@@ -2,7 +2,7 @@ const f=require('fs'),P=require('path'),O='dist';
 // ══════════ CONFIGURA AQUI ══════════
 const N='GasolinaMX',DOM='https://gasolinamx.pages.dev';
 const MAIL='contacto.gasolinamx@gmail.com';   // <- cambia por el correo de contacto que quieras publicar
-const MVERIFY='<meta name="monetag" content="PEGA_AQUI_TU_META">';
+const MVERIFY='<meta name="monetag" content="93992a7ab07c1e69404da37a95d434a1">';
 const MTAG=`<!-- PEGA AQUI TUS SCRIPTS DE MONETAG -->`;
 // ════════════════════════════════════
 const s=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70);
