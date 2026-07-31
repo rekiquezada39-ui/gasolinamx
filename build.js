@@ -597,6 +597,9 @@ console.log(`   ✓ 4 páginas legales`);
 
 // ── EXTRAS
 f.writeFileSync(P.join(O,'s.css'),CSS);
+f.writeFileSync(P.join(O,'_redirects'),'/index.html / 200\n');
+f.writeFileSync(P.join(O,'_headers'),'/*\n  X-Content-Type-Options: nosniff\n');
+
 f.writeFileSync(P.join(O,'favicon.svg'),'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 34" fill="none" stroke="#1d1d1f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 31V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v26"/><path d="M1.5 31h16"/><path d="M6 8h7v5H6z"/><path d="M16 12h4a2 2 0 0 1 2 2v10a2.5 2.5 0 0 0 5 0V13l-3.5-4"/></svg>');
 const U=['','baratas.html','estados.html','aviso-de-privacidad.html','terminos.html','cookies.html','contacto.html'].concat(edos.map(([n])=>`estado-${s(n)}.html`)).concat(muns.map(([k])=>{const[ed,mu]=k.split('|');return slugMun(ed,mu)})).concat(D.map(g=>`estacion/${g._s}.html`));
 f.writeFileSync(P.join(O,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+U.map(u=>`<url><loc>${DOM}/${u}</loc><lastmod>${ISO}</lastmod></url>`).join('\n')+'\n</urlset>');
