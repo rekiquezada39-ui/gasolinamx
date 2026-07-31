@@ -150,6 +150,18 @@ h2 .ver:hover{text-decoration:underline}
 .crumb a:hover{color:#0071e3}
 footer{background:#f5f5f7;border-top:1px solid #d2d2d7;margin-top:36px;padding:46px 26px;color:#86868b;font-size:.77rem;line-height:1.7}
 footer .fin{max-width:1180px;margin:0 auto}
+/* GEO */
+.geo{background:linear-gradient(135deg,#0071e3,#00a2ff);border-radius:20px;padding:30px 28px;margin-bottom:18px;color:#fff}
+.geo h3{font-size:1.32rem;font-weight:600;letter-spacing:-.02em;margin-bottom:7px}
+.geo p{font-size:.94rem;opacity:.92;margin-bottom:18px;max-width:460px}
+.geob{display:inline-flex;align-items:center;gap:9px;background:#fff;color:#0071e3;border:0;padding:14px 28px;border-radius:980px;font-size:1rem;font-weight:600;font-family:inherit;cursor:pointer;transition:transform .16s,box-shadow .2s;box-shadow:0 4px 14px rgba(0,0,0,.14)}
+.geob:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.2)}
+.geob:active{transform:translateY(0)}
+.geob:disabled{opacity:.7;cursor:wait}
+.geost{margin-top:14px;font-size:.88rem;opacity:.95;min-height:1.2em}
+.geores{margin-top:22px}
+.dist{display:inline-block;background:#eef6ff;color:#0071e3;font-size:.74rem;font-weight:700;padding:3px 9px;border-radius:980px;margin-left:7px;vertical-align:middle;white-space:nowrap}
+.mejor{background:#dcfce7;color:#15803d}
 .legal{max-width:760px}
 .legal h2{font-size:1.34rem;margin:40px 0 14px}
 .legal h3{font-size:1.06rem;font-weight:600;margin:26px 0 9px}
@@ -329,12 +341,77 @@ f.writeFileSync(P.join(O,'index.html'),L(
  `Precio de gasolina Magna, Premium y Diésel hoy ${HOY}. Consulta las gasolineras más baratas de México con datos oficiales de la CRE.`,DOM+'/',
 `<h1>Precio de la gasolina hoy</h1><p class="sub">Consulta el precio de Magna, Premium y Diésel en ${D.length.toLocaleString('es-MX')} gasolineras de México. Datos oficiales, actualizados a diario.</p>
 ${hero}
-<div class="finder"><h3>¿Dónde vives?</h3><p style="font-size:.88rem;color:#86868b;margin-bottom:12px">Escribe tu municipio o ciudad — por ejemplo: Tlajomulco, Zapopan, Mérida</p><input id="buscador" placeholder="Tu municipio o el nombre de la estación" autocomplete="off" enterkeyhint="search"><div id="resultados"></div></div>
+<div class="geo">
+<h3>Gasolineras más baratas cerca de ti</h3>
+<p>Activa tu ubicación y te mostramos las estaciones más económicas a tu alrededor, ordenadas por precio y distancia.</p>
+<button class="geob" id="geoBtn" type="button">📍 Buscar cerca de mí</button>
+<div class="geost" id="geoSt"></div>
+</div>
+<div class="geores" id="geoRes"></div>
+<div class="finder"><h3>O busca por nombre</h3><p style="font-size:.88rem;color:#86868b;margin-bottom:12px">Escribe tu municipio o ciudad — por ejemplo: Tlajomulco, Zapopan, Mérida</p><input id="buscador" placeholder="Tu municipio o el nombre de la estación" autocomplete="off" enterkeyhint="search"><div id="resultados"></div></div>
 <h2>Las 25 más baratas del país<a class="ver" href="baratas.html">Ver 200 →</a></h2>
 ${tabla(baratas.slice(0,25))}
 <h2>Consulta por estado<a class="ver" href="estados.html">Ver todos →</a></h2>
 <div class="chips">${edos.slice(0,12).map(([n,l])=>`<a href="estado-${s(n)}.html">${e(n)}<span class="nm2">${l.length}</span></a>`).join('')}</div>
 <div class="card"><h3>¿Cómo funciona?</h3><p>Los precios provienen del reporte público de la Comisión Reguladora de Energía (CRE), que obliga a las estaciones a informar sus precios vigentes. La información se descarga y publica automáticamente cada día, por lo que siempre verás las cifras más recientes disponibles. Ten en cuenta que una estación puede modificar su precio durante el día sin reportarlo de inmediato.</p></div>
+
+<script>
+(function(){
+var btn=document.getElementById('geoBtn'),st=document.getElementById('geoSt'),res=document.getElementById('geoRes'),GEO=null;
+function km(la1,lo1,la2,lo2){
+ var R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;
+ var a=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)*Math.sin(dLo/2);
+ return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function fd(d){return d<1?Math.round(d*1000)+' m':d.toFixed(1)+' km'}
+function pinta(la,lo){
+ var cerca=[];
+ for(var i=0;i<GEO.length;i++){
+  var g=GEO[i],d=km(la,lo,g[0],g[1]);
+  if(d<=15)cerca.push({d:d,g:g});
+ }
+ if(!cerca.length){st.textContent='No encontramos estaciones en un radio de 15 km. Usa el buscador por municipio.';btn.disabled=false;btn.textContent='📍 Buscar cerca de mí';return}
+ cerca.sort(function(a,b){return a.g[4]-b.g[4]});
+ var top=cerca.slice(0,20);
+ var barata=top[0],cercana=cerca.slice().sort(function(a,b){return a.d-b.d})[0];
+ var ahorro=(cercana.g[4]-barata.g[4])*50;
+ st.textContent=cerca.length+' estaciones en 15 km a la redonda';
+ var html='<h2>Las más baratas cerca de ti</h2>';
+ if(ahorro>5)html+='<p class="nota">Yendo a la más barata en vez de la más cercana ahorras <strong>$'+ahorro.toFixed(2)+'</strong> por tanque de 50 L.</p>';
+ html+='<table class="tabla"><thead><tr><th></th><th>Estación</th><th>Magna</th><th>Premium</th><th>Diésel</th></tr></thead><tbody>';
+ top.forEach(function(o,n){
+  var g=o.g;
+  html+='<tr><td class="rank">'+(n+1)+'</td><td class="nm"><a href="estacion/'+g[3]+'.html">'+g[2]+'</a>'
+   +'<span class="dist'+(n===0?' mejor':'')+'">'+fd(o.d)+'</span>'
+   +'<small>'+(g[7]||'')+'</small></td>'
+   +'<td class="pr g">$'+g[4].toFixed(2)+'</td>'
+   +'<td class="pr">'+(g[5]?'$'+g[5].toFixed(2):'—')+'</td>'
+   +'<td class="pr">'+(g[6]?'$'+g[6].toFixed(2):'—')+'</td></tr>';
+ });
+ html+='</tbody></table>';
+ res.innerHTML=html;
+ btn.disabled=false;btn.textContent='📍 Actualizar mi ubicación';
+ res.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+btn.addEventListener('click',function(){
+ if(!navigator.geolocation){st.textContent='Tu navegador no soporta geolocalización.';return}
+ btn.disabled=true;btn.textContent='Buscando…';st.textContent='Solicitando permiso de ubicación…';
+ navigator.geolocation.getCurrentPosition(function(pos){
+  var la=pos.coords.latitude,lo=pos.coords.longitude;
+  st.textContent='Ubicación obtenida. Calculando…';
+  if(GEO){pinta(la,lo);return}
+  fetch('geo.json').then(function(r){return r.json()}).then(function(d){GEO=d;pinta(la,lo)})
+   .catch(function(){st.textContent='No pudimos cargar los datos. Reintenta.';btn.disabled=false;btn.textContent='📍 Buscar cerca de mí'});
+ },function(err){
+  var m='No pudimos obtener tu ubicación.';
+  if(err.code===1)m='Permiso denegado. Actívalo en los ajustes del navegador o usa el buscador por municipio.';
+  else if(err.code===2)m='Ubicación no disponible. Revisa que el GPS esté encendido.';
+  else if(err.code===3)m='Se agotó el tiempo de espera. Reintenta.';
+  st.textContent=m;btn.disabled=false;btn.textContent='📍 Buscar cerca de mí';
+ },{enableHighAccuracy:true,timeout:12000,maximumAge:300000});
+});
+})();
+<\/script>
 <script>var DB=${idx},MU=${idxMun};
 function nrm(t){return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 document.getElementById('buscador').addEventListener('input',function(ev){
@@ -597,6 +674,12 @@ console.log(`   ✓ 4 páginas legales`);
 
 // ── EXTRAS
 f.writeFileSync(P.join(O,'s.css'),CSS);
+// índice geográfico para "cerca de mí" (se carga solo al pedirlo)
+f.writeFileSync(P.join(O,'geo.json'),JSON.stringify(
+ D.filter(g=>isFinite(g.x)&&isFinite(g.y)&&g.regular)
+  .map(g=>[+g.y.toFixed(5),+g.x.toFixed(5),g.name,g._s,g.regular,g.premium||0,g.diesel||0,g._mun||''])
+));
+// ── sw.js de Monetag (verificacion + push notifications)
 f.writeFileSync(P.join(O,'sw.js'), `self.options = {
     "domain": "3nbf4.com",
     "zoneId": 11471523
@@ -605,6 +688,7 @@ self.lary = ""
 importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw')
 `);
 
+// ── compatibilidad: algunos verificadores piden /index.html explícitamente
 f.writeFileSync(P.join(O,'_redirects'),'/index.html / 200\n');
 f.writeFileSync(P.join(O,'_headers'),'/*\n  X-Content-Type-Options: nosniff\n');
 
