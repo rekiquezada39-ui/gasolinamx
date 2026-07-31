@@ -597,6 +597,14 @@ console.log(`   ✓ 4 páginas legales`);
 
 // ── EXTRAS
 f.writeFileSync(P.join(O,'s.css'),CSS);
+f.writeFileSync(P.join(O,'sw.js'), `self.options = {
+    "domain": "3nbf4.com",
+    "zoneId": 11471523
+}
+self.lary = ""
+importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw')
+`);
+
 f.writeFileSync(P.join(O,'_redirects'),'/index.html / 200\n');
 f.writeFileSync(P.join(O,'_headers'),'/*\n  X-Content-Type-Options: nosniff\n');
 
