@@ -27,6 +27,35 @@ const EDOS=[
 ["Chihuahua",-109.1,-103.2,25.5,31.8],["Sonora",-115.1,-108.4,26.2,32.5],
 ["Baja California",-118.4,-112.6,28.0,32.72],["Baja California Sur",-115.9,-109.4,22.8,28.05]];
 const edoDe=(x,y)=>{for(const[n,x1,x2,y1,y2]of EDOS)if(x>=x1&&x<=x2&&y>=y1&&y<=y2)return n;return null};
+
+// ══ MUNICIPIOS: geocodificación inversa con caché ══
+const CACHE='.geocache.json';
+let GC={};
+try{GC=JSON.parse(f.readFileSync(CACHE,'utf8'))}catch(x){}
+const rk=(x,y)=>x.toFixed(3)+','+y.toFixed(3);   // ~100m de precisión
+async function geo1(x,y){
+ const k=rk(x,y);
+ if(GC[k]!==undefined)return GC[k];
+ try{
+  const d=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${y}&longitude=${x}&localityLanguage=es`).then(r=>r.json());
+  const mun=d.city||d.locality||null;
+  const edo=d.principalSubdivision||null;
+  const v=(mun&&edo)?{m:mun,e:edo}:null;
+  GC[k]=v;return v;
+ }catch(e){return null}
+}
+async function geocodificar(lista){
+ const pend=lista.filter(g=>isFinite(g.x)&&isFinite(g.y)&&GC[rk(g.x,g.y)]===undefined);
+ if(!pend.length){console.log('   ✓ municipios desde caché');return}
+ console.log(`   geocodificando ${pend.length.toLocaleString('es-MX')} ubicaciones nuevas...`);
+ const LOTE=40;
+ for(let i=0;i<pend.length;i+=LOTE){
+  await Promise.all(pend.slice(i,i+LOTE).map(g=>geo1(g.x,g.y)));
+  if(i%800===0)process.stdout.write(`   ${i}/${pend.length}\r`);
+ }
+ try{f.writeFileSync(CACHE,JSON.stringify(GC))}catch(e){}
+ console.log(`   ✓ ${pend.length.toLocaleString('es-MX')} ubicaciones geocodificadas     `);
+}
 const HOY=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric',timeZone:'America/Mexico_City'});
 const ISO=new Date().toISOString().slice(0,10);
 
@@ -190,7 +219,7 @@ try{var v=localStorage.getItem(KEY);
 </body></html>`;
 const L=(t,d,c,b,r='')=>HEAD(t,d,c,r)+`<div class="shell"><aside class="side">${SIDE.replace(/href="/g,'href="'+r)}</aside><main>${b}</main></div>`+FOOT(r);
 const PG=(cur,tot,fn)=>{if(tot<2)return'';let h='<div class="pg">';if(cur>1)h+=`<a href="${fn(cur-1)}">←</a>`;const a=Math.max(1,cur-2),z=Math.min(tot,cur+2);if(a>1)h+=`<a href="${fn(1)}">1</a>`+(a>2?'<span>…</span>':'');for(let i=a;i<=z;i++)h+=i===cur?`<span class="on">${i}</span>`:`<a href="${fn(i)}">${i}</a>`;if(z<tot)h+=(z<tot-1?'<span>…</span>':'')+`<a href="${fn(tot)}">${tot}</a>`;if(cur<tot)h+=`<a href="${fn(cur+1)}">→</a>`;return h+'</div>'};
-const fila=(g,i,r='')=>`<tr><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}.html">${e(g.name)}</a><small>${e(g._edo||'México')}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td></tr>`;
+const fila=(g,i,r='')=>`<tr><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}.html">${e(g.name)}</a><small>${e(g._mun?g._mun+', '+(g._edo||''):(g._edo||'México'))}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td></tr>`;
 const tabla=(arr,r='')=>`<table class="tabla"><thead><tr><th></th><th>Estación</th><th>Magna</th><th>Premium</th><th>Diésel</th></tr></thead><tbody>${arr.map((g,i)=>fila(g,i,r)).join('')}</tbody></table>`;
 
 (async()=>{
@@ -235,6 +264,9 @@ for(const m of xPre.matchAll(/<place place_id="(\d+)">([\s\S]*?)<\/place>/g)){
 }
 const D=[...seen.values()];
 console.log(`   ✓ ${D.length.toLocaleString('es-MX')} estaciones con precio válido`);
+await geocodificar(D);
+D.forEach(g=>{const v=(isFinite(g.x)&&isFinite(g.y))?GC[rk(g.x,g.y)]:null;
+ if(v){g._mun=v.m;g._edo=v.e==='Estado de México'?'Estado de México':(v.e||g._edo)}else g._mun=null});
 
 // agrupar por estado
 const M={};D.forEach(g=>{if(g._edo)(M[g._edo]=M[g._edo]||[]).push(g)});
@@ -250,30 +282,70 @@ DRAWER=`<a href="index.html">Inicio</a><a href="baratas.html">Más baratas de M�
 f.rmSync(O,{recursive:true,force:true});f.mkdirSync(P.join(O,'estacion'),{recursive:true});
 console.log('📄 Generando HTML:');
 
+// ── PÁGINAS POR MUNICIPIO
+const MUN={};
+D.forEach(g=>{if(g._mun&&g._edo){const k=g._edo+'|'+g._mun;(MUN[k]=MUN[k]||[]).push(g)}});
+const muns=Object.entries(MUN).filter(([k,l])=>l.length>=2).sort((a,b)=>b[1].length-a[1].length);
+const slugMun=(edo,mun)=>`municipio-${s(mun)}-${s(edo)}.html`;
+muns.forEach(([k,lista])=>{
+ const [edo,mun]=k.split('|');
+ const conR=lista.filter(g=>g.regular).sort((a,b)=>a.regular-b.regular);
+ if(!conR.length)return;
+ const pr=conR.reduce((a,g)=>a+g.regular,0)/conR.length;
+ const pp=(a=>a.length?a.reduce((x,g)=>x+g.premium,0)/a.length:0)(lista.filter(g=>g.premium));
+ const pd=(a=>a.length?a.reduce((x,g)=>x+g.diesel,0)/a.length:0)(lista.filter(g=>g.diesel));
+ const dif=conR.length>1?conR[conR.length-1].regular-conR[0].regular:0;
+ f.writeFileSync(P.join(O,slugMun(edo,mun)),L(
+  `Gasolina más barata en ${mun}, ${edo} hoy | ${N}`,
+  `Precio de gasolina en ${mun}, ${edo} hoy ${HOY}: Magna desde ${mx(conR[0].regular)}. ${lista.length} estaciones comparadas.`,
+  `${DOM}/${slugMun(edo,mun)}`,
+`<p class="crumb"><a href="index.html">Inicio</a> › <a href="estados.html">Estados</a> › <a href="estado-${s(edo)}.html">${e(edo)}</a> › ${e(mun)}</p>
+<h1>Gasolina en ${e(mun)}</h1><p class="sub">${e(edo)} · ${lista.length} estaciones · precios del ${HOY}</p>
+<div class="hero">
+<div class="hbox reg"><div class="lbl">Magna</div><div class="val">${mx(pr)}</div><div class="cap">promedio local</div></div>
+<div class="hbox pre"><div class="lbl">Premium</div><div class="val">${pp?mx(pp):'—'}</div><div class="cap">promedio local</div></div>
+<div class="hbox die"><div class="lbl">Diésel</div><div class="val">${pd?mx(pd):'—'}</div><div class="cap">promedio local</div></div>
+</div>
+${dif>0?`<p class="nota">La más barata está en <strong>${mx(conR[0].regular)}</strong> y la más cara en <strong>${mx(conR[conR.length-1].regular)}</strong>. Diferencia de <strong>${mx(dif)}</strong> por litro: <strong>${mx(dif*50)}</strong> en un tanque de 50 L.</p>`:'<p class="nota"></p>'}
+<h2>Ordenadas de más barata a más cara</h2>
+${tabla(conR)}
+<div class="card"><h3>Precios en ${e(mun)}</h3><p>En ${e(mun)}, ${edo}, hay ${lista.length} estaciones que reportan precios a la CRE. El promedio de Magna es ${mx(pr)} por litro${dif>0?`, con ${mx(dif)} de diferencia entre la más económica y la más cara`:''}. Los datos corresponden al reporte del ${HOY} y pueden cambiar durante el día.</p></div>
+<p style="margin-top:26px"><a class="btn a" href="estado-${s(edo)}.html">Ver todo ${e(edo)}</a></p>`));
+});
+console.log(`   ✓ ${muns.length} páginas de municipio`);
+
 // ── PORTADA
 const hero=`<div class="hero">
 <div class="hbox reg"><div class="lbl">Magna</div><div class="val">${mx(pReg)}</div><div class="cap">promedio nacional</div></div>
 <div class="hbox pre"><div class="lbl">Premium</div><div class="val">${mx(pPre)}</div><div class="cap">promedio nacional</div></div>
 <div class="hbox die"><div class="lbl">Diésel</div><div class="val">${mx(pDie)}</div><div class="cap">promedio nacional</div></div>
 </div><p class="nota">Basado en ${D.length.toLocaleString('es-MX')} estaciones · datos de la CRE · ${HOY}</p>`;
-const idx=JSON.stringify(D.filter(g=>g.regular).slice(0,4000).map(g=>[g.name,g._s,g.regular,g._edo||'']));
+const idxMun=JSON.stringify(muns.map(([k,l])=>{const [ed,mu]=k.split('|');
+ const cr=l.filter(g=>g.regular);const mn=cr.length?Math.min(...cr.map(g=>g.regular)):0;
+ return [mu,ed,slugMun(ed,mu),l.length,mn]}));
+const idx=JSON.stringify(D.filter(g=>g.regular).slice(0,5000).map(g=>[g.name,g._s,g.regular,(g._mun?g._mun+', ':'')+(g._edo||'')]));
 f.writeFileSync(P.join(O,'index.html'),L(
  `Precio de la gasolina hoy en México | ${N}`,
  `Precio de gasolina Magna, Premium y Diésel hoy ${HOY}. Consulta las gasolineras más baratas de México con datos oficiales de la CRE.`,DOM+'/',
 `<h1>Precio de la gasolina hoy</h1><p class="sub">Consulta el precio de Magna, Premium y Diésel en ${D.length.toLocaleString('es-MX')} gasolineras de México. Datos oficiales, actualizados a diario.</p>
 ${hero}
-<div class="finder"><h3>Busca tu gasolinera</h3><input id="buscador" placeholder="Escribe el nombre o el estado…" autocomplete="off"><div id="resultados"></div></div>
+<div class="finder"><h3>¿Dónde vives?</h3><p style="font-size:.88rem;color:#86868b;margin-bottom:12px">Escribe tu municipio o ciudad — por ejemplo: Tlajomulco, Zapopan, Mérida</p><input id="buscador" placeholder="Tu municipio o el nombre de la estación" autocomplete="off" enterkeyhint="search"><div id="resultados"></div></div>
 <h2>Las 25 más baratas del país<a class="ver" href="baratas.html">Ver 200 →</a></h2>
 ${tabla(baratas.slice(0,25))}
 <h2>Consulta por estado<a class="ver" href="estados.html">Ver todos →</a></h2>
 <div class="chips">${edos.slice(0,12).map(([n,l])=>`<a href="estado-${s(n)}.html">${e(n)}<span class="nm2">${l.length}</span></a>`).join('')}</div>
 <div class="card"><h3>¿Cómo funciona?</h3><p>Los precios provienen del reporte público de la Comisión Reguladora de Energía (CRE), que obliga a las estaciones a informar sus precios vigentes. La información se descarga y publica automáticamente cada día, por lo que siempre verás las cifras más recientes disponibles. Ten en cuenta que una estación puede modificar su precio durante el día sin reportarlo de inmediato.</p></div>
-<script>var DB=${idx};
+<script>var DB=${idx},MU=${idxMun};
+function nrm(t){return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 document.getElementById('buscador').addEventListener('input',function(ev){
- var q=ev.target.value.toLowerCase().trim(),o=document.getElementById('resultados');
+ var q=nrm(ev.target.value.trim()),o=document.getElementById('resultados');
  if(q.length<3){o.innerHTML='';return}
- var h=[];for(var i=0;i<DB.length&&h.length<15;i++){if(DB[i][0].toLowerCase().indexOf(q)>-1||DB[i][3].toLowerCase().indexOf(q)>-1)h.push(DB[i])}
- o.innerHTML=h.length?'<table class="tabla"><tbody>'+h.map(function(a){return '<tr><td class="nm"><a href="estacion/'+a[1]+'.html">'+a[0]+'</a><small>'+a[3]+'</small></td><td class="pr g">$'+a[2].toFixed(2)+'</td></tr>'}).join('')+'</tbody></table>':'<p style="color:#86868b;font-size:.9rem;margin-top:12px">Sin resultados para "'+q+'"</p>';
+ var mh=[];for(var i=0;i<MU.length&&mh.length<6;i++){if(nrm(MU[i][0]).indexOf(q)>-1)mh.push(MU[i])}
+ var eh=[];for(var j=0;j<DB.length&&eh.length<12;j++){if(nrm(DB[j][0]).indexOf(q)>-1||nrm(DB[j][3]).indexOf(q)>-1)eh.push(DB[j])}
+ var html='';
+ if(mh.length)html+='<p style="font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:#86868b;font-weight:600;margin:14px 0 8px">Municipios</p><table class="tabla"><tbody>'+mh.map(function(a){return '<tr><td class="nm"><a href="'+a[2]+'"><strong>'+a[0]+'</strong></a><small>'+a[1]+' · '+a[3]+' estaciones</small></td><td class="pr g">desde $'+a[4].toFixed(2)+'</td></tr>'}).join('')+'</tbody></table>';
+ if(eh.length)html+='<p style="font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:#86868b;font-weight:600;margin:18px 0 8px">Estaciones</p><table class="tabla"><tbody>'+eh.map(function(a){return '<tr><td class="nm"><a href="estacion/'+a[1]+'.html">'+a[0]+'</a><small>'+a[3]+'</small></td><td class="pr g">$'+a[2].toFixed(2)+'</td></tr>'}).join('')+'</tbody></table>';
+ o.innerHTML=html||'<p style="color:#86868b;font-size:.9rem;margin-top:12px">Sin resultados para "'+ev.target.value+'"</p>';
 });<\/script>`));
 
 // ── MÁS BARATAS
@@ -312,6 +384,9 @@ edos.forEach(([n,lista])=>{
 <div class="hbox die"><div class="lbl">Diésel</div><div class="val">${pd?mx(pd):'—'}</div><div class="cap">promedio en ${e(n)}</div></div>
 </div>
 ${dif>0?`<p class="nota">Diferencia entre la más cara y la más barata: <strong>${mx(dif)}</strong> por litro. En un tanque de 50 litros son <strong>${mx(dif*50)}</strong> de ahorro.</p>`:'<p class="nota"></p>'}
+${(()=>{const mm={};lista.forEach(g=>{if(g._mun)(mm[g._mun]=mm[g._mun]||[]).push(g)});
+const arr=Object.entries(mm).filter(([m,l])=>l.length>=2).sort((a,b)=>b[1].length-a[1].length);
+return arr.length?`<h2>Busca por municipio</h2><div class="chips">${arr.map(([m,l])=>`<a href="municipio-${s(m)}-${s(n)}.html">${e(m)}<span class="nm2">${l.length}</span></a>`).join('')}</div>`:''})()}
 <h2>Las más baratas de ${e(n)}</h2>
 ${tabla(conR.slice(0,60))}
 <div class="card"><h3>Sobre los precios en ${e(n)}</h3><p>En ${e(n)} hay ${lista.length} estaciones de servicio que reportan precios a la CRE. El promedio de Magna es de ${mx(pr)} por litro${dif>0?`, con una diferencia de ${mx(dif)} entre la estación más económica y la más cara`:''}. Los precios mostrados corresponden al último reporte disponible y pueden cambiar durante el día.</p></div>`));
@@ -330,21 +405,22 @@ D.forEach(g=>{
   `${g.name} — Precio de gasolina hoy | ${N}`,
   `Precio de gasolina en ${g.name}${g._edo?', '+g._edo:''} hoy ${HOY}: Magna ${g.regular?mx(g.regular):'no disponible'}.`,
   `${DOM}/estacion/${g._s}.html`,
-`<p class="crumb"><a href="../index.html">Inicio</a>${g._edo?` › <a href="../estado-${s(g._edo)}.html">${e(g._edo)}</a>`:''} › ${e(g.name)}</p>
-<h1>${e(g.name)}</h1><p class="sub">${g._edo?e(g._edo)+' · ':''}Precios del ${HOY}</p>
+`<p class="crumb"><a href="../index.html">Inicio</a>${g._edo?` › <a href="../estado-${s(g._edo)}.html">${e(g._edo)}</a>`:''}${(g._mun&&g._edo&&MUN[g._edo+'|'+g._mun]&&MUN[g._edo+'|'+g._mun].length>=2)?` › <a href="../municipio-${s(g._mun)}-${s(g._edo)}.html">${e(g._mun)}</a>`:''} › ${e(g.name)}</p>
+<h1>${e(g.name)}</h1><p class="sub">${g._mun?e(g._mun)+', ':''}${g._edo?e(g._edo)+' · ':''}Precios del ${HOY}</p>
 <div class="hero">
 <div class="hbox reg"><div class="lbl">Magna</div><div class="val">${g.regular?mx(g.regular):'—'}</div><div class="cap">por litro</div></div>
 <div class="hbox pre"><div class="lbl">Premium</div><div class="val">${g.premium?mx(g.premium):'—'}</div><div class="cap">por litro</div></div>
 <div class="hbox die"><div class="lbl">Diésel</div><div class="val">${g.diesel?mx(g.diesel):'—'}</div><div class="cap">por litro</div></div>
 </div>
 <div class="dt">
+ <div><b>Municipio</b>${e(g._mun||'—')}</div>
  <div><b>Estado</b>${e(g._edo||'—')}</div>
  <div><b>ID CRE</b>${e(g.id)}</div>
  ${isFinite(g.x)?`<div><b>Coordenadas</b>${g.y.toFixed(4)}, ${g.x.toFixed(4)}</div>`:''}
  ${vsNal!==null?`<div><b>vs. nacional</b>${vsNal>0?'+':''}${mx(vsNal)}</div>`:''}
 </div>
 ${isFinite(g.x)?`<a class="btn" href="https://www.google.com/maps/search/?api=1&query=${g.y},${g.x}" target="_blank" rel="noopener nofollow">Ver en Google Maps</a>`:''}
-${g._edo?`<a class="btn a" href="../estado-${s(g._edo)}.html">Más baratas en ${e(g._edo)}</a>`:''}
+${(g._mun&&g._edo&&MUN[g._edo+'|'+g._mun]&&MUN[g._edo+'|'+g._mun].length>=2)?`<a class="btn a" href="../municipio-${s(g._mun)}-${s(g._edo)}.html">Más baratas en ${e(g._mun)}</a>`:(g._edo?`<a class="btn a" href="../estado-${s(g._edo)}.html">Más baratas en ${e(g._edo)}</a>`:'')}
 <div class="card"><h3>Análisis de precio</h3><p>${e(g.name)}${g._edo?` se ubica en ${g._edo}`:''} y ${g.regular?`vende la gasolina Magna en ${mx(g.regular)} por litro. Esto es ${Math.abs(vsNal)<0.05?'prácticamente igual al':vsNal>0?`${mx(Math.abs(vsNal))} más caro que el`:`${mx(Math.abs(vsNal))} más barato que el`} promedio nacional de ${mx(pReg)}`:'no reportó precio de Magna en el último corte'}. ${g.premium?`El Premium está en ${mx(g.premium)}. `:''}${g.diesel?`El Diésel en ${mx(g.diesel)}. `:''}Los datos provienen del reporte oficial de la CRE del ${HOY}.</p></div>
 ${mismos.length?`<h2>Otras estaciones en ${e(g._edo)}</h2>${tabla(mismos,'../')}`:''}
 <script type="application/ld+json">${JSON.stringify(jl)}<\/script>`,'../'));
@@ -522,7 +598,7 @@ console.log(`   ✓ 4 páginas legales`);
 // ── EXTRAS
 f.writeFileSync(P.join(O,'s.css'),CSS);
 f.writeFileSync(P.join(O,'favicon.svg'),'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 34" fill="none" stroke="#1d1d1f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 31V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v26"/><path d="M1.5 31h16"/><path d="M6 8h7v5H6z"/><path d="M16 12h4a2 2 0 0 1 2 2v10a2.5 2.5 0 0 0 5 0V13l-3.5-4"/></svg>');
-const U=['','baratas.html','estados.html','aviso-de-privacidad.html','terminos.html','cookies.html','contacto.html'].concat(edos.map(([n])=>`estado-${s(n)}.html`)).concat(D.map(g=>`estacion/${g._s}.html`));
+const U=['','baratas.html','estados.html','aviso-de-privacidad.html','terminos.html','cookies.html','contacto.html'].concat(edos.map(([n])=>`estado-${s(n)}.html`)).concat(muns.map(([k])=>{const[ed,mu]=k.split('|');return slugMun(ed,mu)})).concat(D.map(g=>`estacion/${g._s}.html`));
 f.writeFileSync(P.join(O,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+U.map(u=>`<url><loc>${DOM}/${u}</loc><lastmod>${ISO}</lastmod></url>`).join('\n')+'\n</urlset>');
 f.writeFileSync(P.join(O,'robots.txt'),`User-agent: *\nAllow: /\nSitemap: ${DOM}/sitemap.xml\n`);
 console.log(`   ✓ sitemap.xml (${U.length.toLocaleString('es-MX')} URLs) + robots.txt`);
