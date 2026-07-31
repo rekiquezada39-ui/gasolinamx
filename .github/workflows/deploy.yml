@@ -1,0 +1,33 @@
+name: Actualizar precios de gasolina
+
+on:
+  schedule:
+    # 13:00 UTC = 7:00 AM hora de México (CST)
+    - cron: '0 13 * * *'
+  workflow_dispatch:      # boton manual en la pestaña Actions
+  push:
+    branches: [ main ]    # tambien al subir cambios
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Descargar el repo
+        uses: actions/checkout@v4
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generar el sitio
+        run: node build.js
+
+      - name: Publicar en Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=gasolinamx --branch=main
