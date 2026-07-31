@@ -3,7 +3,7 @@ const f=require('fs'),P=require('path'),O='dist';
 const N='GasolinaMX',DOM='https://gasolinamx.pages.dev';
 const MAIL='contacto.gasolinamx@gmail.com';   // <- cambia por el correo de contacto que quieras publicar
 const MVERIFY='<meta name="monetag" content="93992a7ab07c1e69404da37a95d434a1">';
-const MTAG=`<!-- PEGA AQUI TUS SCRIPTS DE MONETAG -->`;
+const MTAG=`<script>(function(s){s.dataset.zone='11471781',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script><script>(function(s){s.dataset.zone='11471783',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>`;
 // ════════════════════════════════════
 const s=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70);
 const e=x=>String(x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
