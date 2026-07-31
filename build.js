@@ -111,6 +111,61 @@ function spark(id,w,h){
  const col=sube?'#dc2626':'#16a34a';
  return `<svg class="spk" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
+
+// ══ GENERADOR DE og.png (1200x630) — sin dependencias ══
+const z=require('zlib');
+const FK='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$.,-:/|!?()+% ';
+const FD='ehhvhhhuhhuhhuehgggheuhhhhhuvgguggvvggugggehgnhhfhhhvhhhe44444e72222ichikokihggggggvhrllhhhhpljhhhehhhhheuhhugggehhhliduhhukihfgge11uv444444hhhhhhehhhhha4hhhllrhhha4ahhhha4444v1248gvehjlphe4c4444eeh1248vv2421he26aiv22vgu11he68guhhev124888ehhehheehhf12c4fke5u400000cc0000c48000v0000cc0cc0122488g44444444444404eh1640424888428422248044v4400000000';
+const AL='0123456789abcdefghijklmnopqrstuv';
+const GLY={};
+for(let i=0;i<FK.length;i++){const rows=[];
+ for(let j=0;j<7;j++)rows.push(AL.indexOf(FD[i*7+j]));
+ GLY[FK[i]]=rows}
+const SS=3;
+function _lz(w,h,r,g,b){const W=w*SS,H=h*SS,p=Buffer.alloc(W*H*3);
+ for(let i=0;i<W*H;i++){p[i*3]=r;p[i*3+1]=g;p[i*3+2]=b}return{w,h,W,H,p}}
+function _rc(c,x,y,w,h,r,g,b){const X=Math.round(x*SS),Y=Math.round(y*SS),Wd=Math.round(w*SS),Ht=Math.round(h*SS);
+ for(let j=Y;j<Y+Ht;j++){if(j<0||j>=c.H)continue;for(let i=X;i<X+Wd;i++){if(i<0||i>=c.W)continue;
+  const k=(j*c.W+i)*3;c.p[k]=r;c.p[k+1]=g;c.p[k+2]=b}}}
+function _tx(c,t,x0,y0,es,r,g,b){let x=x0;
+ for(const ch of String(t).toUpperCase()){const gl=GLY[ch];
+  if(gl)for(let ry=0;ry<7;ry++)for(let rx=0;rx<5;rx++){if((gl[ry]>>(4-rx))&1)_rc(c,x+rx*es,y0+ry*es,es,es,r,g,b)}
+  x+=6*es}return x}
+const _an=(t,es)=>String(t).length*6*es-es;
+const _fit=(t,max,ini)=>{let e2=ini;while(e2>1&&_an(t,e2)>max)e2--;return e2};
+function _png(c){
+ const w=c.w,h=c.h,out=Buffer.alloc(w*h*3),n=SS*SS;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){let R=0,G=0,B=0;
+  for(let j=0;j<SS;j++)for(let i=0;i<SS;i++){const k=(((y*SS+j)*c.W)+(x*SS+i))*3;R+=c.p[k];G+=c.p[k+1];B+=c.p[k+2]}
+  const o=(y*w+x)*3;out[o]=R/n;out[o+1]=G/n;out[o+2]=B/n}
+ const raw=Buffer.alloc(h*(w*3+1));
+ for(let y=0;y<h;y++){raw[y*(w*3+1)]=0;out.copy(raw,y*(w*3+1)+1,y*w*3,(y+1)*w*3)}
+ const T=[];for(let m=0;m<256;m++){let k=m;for(let j=0;j<8;j++)k=k&1?0xEDB88320^(k>>>1):k>>>1;T[m]=k>>>0}
+ const crc=b=>{let k=0xFFFFFFFF;for(const x of b)k=T[(k^x)&255]^(k>>>8);return(k^0xFFFFFFFF)>>>0};
+ const ck=(t,d)=>{const l=Buffer.alloc(4);l.writeUInt32BE(d.length);const td=Buffer.concat([Buffer.from(t),d]);
+  const cb=Buffer.alloc(4);cb.writeUInt32BE(crc(td));return Buffer.concat([l,td,cb])};
+ const ih=Buffer.alloc(13);ih.writeUInt32BE(w,0);ih.writeUInt32BE(h,4);ih[8]=8;ih[9]=2;
+ return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),ck('IHDR',ih),
+  ck('IDAT',z.deflateSync(raw,{level:9})),ck('IEND',Buffer.alloc(0))]);}
+function ogPNG(titulo,sub,mg,pm,ds,pie){
+ const c=_lz(1200,630,255,255,255);
+ _rc(c,0,0,1200,10,0,113,227);
+ _rc(c,70,76,8,50,29,29,31);_rc(c,70,76,38,8,29,29,31);
+ _rc(c,70,118,48,8,29,29,31);_rc(c,86,92,16,14,29,29,31);
+ _tx(c,'GASOLINAMX',140,86,7,29,29,31);
+ _rc(c,70,162,1060,2,232,232,237);
+ _tx(c,titulo,70,200,_fit(titulo,1060,11),29,29,31);
+ _tx(c,sub,70,286,_fit(sub,1060,4),134,134,139);
+ [['MAGNA',mg,22,163,74],['PREMIUM',pm,220,38,38],['DIESEL',ds,29,29,31]]
+ .forEach((b,i)=>{const x=70+i*358;
+  _rc(c,x,346,336,170,247,247,249);_rc(c,x,346,336,6,b[2],b[3],b[4]);
+  _tx(c,b[0],x+28,382,4,134,134,139);
+  _tx(c,b[1],x+28,418,_fit(b[1],280,9),b[2],b[3],b[4]);
+  _tx(c,'PROMEDIO NACIONAL',x+28,482,3,150,150,155)});
+ _tx(c,pie,70,556,_fit(pie,1060,4),134,134,139);
+ _rc(c,0,614,1200,16,22,163,74);
+ return _png(c);}
+
 const HOY=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric',timeZone:'America/Mexico_City'});
 const ISO=new Date().toISOString().slice(0,10);
 
@@ -288,18 +343,18 @@ footer .fin{max-width:1180px;margin:0 auto}
 const LOGO='<svg viewBox="0 0 30 34" width="27" height="30" fill="none" stroke="#1d1d1f" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 31V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v26"/><path d="M1.5 31h16"/><path d="M6 8h7v5H6z"/><path d="M16 12h4a2 2 0 0 1 2 2v10a2.5 2.5 0 0 0 5 0V13l-3.5-4"/></svg>';
 
 let SIDE='',DRAWER='';
-const HEAD=(t,d,c,r)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${e(t)}</title><meta name="description" content="${e(d)}"><link rel="canonical" href="${c}">${MVERIFY}<meta property="og:title" content="${e(t)}"><meta name="theme-color" content="#ffffff"><link rel="icon" type="image/svg+xml" href="${r}favicon.svg"><link rel="stylesheet" href="${r}s.css"></head><body>
+const HEAD=(t,d,c,r)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${e(t)}</title><meta name="description" content="${e(d)}"><link rel="canonical" href="${c}">${MVERIFY}<meta property="og:title" content="${e(t)}"><meta property="og:description" content="${e(d)}"><meta property="og:type" content="website"><meta property="og:url" content="${c}"><meta property="og:site_name" content="GasolinaMX"><meta property="og:locale" content="es_MX"><meta property="og:image" content="${DOM}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${e(t)}"><meta name="twitter:description" content="${e(d)}"><meta name="twitter:image" content="${DOM}/og.png"><meta name="theme-color" content="#ffffff"><link rel="icon" type="image/svg+xml" href="${r}favicon.svg"><link rel="stylesheet" href="${r}s.css"></head><body>
 <header><div class="hin">
 <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
-<a href="${r}index.html" class="lg">${LOGO}<span class="lgt">${N}</span></a>
-<nav class="hnav"><a href="${r}index.html">Inicio</a><a href="${r}estados.html">Estados</a><a href="${r}baratas.html">Más baratas</a></nav>
+<a href="${r}" class="lg">${LOGO}<span class="lgt">${N}</span></a>
+<nav class="hnav"><a href="${r}">Inicio</a><a href="${r}estados">Estados</a><a href="${r}baratas">Más baratas</a></nav>
 <span class="upd">Actualizado ${HOY}</span>
 </div></header>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer"><div class="dhead">${LOGO}<span class="lgt">${N}</span></div><div class="dbody">${DRAWER.replace(/href="/g,'href="'+r)}</div></aside>`;
 const FOOT=(r)=>`<footer><div class="fin"><p>${N}. Precios de gasolina en México actualizados diariamente.</p><p style="margin-top:9px">Datos oficiales de la Comisión Reguladora de Energía (CRE). Los precios pueden variar; verifica en la estación antes de cargar. Última actualización: ${HOY}.</p>
-<nav class="fnav"><a href="${r}aviso-de-privacidad.html">Aviso de privacidad</a><a href="${r}terminos.html">Términos de uso</a><a href="${r}cookies.html">Cookies</a><a href="${r}contacto.html">Contacto</a></nav></div></footer>
-<div id="ck" role="dialog" aria-label="Aviso de cookies"><p>Usamos cookies propias y de terceros para mostrar publicidad y analizar el tráfico. Consulta el <a href="${r}aviso-de-privacidad.html">aviso de privacidad</a> y la <a href="${r}cookies.html">política de cookies</a>.</p><div class="ckb"><button id="ckNo" type="button">Solo necesarias</button><button id="ckSi" type="button">Aceptar</button></div></div>
+<nav class="fnav"><a href="${r}aviso-de-privacidad">Aviso de privacidad</a><a href="${r}terminos">Términos de uso</a><a href="${r}cookies">Cookies</a><a href="${r}contacto">Contacto</a></nav></div></footer>
+<div id="ck" role="dialog" aria-label="Aviso de cookies"><p>Usamos cookies propias y de terceros para mostrar publicidad y analizar el tráfico. Consulta el <a href="${r}aviso-de-privacidad">aviso de privacidad</a> y la <a href="${r}cookies">política de cookies</a>.</p><div class="ckb"><button id="ckNo" type="button">Solo necesarias</button><button id="ckSi" type="button">Aceptar</button></div></div>
 <script>(function(){var b=document.getElementById('burger'),d=document.getElementById('drawer'),s=document.getElementById('scrim');
 function t(o){b.classList.toggle('open',o);d.classList.toggle('on',o);s.classList.toggle('on',o);document.body.classList.toggle('lock',o)}
 if(b){b.addEventListener('click',function(){t(!d.classList.contains('on'))});s.addEventListener('click',function(){t(false)});
@@ -323,7 +378,7 @@ const L=(t,d,c,b,r='')=>HEAD(t,d,c,r)+`<div class="shell"><aside class="side">${
 const PG=(cur,tot,fn)=>{if(tot<2)return'';let h='<div class="pg">';if(cur>1)h+=`<a href="${fn(cur-1)}">←</a>`;const a=Math.max(1,cur-2),z=Math.min(tot,cur+2);if(a>1)h+=`<a href="${fn(1)}">1</a>`+(a>2?'<span>…</span>':'');for(let i=a;i<=z;i++)h+=i===cur?`<span class="on">${i}</span>`:`<a href="${fn(i)}">${i}</a>`;if(z<tot)h+=(z<tot-1?'<span>…</span>':'')+`<a href="${fn(tot)}">${tot}</a>`;if(cur<tot)h+=`<a href="${fn(cur+1)}">→</a>`;return h+'</div>'};
 const badge=g=>{const t=tendencia(g.id,g.regular);if(!t||Math.abs(t.d)<0.01)return '';
  return `<span class="trend ${t.d>0?'up':'down'}">${t.d>0?'▲':'▼'} ${mx(Math.abs(t.d))}</span>`};
-const fila=(g,i,r='')=>`<tr><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}.html">${e(g.name)}</a>${badge(g)}<small>${e(g._mun?g._mun+', '+(g._edo||''):(g._edo||'México'))}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td></tr>`;
+const fila=(g,i,r='')=>`<tr><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}">${e(g.name)}</a>${badge(g)}<small>${e(g._mun?g._mun+', '+(g._edo||''):(g._edo||'México'))}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td></tr>`;
 const tabla=(arr,r='')=>`<table class="tabla"><thead><tr><th></th><th>Estación</th><th>Magna</th><th>Premium</th><th>Diésel</th></tr></thead><tbody>${arr.map((g,i)=>fila(g,i,r)).join('')}</tbody></table>`;
 
 (async()=>{
@@ -356,11 +411,17 @@ for(const m of xPre.matchAll(/<place place_id="(\d+)">([\s\S]*?)<\/place>/g)){
  const g=t=>{const r=b.match(new RegExp(`<gas_price type="${t}">([\\d.]+)</gas_price>`));return r?parseFloat(r[1]):null};
  const reg=g('regular'),pre=g('premium'),die=g('diesel');
  // filtrar precios absurdos (errores de captura de la CRE)
- const ok=v=>v!==null&&v>=10&&v<=40;
- if(!ok(reg)&&!ok(pre)&&!ok(die))continue;
+ // rangos realistas por combustible (la CRE tiene errores de captura)
+ const okR=v=>v!==null&&v>=17&&v<=33;
+ const okP=v=>v!==null&&v>=19&&v<=37;
+ const okD=v=>v!==null&&v>=19&&v<=37;
+ let R=okR(reg)?reg:null, PR=okP(pre)?pre:null, DI=okD(die)?die:null;
+ // la Premium SIEMPRE cuesta mas que la Magna; si no, es captura invertida
+ if(R!==null&&PR!==null&&R>=PR){R=null;PR=null}
+ if(R===null&&PR===null&&DI===null)continue;
  const edo=(isFinite(c.x)&&isFinite(c.y))?edoDe(c.x,c.y):null;
  const rec={id,name:c.name,x:c.x,y:c.y,_edo:edo,
-  regular:ok(reg)?reg:null,premium:ok(pre)?pre:null,diesel:ok(die)?die:null,
+  regular:R,premium:PR,diesel:DI,
   _s:(s(c.name)||'estacion')+'-'+id};
  const prev=seen.get(id);
  const score=r=>(r.regular?1:0)+(r.premium?1:0)+(r.diesel?1:0);
@@ -381,8 +442,8 @@ const prom=t=>{const a=D.filter(g=>g[t]);return a.length?a.reduce((s,g)=>s+g[t],
 const pReg=prom('regular'),pPre=prom('premium'),pDie=prom('diesel');
 const baratas=[...conReg].sort((a,b)=>a.regular-b.regular);
 
-SIDE=`<div class="sttl">Consultar</div><a href="index.html">Inicio</a><a href="baratas.html">Más baratas</a><a href="estados.html">Todos los estados</a><div class="sttl">Estados</div>`+edos.map(([n,l])=>`<a href="estado-${s(n)}.html">${e(n)}</a>`).join('');
-DRAWER=`<a href="index.html">Inicio</a><a href="baratas.html">Más baratas de México</a><a href="estados.html">Todos los estados</a><div class="dsep"></div><div class="dttl">Estados</div>`+edos.map(([n,l])=>`<a href="estado-${s(n)}.html">${e(n)}<span class="n">${l.length}</span></a>`).join('');
+SIDE=`<div class="sttl">Consultar</div><a href="./">Inicio</a><a href="baratas">Más baratas</a><a href="estados">Todos los estados</a><div class="sttl">Estados</div>`+edos.map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}</a>`).join('');
+DRAWER=`<a href="./">Inicio</a><a href="baratas">Más baratas de México</a><a href="estados">Todos los estados</a><div class="dsep"></div><div class="dttl">Estados</div>`+edos.map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}<span class="n">${l.length}</span></a>`).join('');
 
 f.rmSync(O,{recursive:true,force:true});f.mkdirSync(P.join(O,'estacion'),{recursive:true});
 console.log('📄 Generando HTML:');
@@ -390,8 +451,9 @@ console.log('📄 Generando HTML:');
 // ── PÁGINAS POR MUNICIPIO
 const MUN={};
 D.forEach(g=>{if(g._mun&&g._edo){const k=g._edo+'|'+g._mun;(MUN[k]=MUN[k]||[]).push(g)}});
-const muns=Object.entries(MUN).filter(([k,l])=>l.length>=2).sort((a,b)=>b[1].length-a[1].length);
-const slugMun=(edo,mun)=>`municipio-${s(mun)}-${s(edo)}.html`;
+const muns=Object.entries(MUN).filter(([k,l])=>l.length>=2&&l.some(g=>g.regular)).sort((a,b)=>b[1].length-a[1].length);
+const MUNOK=new Set(muns.map(([k])=>k));
+const slugMun=(edo,mun)=>`municipio-${s(mun)}-${s(edo)}`;
 muns.forEach(([k,lista])=>{
  const [edo,mun]=k.split('|');
  const conR=lista.filter(g=>g.regular).sort((a,b)=>a.regular-b.regular);
@@ -400,11 +462,11 @@ muns.forEach(([k,lista])=>{
  const pp=(a=>a.length?a.reduce((x,g)=>x+g.premium,0)/a.length:0)(lista.filter(g=>g.premium));
  const pd=(a=>a.length?a.reduce((x,g)=>x+g.diesel,0)/a.length:0)(lista.filter(g=>g.diesel));
  const dif=conR.length>1?conR[conR.length-1].regular-conR[0].regular:0;
- f.writeFileSync(P.join(O,slugMun(edo,mun)),L(
+ f.writeFileSync(P.join(O,slugMun(edo,mun)+'.html'),L(
   `Gasolina más barata en ${mun}, ${edo} hoy | ${N}`,
   `Precio de gasolina en ${mun}, ${edo} hoy ${HOY}: Magna desde ${mx(conR[0].regular)}. ${lista.length} estaciones comparadas.`,
   `${DOM}/${slugMun(edo,mun)}`,
-`<p class="crumb"><a href="index.html">Inicio</a> › <a href="estados.html">Estados</a> › <a href="estado-${s(edo)}.html">${e(edo)}</a> › ${e(mun)}</p>
+`<p class="crumb"><a href="./">Inicio</a> › <a href="estados">Estados</a> › <a href="estado-${s(edo)}">${e(edo)}</a> › ${e(mun)}</p>
 <h1>Gasolina en ${e(mun)}</h1><p class="sub">${e(edo)} · ${lista.length} estaciones · precios del ${HOY}</p>
 <div class="hero">
 <div class="hbox reg"><div class="lbl">Magna</div><div class="val">${mx(pr)}</div><div class="cap">promedio local</div></div>
@@ -424,7 +486,7 @@ ${dif>0?`<p class="nota">La más barata está en <strong>${mx(conR[0].regular)}<
 <h2>Ordenadas de más barata a más cara</h2>
 ${tabla(conR)}
 <div class="card"><h3>Precios en ${e(mun)}</h3><p>En ${e(mun)}, ${edo}, hay ${lista.length} estaciones que reportan precios a la CRE. El promedio de Magna es ${mx(pr)} por litro${dif>0?`, con ${mx(dif)} de diferencia entre la más económica y la más cara`:''}. Los datos corresponden al reporte del ${HOY} y pueden cambiar durante el día.</p></div>
-<p style="margin-top:26px"><a class="btn a" href="estado-${s(edo)}.html">Ver todo ${e(edo)}</a></p>`));
+<p style="margin-top:26px"><a class="btn a" href="estado-${s(edo)}">Ver todo ${e(edo)}</a></p>`));
 });
 console.log(`   ✓ ${muns.length} páginas de municipio`);
 
@@ -461,10 +523,10 @@ ${hero}
 <div class="est" id="alEst"></div>
 </div>
 
-<h2>Las 25 más baratas del país<a class="ver" href="baratas.html">Ver 200 →</a></h2>
+<h2>Las 25 más baratas del país<a class="ver" href="baratas">Ver 200 →</a></h2>
 ${tabla(baratas.slice(0,25))}
-<h2>Consulta por estado<a class="ver" href="estados.html">Ver todos →</a></h2>
-<div class="chips">${edos.slice(0,12).map(([n,l])=>`<a href="estado-${s(n)}.html">${e(n)}<span class="nm2">${l.length}</span></a>`).join('')}</div>
+<h2>Consulta por estado<a class="ver" href="estados">Ver todos →</a></h2>
+<div class="chips">${edos.slice(0,12).map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}<span class="nm2">${l.length}</span></a>`).join('')}</div>
 <div class="card"><h3>¿Cómo funciona?</h3><p>Los precios provienen del reporte público de la Comisión Reguladora de Energía (CRE), que obliga a las estaciones a informar sus precios vigentes. La información se descarga y publica automáticamente cada día, por lo que siempre verás las cifras más recientes disponibles. Ten en cuenta que una estación puede modificar su precio durante el día sin reportarlo de inmediato.</p></div>
 
 <script>
@@ -495,7 +557,7 @@ function pinta(la,lo){
   var h='<table class="tabla"><thead><tr><th></th><th>Estación</th><th>Magna</th><th>Premium</th><th>Diésel</th></tr></thead><tbody>';
   arr.forEach(function(o,n){
    var g=o.g,cls=(n===0)?' mejor':'';
-   h+='<tr><td class="rank">'+(n+1)+'</td><td class="nm"><a href="estacion/'+g[3]+'.html">'+g[2]+'</a>'
+   h+='<tr><td class="rank">'+(n+1)+'</td><td class="nm"><a href="estacion/'+g[3]+'">'+g[2]+'</a>'
     +'<span class="dist'+cls+'">'+fd(o.d)+'</span><small>'+(g[7]||'')+'</small></td>'
     +'<td class="pr g">$'+g[4].toFixed(2)+'</td><td class="pr">'+(g[5]?'$'+g[5].toFixed(2):'—')+'</td>'
     +'<td class="pr">'+(g[6]?'$'+g[6].toFixed(2):'—')+'</td></tr>';
@@ -606,25 +668,25 @@ document.getElementById('buscador').addEventListener('input',function(ev){
  var eh=[];for(var j=0;j<DB.length&&eh.length<12;j++){if(nrm(DB[j][0]).indexOf(q)>-1||nrm(DB[j][3]).indexOf(q)>-1)eh.push(DB[j])}
  var html='';
  if(mh.length)html+='<p style="font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:#86868b;font-weight:600;margin:14px 0 8px">Municipios</p><table class="tabla"><tbody>'+mh.map(function(a){return '<tr><td class="nm"><a href="'+a[2]+'"><strong>'+a[0]+'</strong></a><small>'+a[1]+' · '+a[3]+' estaciones</small></td><td class="pr g">desde $'+a[4].toFixed(2)+'</td></tr>'}).join('')+'</tbody></table>';
- if(eh.length)html+='<p style="font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:#86868b;font-weight:600;margin:18px 0 8px">Estaciones</p><table class="tabla"><tbody>'+eh.map(function(a){return '<tr><td class="nm"><a href="estacion/'+a[1]+'.html">'+a[0]+'</a><small>'+a[3]+'</small></td><td class="pr g">$'+a[2].toFixed(2)+'</td></tr>'}).join('')+'</tbody></table>';
+ if(eh.length)html+='<p style="font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:#86868b;font-weight:600;margin:18px 0 8px">Estaciones</p><table class="tabla"><tbody>'+eh.map(function(a){return '<tr><td class="nm"><a href="estacion/'+a[1]+'">'+a[0]+'</a><small>'+a[3]+'</small></td><td class="pr g">$'+a[2].toFixed(2)+'</td></tr>'}).join('')+'</tbody></table>';
  o.innerHTML=html||'<p style="color:#86868b;font-size:.9rem;margin-top:12px">Sin resultados para "'+ev.target.value+'"</p>';
 });<\/script>`));
 
 // ── MÁS BARATAS
 f.writeFileSync(P.join(O,'baratas.html'),L(
  `Gasolina más barata de México hoy | ${N}`,
- `Las 200 gasolineras más baratas de México hoy ${HOY}. Precio de Magna desde ${mx(baratas[0].regular)}.`,DOM+'/baratas.html',
-`<p class="crumb"><a href="index.html">Inicio</a> › Más baratas</p>
+ `Las 200 gasolineras más baratas de México hoy ${HOY}. Precio de Magna desde ${mx(baratas[0].regular)}.`,DOM+'/baratas',
+`<p class="crumb"><a href="./">Inicio</a> › Más baratas</p>
 <h1>Gasolina más barata de México</h1><p class="sub">Las 200 estaciones con el precio de Magna más bajo del país, según el último reporte de la CRE.</p>
 ${tabla(baratas.slice(0,200))}`));
 
 // ── ESTADOS (índice)
 f.writeFileSync(P.join(O,'estados.html'),L(
  `Precio de la gasolina por estado | ${N}`,
- `Precio promedio de gasolina en los ${edos.length} estados de México. Consulta Magna, Premium y Diésel por entidad.`,DOM+'/estados.html',
-`<p class="crumb"><a href="index.html">Inicio</a> › Estados</p>
+ `Precio promedio de gasolina en los ${edos.length} estados de México. Consulta Magna, Premium y Diésel por entidad.`,DOM+'/estados',
+`<p class="crumb"><a href="./">Inicio</a> › Estados</p>
 <h1>Precio por estado</h1><p class="sub">${edos.length} entidades · ${D.length.toLocaleString('es-MX')} estaciones registradas</p>
-<div class="chips">${edos.map(([n,l])=>`<a href="estado-${s(n)}.html">${e(n)}<span class="nm2">${l.length}</span></a>`).join('')}</div>`));
+<div class="chips">${edos.map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}<span class="nm2">${l.length}</span></a>`).join('')}</div>`));
 
 // ── PÁGINA POR ESTADO
 let npe=0;
@@ -637,8 +699,8 @@ edos.forEach(([n,lista])=>{
  f.writeFileSync(P.join(O,`estado-${s(n)}.html`),L(
   `Precio de la gasolina en ${n} hoy | ${N}`,
   `Precio de gasolina en ${n} hoy ${HOY}: Magna ${mx(pr)} promedio. ${lista.length} estaciones. Encuentra la más barata.`,
-  `${DOM}/estado-${s(n)}.html`,
-`<p class="crumb"><a href="index.html">Inicio</a> › <a href="estados.html">Estados</a> › ${e(n)}</p>
+  `${DOM}/estado-${s(n)}`,
+`<p class="crumb"><a href="./">Inicio</a> › <a href="estados">Estados</a> › ${e(n)}</p>
 <h1>Gasolina en ${e(n)}</h1><p class="sub">${lista.length} estaciones registradas · precios del ${HOY}</p>
 <div class="hero">
 <div class="hbox reg"><div class="lbl">Magna</div><div class="val">${mx(pr)}</div><div class="cap">promedio en ${e(n)}</div></div>
@@ -647,8 +709,8 @@ edos.forEach(([n,lista])=>{
 </div>
 ${dif>0?`<p class="nota">Diferencia entre la más cara y la más barata: <strong>${mx(dif)}</strong> por litro. En un tanque de 50 litros son <strong>${mx(dif*50)}</strong> de ahorro.</p>`:'<p class="nota"></p>'}
 ${(()=>{const mm={};lista.forEach(g=>{if(g._mun)(mm[g._mun]=mm[g._mun]||[]).push(g)});
-const arr=Object.entries(mm).filter(([m,l])=>l.length>=2).sort((a,b)=>b[1].length-a[1].length);
-return arr.length?`<h2>Busca por municipio</h2><div class="chips">${arr.map(([m,l])=>`<a href="municipio-${s(m)}-${s(n)}.html">${e(m)}<span class="nm2">${l.length}</span></a>`).join('')}</div>`:''})()}
+const arr=Object.entries(mm).filter(([m,l])=>MUNOK.has(n+'|'+m)).sort((a,b)=>b[1].length-a[1].length);
+return arr.length?`<h2>Busca por municipio</h2><div class="chips">${arr.map(([m,l])=>`<a href="municipio-${s(m)}-${s(n)}">${e(m)}<span class="nm2">${l.length}</span></a>`).join('')}</div>`:''})()}
 <h2>Las más baratas de ${e(n)}</h2>
 ${tabla(conR.slice(0,60))}
 <div class="card"><h3>Sobre los precios en ${e(n)}</h3><p>En ${e(n)} hay ${lista.length} estaciones de servicio que reportan precios a la CRE. El promedio de Magna es de ${mx(pr)} por litro${dif>0?`, con una diferencia de ${mx(dif)} entre la estación más económica y la más cara`:''}. Los precios mostrados corresponden al último reporte disponible y pueden cambiar durante el día.</p></div>`));
@@ -666,8 +728,8 @@ D.forEach(g=>{
  f.writeFileSync(P.join(O,'estacion',g._s+'.html'),L(
   `${g.name} — Precio de gasolina hoy | ${N}`,
   `Precio de gasolina en ${g.name}${g._edo?', '+g._edo:''} hoy ${HOY}: Magna ${g.regular?mx(g.regular):'no disponible'}.`,
-  `${DOM}/estacion/${g._s}.html`,
-`<p class="crumb"><a href="../index.html">Inicio</a>${g._edo?` › <a href="../estado-${s(g._edo)}.html">${e(g._edo)}</a>`:''}${(g._mun&&g._edo&&MUN[g._edo+'|'+g._mun]&&MUN[g._edo+'|'+g._mun].length>=2)?` › <a href="../municipio-${s(g._mun)}-${s(g._edo)}.html">${e(g._mun)}</a>`:''} › ${e(g.name)}</p>
+  `${DOM}/estacion/${g._s}`,
+`<p class="crumb"><a href="../">Inicio</a>${g._edo?` › <a href="../estado-${s(g._edo)}">${e(g._edo)}</a>`:''}${(g._mun&&g._edo&&MUNOK.has(g._edo+'|'+g._mun))?` › <a href="../municipio-${s(g._mun)}-${s(g._edo)}">${e(g._mun)}</a>`:''} › ${e(g.name)}</p>
 <h1>${e(g.name)}</h1><p class="sub">${g._mun?e(g._mun)+', ':''}${g._edo?e(g._edo)+' · ':''}Precios del ${HOY}</p>
 <div class="hero">
 <div class="hbox reg"><div class="lbl">Magna</div><div class="val">${g.regular?mx(g.regular):'—'}</div><div class="cap">por litro</div></div>
@@ -682,7 +744,7 @@ D.forEach(g=>{
  ${vsNal!==null?`<div><b>vs. nacional</b>${vsNal>0?'+':''}${mx(vsNal)}</div>`:''}
 </div>
 ${isFinite(g.x)?`<a class="btn" href="https://www.google.com/maps/search/?api=1&query=${g.y},${g.x}" target="_blank" rel="noopener nofollow">Ver en Google Maps</a>`:''}
-${(g._mun&&g._edo&&MUN[g._edo+'|'+g._mun]&&MUN[g._edo+'|'+g._mun].length>=2)?`<a class="btn a" href="../municipio-${s(g._mun)}-${s(g._edo)}.html">Más baratas en ${e(g._mun)}</a>`:(g._edo?`<a class="btn a" href="../estado-${s(g._edo)}.html">Más baratas en ${e(g._edo)}</a>`:'')}
+${(g._mun&&g._edo&&MUNOK.has(g._edo+'|'+g._mun))?`<a class="btn a" href="../municipio-${s(g._mun)}-${s(g._edo)}">Más baratas en ${e(g._mun)}</a>`:(g._edo?`<a class="btn a" href="../estado-${s(g._edo)}">Más baratas en ${e(g._edo)}</a>`:'')}
 ${(()=>{const r=rango(g.id),t=tendencia(g.id,g.regular),v=serie(g.id);
 if(!r||r.n<2)return '';
 const w=600,h=150,mn=r.min,mx2=r.max,rg=(mx2-mn)||1;
@@ -707,8 +769,8 @@ console.log(`   ✓ ${D.length.toLocaleString('es-MX')} fichas de estación`);
 // ══════════ PAGINAS LEGALES ══════════
 const LEG=(t,d,f,b)=>f&&f;
 const pgLegal=(archivo,titulo,desc,cuerpo)=>{
- f.writeFileSync(P.join(O,archivo),L(`${titulo} | ${N}`,desc,`${DOM}/${archivo}`,
- `<p class="crumb"><a href="index.html">Inicio</a> › ${e(titulo)}</p><div class="legal"><h1>${e(titulo)}</h1><p class="fecha">Última actualización: ${HOY}</p>${cuerpo}</div>`));
+ f.writeFileSync(P.join(O,archivo),L(`${titulo} | ${N}`,desc,`${DOM}/${archivo.replace('.html','')}`,
+ `<p class="crumb"><a href="./">Inicio</a> › ${e(titulo)}</p><div class="legal"><h1>${e(titulo)}</h1><p class="fecha">Última actualización: ${HOY}</p>${cuerpo}</div>`));
 };
 
 pgLegal('aviso-de-privacidad.html','Aviso de privacidad',
@@ -747,7 +809,7 @@ pgLegal('aviso-de-privacidad.html','Aviso de privacidad',
 <h2>4. Uso de cookies y publicidad de terceros</h2>
 <p>Este sitio se financia mediante publicidad servida por <strong>Monetag</strong>, una red publicitaria de terceros. Cuando usted acepta las cookies publicitarias, Monetag y sus socios pueden colocar cookies o identificadores en su navegador para mostrar y medir anuncios.</p>
 <p>El tratamiento que dichos terceros realicen se rige por sus propias políticas de privacidad. Puede consultar la de Monetag en <a href="https://monetag.com/privacy-policy/" target="_blank" rel="noopener nofollow">monetag.com/privacy-policy</a>.</p>
-<p>Para más detalle consulte nuestra <a href="cookies.html">política de cookies</a>.</p>
+<p>Para más detalle consulte nuestra <a href="cookies">política de cookies</a>.</p>
 
 <h2>5. Transferencias</h2>
 <p>No vendemos, comercializamos ni transferimos datos personales a terceros con fines distintos a los descritos. Los datos de navegación procesados por la red publicitaria y por el proveedor de alojamiento (Cloudflare) se tratan conforme a las políticas de cada proveedor y pueden implicar el procesamiento en servidores ubicados fuera de México.</p>
@@ -846,7 +908,7 @@ pgLegal('cookies.html','Política de cookies',
 <p>Todos los navegadores modernos permiten gestionar cookies desde su sección de privacidad o configuración.</p>
 
 <h2>5. Más información</h2>
-<p>Consulte también nuestro <a href="aviso-de-privacidad.html">aviso de privacidad</a>. Si tiene dudas, escríbanos a <a href="mailto:${MAIL}">${MAIL}</a>.</p>`);
+<p>Consulte también nuestro <a href="aviso-de-privacidad">aviso de privacidad</a>. Si tiene dudas, escríbanos a <a href="mailto:${MAIL}">${MAIL}</a>.</p>`);
 
 pgLegal('contacto.html','Contacto',
  `Cómo contactar al equipo de ${N} para dudas, correcciones o reportes.`,
@@ -865,7 +927,7 @@ pgLegal('contacto.html','Contacto',
 <p>Si desea que su estación sea retirada del sitio, escríbanos indicando el nombre y el identificador CRE.</p>
 
 <h2>Ejercicio de derechos ARCO</h2>
-<p>Para solicitudes relacionadas con datos personales, consulte el <a href="aviso-de-privacidad.html">aviso de privacidad</a> y escriba al mismo correo indicando su petición.</p>
+<p>Para solicitudes relacionadas con datos personales, consulte el <a href="aviso-de-privacidad">aviso de privacidad</a> y escriba al mismo correo indicando su petición.</p>
 
 <h2>Prensa y colaboraciones</h2>
 <p>Para consultas de medios o propuestas de colaboración, utilice el correo anterior indicando el asunto.</p>`);
@@ -873,6 +935,13 @@ console.log(`   ✓ 4 páginas legales`);
 
 // ── EXTRAS
 f.writeFileSync(P.join(O,'s.css'),CSS);
+// og.png para redes sociales (WhatsApp, Facebook, X)
+try{f.writeFileSync(P.join(O,'og.png'),ogPNG(
+ 'GASOLINA HOY',
+ `PRECIOS OFICIALES DE LA CRE EN ${D.length.toLocaleString('en-US')} GASOLINERAS`,
+ mx(pReg),mx(pPre),mx(pDie),
+ `GASOLINAMX.PAGES.DEV  -  ${HOY.toUpperCase()}`));
+ console.log('   \u2713 og.png generado')}catch(err){console.log('   og.png fallo:',err.message)}
 // índice geográfico para "cerca de mí" (se carga solo al pedirlo)
 f.writeFileSync(P.join(O,'geo.json'),JSON.stringify(
  D.filter(g=>isFinite(g.x)&&isFinite(g.y)&&g.regular)
@@ -892,7 +961,7 @@ f.writeFileSync(P.join(O,'_redirects'),'/index.html / 200\n');
 f.writeFileSync(P.join(O,'_headers'),'/*\n  X-Content-Type-Options: nosniff\n');
 
 f.writeFileSync(P.join(O,'favicon.svg'),'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 34" fill="none" stroke="#1d1d1f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 31V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v26"/><path d="M1.5 31h16"/><path d="M6 8h7v5H6z"/><path d="M16 12h4a2 2 0 0 1 2 2v10a2.5 2.5 0 0 0 5 0V13l-3.5-4"/></svg>');
-const U=['','baratas.html','estados.html','aviso-de-privacidad.html','terminos.html','cookies.html','contacto.html'].concat(edos.map(([n])=>`estado-${s(n)}.html`)).concat(muns.map(([k])=>{const[ed,mu]=k.split('|');return slugMun(ed,mu)})).concat(D.map(g=>`estacion/${g._s}.html`));
+const U=['','baratas','estados','aviso-de-privacidad','terminos','cookies','contacto'].concat(edos.map(([n])=>`estado-${s(n)}`)).concat(muns.map(([k])=>{const[ed,mu]=k.split('|');return slugMun(ed,mu)})).concat(D.map(g=>`estacion/${g._s}`));
 f.writeFileSync(P.join(O,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+U.map(u=>`<url><loc>${DOM}/${u}</loc><lastmod>${ISO}</lastmod></url>`).join('\n')+'\n</urlset>');
 f.writeFileSync(P.join(O,'robots.txt'),`User-agent: *\nAllow: /\nSitemap: ${DOM}/sitemap.xml\n`);
 console.log(`   ✓ sitemap.xml (${U.length.toLocaleString('es-MX')} URLs) + robots.txt`);
