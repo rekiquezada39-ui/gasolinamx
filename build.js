@@ -1,6 +1,7 @@
 const f=require('fs'),P=require('path'),O='dist';
 // ══════════ CONFIGURA AQUI ══════════
 const N='GasolinaMX',DOM='https://gasolinamx.pages.dev';
+const MAIL='contacto.gasolinamx@gmail.com';   // <- cambia por el correo de contacto que quieras publicar
 const MVERIFY='<meta name="monetag" content="PEGA_AQUI_TU_META">';
 const MTAG=`<!-- PEGA AQUI TUS SCRIPTS DE MONETAG -->`;
 // ════════════════════════════════════
@@ -120,6 +121,28 @@ h2 .ver:hover{text-decoration:underline}
 .crumb a:hover{color:#0071e3}
 footer{background:#f5f5f7;border-top:1px solid #d2d2d7;margin-top:36px;padding:46px 26px;color:#86868b;font-size:.77rem;line-height:1.7}
 footer .fin{max-width:1180px;margin:0 auto}
+.legal{max-width:760px}
+.legal h2{font-size:1.34rem;margin:40px 0 14px}
+.legal h3{font-size:1.06rem;font-weight:600;margin:26px 0 9px}
+.legal p,.legal li{font-size:1rem;line-height:1.68;color:#1d1d1f;margin-bottom:13px}
+.legal ul{margin:0 0 16px 22px}
+.legal .fecha{color:#86868b;font-size:.86rem;margin-bottom:34px}
+.legal a{color:#0071e3}
+.legal a:hover{text-decoration:underline}
+.fnav{margin-top:14px;display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+.fnav a{color:#1d1d1f;opacity:.75;transition:opacity .2s}
+.fnav a:hover{opacity:1;color:#0071e3}
+#ck{position:fixed;left:16px;right:16px;bottom:16px;max-width:520px;margin:0 auto;background:rgba(255,255,255,.97);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(0,0,0,.1);border-radius:18px;padding:20px 22px;box-shadow:0 8px 40px rgba(0,0,0,.16);z-index:9800;display:none}
+#ck.on{display:block;animation:ckup .34s cubic-bezier(.32,.72,0,1)}
+@keyframes ckup{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+#ck p{font-size:.87rem;line-height:1.55;color:#1d1d1f;margin-bottom:15px}
+#ck a{color:#0071e3}
+.ckb{display:flex;gap:9px;flex-wrap:wrap}
+.ckb button{flex:1;min-width:120px;padding:10px 18px;border-radius:980px;font-size:.88rem;font-family:inherit;cursor:pointer;border:1px solid #0071e3;transition:.16s}
+#ckSi{background:#0071e3;color:#fff}
+#ckSi:hover{background:#0077ed}
+#ckNo{background:transparent;color:#0071e3}
+#ckNo:hover{background:rgba(0,113,227,.06)}
 @media(max-width:1000px){.shell{grid-template-columns:1fr;gap:0}.side{display:none}.burger{display:flex}.hnav{display:none}}
 @media(max-width:734px){
  .hin{height:60px;gap:12px;padding:0 16px}.lgt{font-size:1.2rem}.upd{font-size:.7rem}
@@ -143,11 +166,28 @@ const HEAD=(t,d,c,r)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8
 </div></header>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer"><div class="dhead">${LOGO}<span class="lgt">${N}</span></div><div class="dbody">${DRAWER.replace(/href="/g,'href="'+r)}</div></aside>`;
-const FOOT=(r)=>`<footer><div class="fin"><p>${N}. Precios de gasolina en México actualizados diariamente.</p><p style="margin-top:9px">Datos oficiales de la Comisión Reguladora de Energía (CRE). Los precios pueden variar; verifica en la estación antes de cargar. Última actualización: ${HOY}.</p></div></footer>
+const FOOT=(r)=>`<footer><div class="fin"><p>${N}. Precios de gasolina en México actualizados diariamente.</p><p style="margin-top:9px">Datos oficiales de la Comisión Reguladora de Energía (CRE). Los precios pueden variar; verifica en la estación antes de cargar. Última actualización: ${HOY}.</p>
+<nav class="fnav"><a href="${r}aviso-de-privacidad.html">Aviso de privacidad</a><a href="${r}terminos.html">Términos de uso</a><a href="${r}cookies.html">Cookies</a><a href="${r}contacto.html">Contacto</a></nav></div></footer>
+<div id="ck" role="dialog" aria-label="Aviso de cookies"><p>Usamos cookies propias y de terceros para mostrar publicidad y analizar el tráfico. Consulta el <a href="${r}aviso-de-privacidad.html">aviso de privacidad</a> y la <a href="${r}cookies.html">política de cookies</a>.</p><div class="ckb"><button id="ckNo" type="button">Solo necesarias</button><button id="ckSi" type="button">Aceptar</button></div></div>
 <script>(function(){var b=document.getElementById('burger'),d=document.getElementById('drawer'),s=document.getElementById('scrim');
 function t(o){b.classList.toggle('open',o);d.classList.toggle('on',o);s.classList.toggle('on',o);document.body.classList.toggle('lock',o)}
 if(b){b.addEventListener('click',function(){t(!d.classList.contains('on'))});s.addEventListener('click',function(){t(false)});
-document.addEventListener('keydown',function(ev){if(ev.key==='Escape')t(false)});d.addEventListener('click',function(ev){if(ev.target.closest('a'))t(false)})}})();<\/script>${MTAG}</body></html>`;
+document.addEventListener('keydown',function(ev){if(ev.key==='Escape')t(false)});d.addEventListener('click',function(ev){if(ev.target.closest('a'))t(false)})}
+// ── Consentimiento de cookies: los anuncios solo cargan si el usuario acepta
+var KEY='ck_gmx',box=document.getElementById('ck');
+function ads(){var f=document.getElementById('ads-tpl');if(!f)return;
+ var h=f.innerHTML,w=document.createElement('div');w.innerHTML=h;
+ [].forEach.call(w.querySelectorAll('script'),function(o){var n=document.createElement('script');
+  [].forEach.call(o.attributes,function(a){n.setAttribute(a.name,a.value)});
+  if(o.textContent)n.textContent=o.textContent;document.body.appendChild(n)});}
+try{var v=localStorage.getItem(KEY);
+ if(v==='1'){ads()}else if(v!=='0'&&box){box.classList.add('on')}
+ if(box){document.getElementById('ckSi').addEventListener('click',function(){try{localStorage.setItem(KEY,'1')}catch(e){}box.classList.remove('on');ads()});
+ document.getElementById('ckNo').addEventListener('click',function(){try{localStorage.setItem(KEY,'0')}catch(e){}box.classList.remove('on')})}
+}catch(e){}
+})();<\/script>
+<template id="ads-tpl">${MTAG}</template>
+</body></html>`;
 const L=(t,d,c,b,r='')=>HEAD(t,d,c,r)+`<div class="shell"><aside class="side">${SIDE.replace(/href="/g,'href="'+r)}</aside><main>${b}</main></div>`+FOOT(r);
 const PG=(cur,tot,fn)=>{if(tot<2)return'';let h='<div class="pg">';if(cur>1)h+=`<a href="${fn(cur-1)}">←</a>`;const a=Math.max(1,cur-2),z=Math.min(tot,cur+2);if(a>1)h+=`<a href="${fn(1)}">1</a>`+(a>2?'<span>…</span>':'');for(let i=a;i<=z;i++)h+=i===cur?`<span class="on">${i}</span>`:`<a href="${fn(i)}">${i}</a>`;if(z<tot)h+=(z<tot-1?'<span>…</span>':'')+`<a href="${fn(tot)}">${tot}</a>`;if(cur<tot)h+=`<a href="${fn(cur+1)}">→</a>`;return h+'</div>'};
 const fila=(g,i,r='')=>`<tr><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}.html">${e(g.name)}</a><small>${e(g._edo||'México')}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td></tr>`;
@@ -311,10 +351,178 @@ ${mismos.length?`<h2>Otras estaciones en ${e(g._edo)}</h2>${tabla(mismos,'../')}
 });
 console.log(`   ✓ ${D.length.toLocaleString('es-MX')} fichas de estación`);
 
+
+// ══════════ PAGINAS LEGALES ══════════
+const LEG=(t,d,f,b)=>f&&f;
+const pgLegal=(archivo,titulo,desc,cuerpo)=>{
+ f.writeFileSync(P.join(O,archivo),L(`${titulo} | ${N}`,desc,`${DOM}/${archivo}`,
+ `<p class="crumb"><a href="index.html">Inicio</a> › ${e(titulo)}</p><div class="legal"><h1>${e(titulo)}</h1><p class="fecha">Última actualización: ${HOY}</p>${cuerpo}</div>`));
+};
+
+pgLegal('aviso-de-privacidad.html','Aviso de privacidad',
+ `Aviso de privacidad de ${N} conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares.`,
+`<p>En cumplimiento de la <strong>Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)</strong> y su Reglamento, ${N} pone a disposición de los usuarios el presente aviso de privacidad.</p>
+
+<h2>1. Responsable</h2>
+<p>El responsable del tratamiento de los datos personales recabados a través de este sitio es el operador de <strong>${N}</strong>, sitio web disponible en ${DOM}. Para cualquier asunto relacionado con este aviso, el medio de contacto es el correo <a href="mailto:${MAIL}">${MAIL}</a>.</p>
+
+<h2>2. Datos personales que se recaban</h2>
+<p>Este sitio <strong>no solicita ni almacena datos personales de forma directa</strong>. No existen formularios de registro, suscripción ni compra. No pedimos nombre, teléfono, domicilio ni datos financieros.</p>
+<p>De manera automática, y como ocurre en la mayoría de los sitios web, se pueden recabar los siguientes datos de navegación:</p>
+<ul>
+<li>Dirección IP (utilizada de forma agregada y para inferir la región aproximada)</li>
+<li>Tipo de navegador, sistema operativo y dispositivo</li>
+<li>Páginas visitadas, fecha y hora de acceso</li>
+<li>Sitio de procedencia (referente)</li>
+<li>Identificadores almacenados en cookies o tecnologías similares</li>
+</ul>
+<p>No se recaban <strong>datos personales sensibles</strong> en ningún caso.</p>
+
+<h2>3. Finalidades del tratamiento</h2>
+<h3>Finalidades necesarias</h3>
+<ul>
+<li>Permitir el funcionamiento técnico y la seguridad del sitio</li>
+<li>Prevenir fraudes y usos abusivos</li>
+</ul>
+<h3>Finalidades que requieren su consentimiento</h3>
+<ul>
+<li>Mostrar publicidad, incluida publicidad personalizada según sus intereses</li>
+<li>Medir el rendimiento y el alcance de los anuncios</li>
+<li>Analizar de forma estadística el uso del sitio</li>
+</ul>
+<p>Usted puede negar el consentimiento para estas últimas finalidades sin que ello afecte su acceso al contenido del sitio. Al ingresar por primera vez se muestra un aviso donde puede elegir entre <em>Aceptar</em> o <em>Solo necesarias</em>.</p>
+
+<h2>4. Uso de cookies y publicidad de terceros</h2>
+<p>Este sitio se financia mediante publicidad servida por <strong>Monetag</strong>, una red publicitaria de terceros. Cuando usted acepta las cookies publicitarias, Monetag y sus socios pueden colocar cookies o identificadores en su navegador para mostrar y medir anuncios.</p>
+<p>El tratamiento que dichos terceros realicen se rige por sus propias políticas de privacidad. Puede consultar la de Monetag en <a href="https://monetag.com/privacy-policy/" target="_blank" rel="noopener nofollow">monetag.com/privacy-policy</a>.</p>
+<p>Para más detalle consulte nuestra <a href="cookies.html">política de cookies</a>.</p>
+
+<h2>5. Transferencias</h2>
+<p>No vendemos, comercializamos ni transferimos datos personales a terceros con fines distintos a los descritos. Los datos de navegación procesados por la red publicitaria y por el proveedor de alojamiento (Cloudflare) se tratan conforme a las políticas de cada proveedor y pueden implicar el procesamiento en servidores ubicados fuera de México.</p>
+
+<h2>6. Derechos ARCO</h2>
+<p>Usted tiene derecho a conocer qué datos personales tenemos, para qué los utilizamos y las condiciones de dicho uso (<strong>Acceso</strong>); solicitar la corrección de información inexacta (<strong>Rectificación</strong>); pedir que se elimine de nuestros registros cuando considere que no está siendo utilizada conforme a los principios y deberes de la ley (<strong>Cancelación</strong>); así como oponerse al uso de sus datos para fines específicos (<strong>Oposición</strong>).</p>
+<p>Para ejercer cualquiera de estos derechos, envíe una solicitud al correo <a href="mailto:${MAIL}">${MAIL}</a> indicando su petición y un medio de contacto para responderle. Se dará respuesta en un plazo máximo de veinte días hábiles.</p>
+
+<h2>7. Revocación del consentimiento</h2>
+<p>Puede revocar en cualquier momento el consentimiento otorgado para cookies publicitarias. Basta con borrar los datos de navegación de este sitio en su navegador; al volver a ingresar se le mostrará nuevamente el aviso de cookies para elegir de nuevo.</p>
+
+<h2>8. Medios para limitar el uso o divulgación</h2>
+<p>Además de la opción anterior, usted puede configurar su navegador para bloquear o eliminar cookies, o utilizar extensiones de bloqueo de publicidad. El sitio seguirá siendo funcional.</p>
+
+<h2>9. Cambios a este aviso</h2>
+<p>Este aviso puede actualizarse para reflejar cambios legales o en nuestras prácticas. Cualquier modificación se publicará en esta misma página, indicando la fecha de última actualización.</p>
+
+<h2>10. Autoridad</h2>
+<p>Si considera que su derecho a la protección de datos personales ha sido vulnerado, puede acudir ante la autoridad competente en materia de protección de datos personales en México.</p>`);
+
+pgLegal('terminos.html','Términos de uso',
+ `Términos y condiciones de uso del sitio ${N}.`,
+`<p>El acceso y uso de <strong>${N}</strong> implica la aceptación plena de los presentes términos. Si no está de acuerdo, le pedimos abstenerse de utilizar el sitio.</p>
+
+<h2>1. Objeto del sitio</h2>
+<p>${N} es un sitio <strong>informativo e independiente</strong> que consulta y presenta de forma ordenada los precios de combustibles publicados por la <strong>Comisión Reguladora de Energía (CRE)</strong> en su reporte público.</p>
+<p>No vendemos combustible, no operamos estaciones de servicio ni intermediamos en ninguna transacción.</p>
+
+<h2>2. Ausencia de vínculo oficial</h2>
+<p>Este sitio <strong>no está afiliado, patrocinado ni respaldado</strong> por la Comisión Reguladora de Energía, por PEMEX, por la Secretaría de Energía ni por ninguna dependencia gubernamental. Tampoco mantiene relación con las marcas o estaciones de servicio mencionadas.</p>
+<p>Los nombres comerciales y marcas que aparecen son propiedad de sus respectivos titulares y se utilizan únicamente con fines identificativos e informativos.</p>
+
+<h2>3. Exactitud de la información</h2>
+<p>Los precios se obtienen del reporte público de la CRE y se actualizan de forma automática una vez al día. Sin embargo:</p>
+<ul>
+<li>Una estación puede modificar su precio en cualquier momento sin reportarlo de inmediato</li>
+<li>Pueden existir errores de captura en la fuente original</li>
+<li>Puede haber retrasos o interrupciones en la publicación de los datos</li>
+</ul>
+<p>Por lo anterior, la información se ofrece <strong>"tal cual", sin garantía de exactitud, vigencia o disponibilidad</strong>. Verifique siempre el precio directamente en la estación antes de cargar combustible.</p>
+
+<h2>4. Limitación de responsabilidad</h2>
+<p>El operador de este sitio no será responsable por daños o perjuicios derivados del uso de la información aquí publicada, incluyendo diferencias de precio, traslados innecesarios o decisiones de compra basadas en los datos mostrados.</p>
+
+<h2>5. Publicidad</h2>
+<p>El sitio se financia mediante publicidad de terceros. No controlamos ni respaldamos el contenido de los anuncios mostrados, ni los productos o servicios que promocionan. Cualquier relación que usted establezca con un anunciante es ajena a este sitio.</p>
+
+<h2>6. Uso permitido</h2>
+<p>Usted puede consultar y compartir libremente la información del sitio. No está permitido:</p>
+<ul>
+<li>Realizar extracciones automatizadas masivas que afecten el servicio</li>
+<li>Intentar vulnerar la seguridad del sitio</li>
+<li>Reproducir el sitio en su totalidad haciéndolo pasar como propio</li>
+</ul>
+
+<h2>7. Propiedad intelectual</h2>
+<p>Los datos de precios son información pública de la CRE. El diseño, la estructura, los textos originales y la presentación de este sitio son propiedad de su operador.</p>
+
+<h2>8. Modificaciones</h2>
+<p>Estos términos pueden actualizarse en cualquier momento. La versión vigente es la publicada en esta página.</p>
+
+<h2>9. Contacto</h2>
+<p>Para cualquier duda escriba a <a href="mailto:${MAIL}">${MAIL}</a>.</p>`);
+
+pgLegal('cookies.html','Política de cookies',
+ `Qué cookies utiliza ${N}, para qué sirven y cómo puede gestionarlas.`,
+`<p>Una cookie es un pequeño archivo que un sitio web guarda en su navegador. Sirve para recordar información entre visitas. A continuación se explica cómo las utiliza <strong>${N}</strong>.</p>
+
+<h2>1. Cookies necesarias</h2>
+<p>Son imprescindibles para que el sitio funcione y no requieren su consentimiento.</p>
+<ul>
+<li><strong>Preferencia de consentimiento:</strong> guardamos en su navegador (mediante almacenamiento local) su elección respecto a las cookies, para no volver a preguntarle en cada visita. No contiene datos personales.</li>
+<li><strong>Seguridad del proveedor:</strong> Cloudflare, nuestro proveedor de alojamiento, puede utilizar cookies técnicas para proteger el sitio frente a tráfico malicioso.</li>
+</ul>
+
+<h2>2. Cookies publicitarias</h2>
+<p>Solo se activan si usted pulsa <em>Aceptar</em> en el aviso inicial.</p>
+<p>Nuestro socio publicitario <strong>Monetag</strong> puede utilizar cookies e identificadores para:</p>
+<ul>
+<li>Mostrar anuncios y limitar cuántas veces ve el mismo</li>
+<li>Medir si un anuncio fue visto o generó interacción</li>
+<li>Personalizar la publicidad según sus intereses inferidos</li>
+</ul>
+<p>Estas cookies son gestionadas por el tercero y se rigen por su propia política: <a href="https://monetag.com/privacy-policy/" target="_blank" rel="noopener nofollow">monetag.com/privacy-policy</a>.</p>
+
+<h2>3. Si elige "Solo necesarias"</h2>
+<p>No se cargarán los scripts publicitarios y no se colocarán cookies de publicidad. El sitio funcionará con normalidad y podrá consultar todos los precios sin restricción.</p>
+
+<h2>4. Cómo cambiar su decisión</h2>
+<p>Puede modificar su elección en cualquier momento:</p>
+<ul>
+<li><strong>Borrando los datos del sitio</strong> en la configuración de su navegador. Al volver a entrar se le preguntará de nuevo.</li>
+<li><strong>Configurando su navegador</strong> para bloquear cookies de terceros de forma permanente.</li>
+<li><strong>Usando una extensión</strong> de bloqueo de publicidad.</li>
+</ul>
+<p>Todos los navegadores modernos permiten gestionar cookies desde su sección de privacidad o configuración.</p>
+
+<h2>5. Más información</h2>
+<p>Consulte también nuestro <a href="aviso-de-privacidad.html">aviso de privacidad</a>. Si tiene dudas, escríbanos a <a href="mailto:${MAIL}">${MAIL}</a>.</p>`);
+
+pgLegal('contacto.html','Contacto',
+ `Cómo contactar al equipo de ${N} para dudas, correcciones o reportes.`,
+`<p>¿Detectó un precio incorrecto? ¿Tiene una duda o una sugerencia? Escríbanos.</p>
+
+<h2>Correo</h2>
+<p><a href="mailto:${MAIL}">${MAIL}</a></p>
+<p>Respondemos en un plazo aproximado de tres días hábiles.</p>
+
+<h2>Sobre correcciones de precio</h2>
+<p>Los precios que mostramos provienen directamente del <strong>reporte público de la Comisión Reguladora de Energía</strong>. No los capturamos ni los modificamos.</p>
+<p>Si un precio aparece incorrecto, lo más probable es que la estación no haya actualizado su reporte ante la CRE, o que exista un error en la fuente original. En esos casos la corrección debe realizarse ante la propia CRE; nosotros reflejaremos el cambio en la siguiente actualización diaria.</p>
+
+<h2>Soy propietario de una estación</h2>
+<p>Si su estación aparece con información incorrecta, verifique primero su reporte ante la CRE. Una vez corregido ahí, el cambio se reflejará automáticamente en este sitio dentro de las 24 horas siguientes.</p>
+<p>Si desea que su estación sea retirada del sitio, escríbanos indicando el nombre y el identificador CRE.</p>
+
+<h2>Ejercicio de derechos ARCO</h2>
+<p>Para solicitudes relacionadas con datos personales, consulte el <a href="aviso-de-privacidad.html">aviso de privacidad</a> y escriba al mismo correo indicando su petición.</p>
+
+<h2>Prensa y colaboraciones</h2>
+<p>Para consultas de medios o propuestas de colaboración, utilice el correo anterior indicando el asunto.</p>`);
+console.log(`   ✓ 4 páginas legales`);
+
 // ── EXTRAS
 f.writeFileSync(P.join(O,'s.css'),CSS);
 f.writeFileSync(P.join(O,'favicon.svg'),'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 34" fill="none" stroke="#1d1d1f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 31V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v26"/><path d="M1.5 31h16"/><path d="M6 8h7v5H6z"/><path d="M16 12h4a2 2 0 0 1 2 2v10a2.5 2.5 0 0 0 5 0V13l-3.5-4"/></svg>');
-const U=['','baratas.html','estados.html'].concat(edos.map(([n])=>`estado-${s(n)}.html`)).concat(D.map(g=>`estacion/${g._s}.html`));
+const U=['','baratas.html','estados.html','aviso-de-privacidad.html','terminos.html','cookies.html','contacto.html'].concat(edos.map(([n])=>`estado-${s(n)}.html`)).concat(D.map(g=>`estacion/${g._s}.html`));
 f.writeFileSync(P.join(O,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+U.map(u=>`<url><loc>${DOM}/${u}</loc><lastmod>${ISO}</lastmod></url>`).join('\n')+'\n</urlset>');
 f.writeFileSync(P.join(O,'robots.txt'),`User-agent: *\nAllow: /\nSitemap: ${DOM}/sitemap.xml\n`);
 console.log(`   ✓ sitemap.xml (${U.length.toLocaleString('es-MX')} URLs) + robots.txt`);
