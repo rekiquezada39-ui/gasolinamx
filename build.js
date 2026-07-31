@@ -56,6 +56,61 @@ async function geocodificar(lista){
  try{f.writeFileSync(CACHE,JSON.stringify(GC))}catch(e){}
  console.log(`   ✓ ${pend.length.toLocaleString('es-MX')} ubicaciones geocodificadas     `);
 }
+
+// ══ HISTÓRICO DE PRECIOS (se acumula día a día) ══
+const HFILE='historial.json';
+const DIAS_HIST=30;
+let HIST={fechas:[],est:{}};
+try{HIST=JSON.parse(f.readFileSync(HFILE,'utf8'))}catch(x){}
+function guardarHistorial(lista){
+ const hoy=ISO;
+ if(HIST.fechas[HIST.fechas.length-1]===hoy){HIST.fechas.pop();Object.keys(HIST.est).forEach(k=>HIST.est[k].pop())}
+ HIST.fechas.push(hoy);
+ const n=HIST.fechas.length;
+ const vistos=new Set();
+ lista.forEach(g=>{
+  vistos.add(g.id);
+  if(!HIST.est[g.id])HIST.est[g.id]=new Array(n-1).fill(null);
+  while(HIST.est[g.id].length<n-1)HIST.est[g.id].push(null);
+  HIST.est[g.id].push(g.regular||null);
+ });
+ Object.keys(HIST.est).forEach(k=>{
+  if(!vistos.has(k)){while(HIST.est[k].length<n)HIST.est[k].push(null)}
+ });
+ if(HIST.fechas.length>DIAS_HIST){
+  const c=HIST.fechas.length-DIAS_HIST;
+  HIST.fechas=HIST.fechas.slice(c);
+  Object.keys(HIST.est).forEach(k=>{
+   HIST.est[k]=HIST.est[k].slice(c);
+   if(HIST.est[k].every(v=>v===null))delete HIST.est[k];
+  });
+ }
+ try{f.writeFileSync(HFILE,JSON.stringify(HIST))}catch(e){}
+ console.log(`   ✓ histórico: ${HIST.fechas.length} día(s) registrado(s)`);
+}
+// helpers de tendencia
+function serie(id){const a=HIST.est[id];return a?a.filter(v=>v!==null):[]}
+function tendencia(id,actual){
+ const a=HIST.est[id]; if(!a||a.length<2)return null;
+ let prev=null;
+ for(let i=a.length-2;i>=0;i--){if(a[i]!==null){prev=a[i];break}}
+ if(prev===null||actual===null)return null;
+ const d=actual-prev;
+ return {d:d, pct:prev?d/prev*100:0, prev:prev};
+}
+function rango(id){
+ const v=serie(id); if(!v.length)return null;
+ return {min:Math.min(...v),max:Math.max(...v),n:v.length};
+}
+// mini gráfica SVG (sparkline)
+function spark(id,w,h){
+ const v=serie(id); if(v.length<2)return '';
+ const mn=Math.min(...v),mx=Math.max(...v),r=(mx-mn)||1;
+ const pts=v.map((p,i)=>`${(i/(v.length-1)*w).toFixed(1)},${(h-((p-mn)/r)*h*0.82-h*0.09).toFixed(1)}`).join(' ');
+ const sube=v[v.length-1]>v[0];
+ const col=sube?'#dc2626':'#16a34a';
+ return `<svg class="spk" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
 const HOY=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric',timeZone:'America/Mexico_City'});
 const ISO=new Date().toISOString().slice(0,10);
 
@@ -167,6 +222,36 @@ footer .fin{max-width:1180px;margin:0 auto}
 .tip{background:#eef6ff;border-left:3px solid #0071e3;padding:13px 16px;border-radius:9px;font-size:.89rem;color:#1d1d1f;margin:16px 0}
 .dist{display:inline-block;background:#eef6ff;color:#0071e3;font-size:.74rem;font-weight:700;padding:3px 9px;border-radius:980px;margin-left:7px;vertical-align:middle;white-space:nowrap}
 .mejor{background:#dcfce7;color:#15803d}
+/* TENDENCIAS E HISTÓRICO */
+.spk{width:56px;height:20px;vertical-align:middle;margin-left:8px;opacity:.85}
+.trend{display:inline-flex;align-items:center;gap:3px;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:980px;margin-left:7px;vertical-align:middle;white-space:nowrap}
+.trend.up{background:#fee2e2;color:#b91c1c}
+.trend.down{background:#dcfce7;color:#15803d}
+.trend.eq{background:#f1f1f4;color:#6e6e73}
+.hcard{border:1px solid #d2d2d7;border-radius:16px;padding:22px;margin:20px 0}
+.hcard h3{font-size:1.1rem;font-weight:600;margin-bottom:4px}
+.hcard .hsub{font-size:.84rem;color:#86868b;margin-bottom:16px}
+.chart{width:100%;height:150px;display:block}
+.hstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:0;margin-top:16px;border-top:1px solid #ececee}
+.hstats>div{padding:13px 14px 13px 0;font-size:1.02rem;font-weight:600;font-variant-numeric:tabular-nums}
+.hstats b{display:block;color:#86868b;font-size:.72rem;font-weight:400;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+.alerta{background:linear-gradient(135deg,#111827,#1f2937);color:#fff;border-radius:20px;padding:28px;margin:26px 0}
+.alerta h3{font-size:1.25rem;font-weight:600;margin-bottom:7px;letter-spacing:-.02em}
+.alerta p{font-size:.92rem;opacity:.85;margin-bottom:18px;max-width:480px}
+.alerta .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.alerta input{padding:12px 15px;border-radius:11px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:#fff;font-size:16px;font-family:inherit;width:120px}
+.alerta input::placeholder{color:rgba(255,255,255,.5)}
+.alerta button{background:#fff;color:#111827;border:0;padding:12px 24px;border-radius:980px;font-size:.93rem;font-weight:600;font-family:inherit;cursor:pointer;transition:transform .16s}
+.alerta button:hover{transform:translateY(-2px)}
+.alerta button:disabled{opacity:.55;cursor:default;transform:none}
+.alerta .est{font-size:.85rem;margin-top:13px;opacity:.9;min-height:1.2em}
+.resumen{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:#d2d2d7;border:1px solid #d2d2d7;border-radius:16px;overflow:hidden;margin:18px 0}
+.resumen>div{background:#fff;padding:20px}
+.resumen .k{font-size:.73rem;color:#86868b;text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:7px}
+.resumen .v{font-size:1.6rem;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.resumen .v.pos{color:#b91c1c}.resumen .v.neg{color:#15803d}
+.resumen .c{font-size:.79rem;color:#86868b;margin-top:4px}
+@media(max-width:734px){.hcard{padding:17px}.alerta{padding:22px}.alerta input{width:100%}.alerta .row{flex-direction:column;align-items:stretch}.alerta button{width:100%}}
 .legal{max-width:760px}
 .legal h2{font-size:1.34rem;margin:40px 0 14px}
 .legal h3{font-size:1.06rem;font-weight:600;margin:26px 0 9px}
@@ -236,7 +321,9 @@ try{var v=localStorage.getItem(KEY);
 </body></html>`;
 const L=(t,d,c,b,r='')=>HEAD(t,d,c,r)+`<div class="shell"><aside class="side">${SIDE.replace(/href="/g,'href="'+r)}</aside><main>${b}</main></div>`+FOOT(r);
 const PG=(cur,tot,fn)=>{if(tot<2)return'';let h='<div class="pg">';if(cur>1)h+=`<a href="${fn(cur-1)}">←</a>`;const a=Math.max(1,cur-2),z=Math.min(tot,cur+2);if(a>1)h+=`<a href="${fn(1)}">1</a>`+(a>2?'<span>…</span>':'');for(let i=a;i<=z;i++)h+=i===cur?`<span class="on">${i}</span>`:`<a href="${fn(i)}">${i}</a>`;if(z<tot)h+=(z<tot-1?'<span>…</span>':'')+`<a href="${fn(tot)}">${tot}</a>`;if(cur<tot)h+=`<a href="${fn(cur+1)}">→</a>`;return h+'</div>'};
-const fila=(g,i,r='')=>`<tr><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}.html">${e(g.name)}</a><small>${e(g._mun?g._mun+', '+(g._edo||''):(g._edo||'México'))}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td></tr>`;
+const badge=g=>{const t=tendencia(g.id,g.regular);if(!t||Math.abs(t.d)<0.01)return '';
+ return `<span class="trend ${t.d>0?'up':'down'}">${t.d>0?'▲':'▼'} ${mx(Math.abs(t.d))}</span>`};
+const fila=(g,i,r='')=>`<tr><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}.html">${e(g.name)}</a>${badge(g)}<small>${e(g._mun?g._mun+', '+(g._edo||''):(g._edo||'México'))}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td></tr>`;
 const tabla=(arr,r='')=>`<table class="tabla"><thead><tr><th></th><th>Estación</th><th>Magna</th><th>Premium</th><th>Diésel</th></tr></thead><tbody>${arr.map((g,i)=>fila(g,i,r)).join('')}</tbody></table>`;
 
 (async()=>{
@@ -284,6 +371,7 @@ console.log(`   ✓ ${D.length.toLocaleString('es-MX')} estaciones con precio v�
 await geocodificar(D);
 D.forEach(g=>{const v=(isFinite(g.x)&&isFinite(g.y))?GC[rk(g.x,g.y)]:null;
  if(v){g._mun=v.m;g._edo=v.e==='Estado de México'?'Estado de México':(v.e||g._edo)}else g._mun=null});
+guardarHistorial(D);
 
 // agrupar por estado
 const M={};D.forEach(g=>{if(g._edo)(M[g._edo]=M[g._edo]||[]).push(g)});
@@ -323,6 +411,15 @@ muns.forEach(([k,lista])=>{
 <div class="hbox pre"><div class="lbl">Premium</div><div class="val">${pp?mx(pp):'—'}</div><div class="cap">promedio local</div></div>
 <div class="hbox die"><div class="lbl">Diésel</div><div class="val">${pd?mx(pd):'—'}</div><div class="cap">promedio local</div></div>
 </div>
+${(()=>{let sube=0,baja=0,sumd=0,nd=0;
+lista.forEach(g=>{const t=tendencia(g.id,g.regular);if(t&&Math.abs(t.d)>=0.01){t.d>0?sube++:baja++;sumd+=t.d;nd++}});
+if(!nd)return '';
+const prom2=sumd/nd;
+return `<div class="resumen">
+<div><div class="k">Cambio promedio</div><div class="v ${prom2>0?'pos':'neg'}">${prom2>0?'+':''}${mx(prom2)}</div><div class="c">respecto al día anterior</div></div>
+<div><div class="k">Subieron</div><div class="v">${sube}</div><div class="c">estaciones</div></div>
+<div><div class="k">Bajaron</div><div class="v">${baja}</div><div class="c">estaciones</div></div>
+</div>`})()}
 ${dif>0?`<p class="nota">La más barata está en <strong>${mx(conR[0].regular)}</strong> y la más cara en <strong>${mx(conR[conR.length-1].regular)}</strong>. Diferencia de <strong>${mx(dif)}</strong> por litro: <strong>${mx(dif*50)}</strong> en un tanque de 50 L.</p>`:'<p class="nota"></p>'}
 <h2>Ordenadas de más barata a más cara</h2>
 ${tabla(conR)}
@@ -354,6 +451,16 @@ ${hero}
 </div>
 <div class="geores" id="geoRes"></div>
 <div class="finder"><h3>O busca por nombre</h3><p style="font-size:.88rem;color:#86868b;margin-bottom:12px">Escribe tu municipio o ciudad — por ejemplo: Tlajomulco, Zapopan, Mérida</p><input id="buscador" placeholder="Tu municipio o el nombre de la estación" autocomplete="off" enterkeyhint="search"><div id="resultados"></div></div>
+<div class="alerta">
+<h3>Avísame cuando baje el precio</h3>
+<p>Activa las notificaciones y te avisamos cuando alguna gasolinera cerca de ti baje del precio que elijas.</p>
+<div class="row">
+<input id="alPrecio" type="number" step="0.10" min="15" max="40" placeholder="23.50" inputmode="decimal">
+<button id="alBtn" type="button">Activar alerta</button>
+</div>
+<div class="est" id="alEst"></div>
+</div>
+
 <h2>Las 25 más baratas del país<a class="ver" href="baratas.html">Ver 200 →</a></h2>
 ${tabla(baratas.slice(0,25))}
 <h2>Consulta por estado<a class="ver" href="estados.html">Ver todos →</a></h2>
@@ -375,21 +482,23 @@ function pinta(la,lo){
   var g=GEO[i],d=km(la,lo,g[0],g[1]);
   if(d<=15)cerca.push({d:d,g:g});
  }
- if(!cerca.length){st.textContent='No encontramos estaciones en 15 km. Usa el buscador por municipio.';btn.disabled=false;btn.textContent='\ud83d\udccd Buscar cerca de m\u00ed';return}
+ if(!cerca.length){st.textContent='No encontramos estaciones en 15 km. Usa el buscador por municipio.';btn.disabled=false;btn.textContent='📍 Buscar cerca de mí';return}
  st.textContent=cerca.length+' estaciones en 15 km a la redonda';
+ // dos criterios
  var porDist=cerca.slice().sort(function(a,b){return a.d-b.d});
+ // "mejor opción": precio penalizado por distancia (ida y vuelta, ~10 km/L, 50 L de carga)
  var porValor=cerca.slice().sort(function(a,b){
    var ca=a.g[4]*50+(a.d*2/10)*a.g[4], cb=b.g[4]*50+(b.d*2/10)*b.g[4];
    return ca-cb;
  });
  function tabla(arr,modo){
-  var h='<table class="tabla"><thead><tr><th></th><th>Estaci\u00f3n</th><th>Magna</th><th>Premium</th><th>Di\u00e9sel</th></tr></thead><tbody>';
+  var h='<table class="tabla"><thead><tr><th></th><th>Estación</th><th>Magna</th><th>Premium</th><th>Diésel</th></tr></thead><tbody>';
   arr.forEach(function(o,n){
    var g=o.g,cls=(n===0)?' mejor':'';
    h+='<tr><td class="rank">'+(n+1)+'</td><td class="nm"><a href="estacion/'+g[3]+'.html">'+g[2]+'</a>'
     +'<span class="dist'+cls+'">'+fd(o.d)+'</span><small>'+(g[7]||'')+'</small></td>'
-    +'<td class="pr g">$'+g[4].toFixed(2)+'</td><td class="pr">'+(g[5]?'$'+g[5].toFixed(2):'\u2014')+'</td>'
-    +'<td class="pr">'+(g[6]?'$'+g[6].toFixed(2):'\u2014')+'</td></tr>';
+    +'<td class="pr g">$'+g[4].toFixed(2)+'</td><td class="pr">'+(g[5]?'$'+g[5].toFixed(2):'—')+'</td>'
+    +'<td class="pr">'+(g[6]?'$'+g[6].toFixed(2):'—')+'</td></tr>';
   });
   return h+'</tbody></table>';
  }
@@ -399,10 +508,10 @@ function pinta(la,lo){
  var aviso='';
  if(ahorro>8&&mb.d>mc.d){
   var neto=ahorro-extra;
-  aviso='<div class="tip">La m\u00e1s cercana est\u00e1 a <strong>'+fd(mc.d)+'</strong> a $'+mc.g[4].toFixed(2)+'. La m\u00e1s barata est\u00e1 a <strong>'+fd(mb.d)+'</strong> a $'+mb.g[4].toFixed(2)+'.<br>Ir hasta all\u00e1 te ahorra <strong>$'+ahorro.toFixed(2)+'</strong> por tanque, pero gastas ~$'+extra.toFixed(2)+' de combustible extra. '+(neto>15?'<strong>S\u00ed conviene el viaje ($'+neto.toFixed(2)+' netos).</strong>':'<strong>Casi no conviene: mejor la de cerca.</strong>')+'</div>';
+  aviso='<div class="tip">La más cercana está a <strong>'+fd(mc.d)+'</strong> a $'+mc.g[4].toFixed(2)+'. La más barata está a <strong>'+fd(mb.d)+'</strong> a $'+mb.g[4].toFixed(2)+'.<br>Ir hasta allá te ahorra <strong>$'+ahorro.toFixed(2)+'</strong> por tanque, pero gastas ~$'+extra.toFixed(2)+' de combustible extra. '+(neto>15?'<strong>Sí conviene el viaje ('+('$'+neto.toFixed(2))+' netos).</strong>':'<strong>Casi no conviene: mejor la de cerca.</strong>')+'</div>';
  }
  res.innerHTML='<h2>Gasolineras cerca de ti</h2>'
-  +'<div class="tabs"><button id="tD" class="on" type="button">M\u00e1s cercanas</button><button id="tV" type="button">Mejor precio-distancia</button></div>'
+  +'<div class="tabs"><button id="tD" class="on" type="button">Más cercanas</button><button id="tV" type="button">Mejor precio-distancia</button></div>'
   +aviso+'<div id="tabBody">'+tabla(A,'d')+'</div>';
  document.getElementById('tD').addEventListener('click',function(){
   this.classList.add('on');document.getElementById('tV').classList.remove('on');
@@ -412,7 +521,7 @@ function pinta(la,lo){
   this.classList.add('on');document.getElementById('tD').classList.remove('on');
   document.getElementById('tabBody').innerHTML=tabla(B,'v');
  });
- btn.disabled=false;btn.textContent='\ud83d\udccd Actualizar mi ubicaci\u00f3n';
+ btn.disabled=false;btn.textContent='📍 Actualizar mi ubicación';
  res.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 btn.addEventListener('click',function(){
@@ -432,6 +541,60 @@ btn.addEventListener('click',function(){
   st.textContent=m;btn.disabled=false;btn.textContent='📍 Buscar cerca de mí';
  },{enableHighAccuracy:true,timeout:12000,maximumAge:300000});
 });
+})();
+<\/script>
+
+<script>
+(function(){
+var b=document.getElementById('alBtn'),inp=document.getElementById('alPrecio'),est=document.getElementById('alEst');
+if(!b)return;
+var KEY='al_gmx';
+try{var g=JSON.parse(localStorage.getItem(KEY)||'null');
+ if(g&&g.p){inp.value=g.p;est.textContent='Alerta activa: te avisamos si baja de $'+Number(g.p).toFixed(2)+'.';b.textContent='Actualizar alerta'}
+}catch(e){}
+b.addEventListener('click',function(){
+ var p=parseFloat(inp.value);
+ if(!p||p<15||p>40){est.textContent='Escribe un precio entre $15 y $40.';return}
+ if(!('Notification' in window)){est.textContent='Tu navegador no soporta notificaciones.';return}
+ b.disabled=true;est.textContent='Solicitando permiso…';
+ Notification.requestPermission().then(function(perm){
+  b.disabled=false;
+  if(perm!=='granted'){est.textContent='Permiso denegado. Actívalo en los ajustes del navegador.';return}
+  function guarda(la,lo){
+   try{localStorage.setItem(KEY,JSON.stringify({p:p,la:la,lo:lo,t:Date.now()}))}catch(e){}
+   est.textContent='Listo. Te avisaremos si una gasolinera cerca baja de $'+p.toFixed(2)+'.';
+   b.textContent='Actualizar alerta';
+   try{new Notification('Alerta activada',{body:'Te avisaremos cuando el precio baje de $'+p.toFixed(2)+'.',icon:'/favicon.svg'})}catch(e){}
+  }
+  if(navigator.geolocation){
+   navigator.geolocation.getCurrentPosition(
+    function(pos){guarda(pos.coords.latitude,pos.coords.longitude)},
+    function(){guarda(null,null)},
+    {timeout:9000,maximumAge:600000});
+  }else guarda(null,null);
+ });
+});
+// revisar al cargar si ya bajó de su umbral
+try{
+ var cfg=JSON.parse(localStorage.getItem(KEY)||'null');
+ if(cfg&&cfg.la&&Notification.permission==='granted'){
+  fetch('geo.json').then(function(r){return r.json()}).then(function(D){
+   function km(a1,o1,a2,o2){var R=6371,da=(a2-a1)*Math.PI/180,dop=(o2-o1)*Math.PI/180;
+    var x=Math.sin(da/2)*Math.sin(da/2)+Math.cos(a1*Math.PI/180)*Math.cos(a2*Math.PI/180)*Math.sin(dop/2)*Math.sin(dop/2);
+    return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
+   var mejor=null;
+   for(var i=0;i<D.length;i++){var g2=D[i];
+    if(g2[4]<cfg.p&&km(cfg.la,cfg.lo,g2[0],g2[1])<=15){if(!mejor||g2[4]<mejor[4])mejor=g2}}
+   if(mejor){
+    var ult=localStorage.getItem(KEY+'_avisado');
+    if(ult!==mejor[3]){
+     localStorage.setItem(KEY+'_avisado',mejor[3]);
+     new Notification('Precio bajo cerca de ti',{body:mejor[2]+' — $'+mejor[4].toFixed(2)+' la Magna',icon:'/favicon.svg'});
+    }
+   }
+  }).catch(function(){});
+ }
+}catch(e){}
 })();
 <\/script>
 <script>var DB=${idx},MU=${idxMun};
@@ -520,6 +683,20 @@ D.forEach(g=>{
 </div>
 ${isFinite(g.x)?`<a class="btn" href="https://www.google.com/maps/search/?api=1&query=${g.y},${g.x}" target="_blank" rel="noopener nofollow">Ver en Google Maps</a>`:''}
 ${(g._mun&&g._edo&&MUN[g._edo+'|'+g._mun]&&MUN[g._edo+'|'+g._mun].length>=2)?`<a class="btn a" href="../municipio-${s(g._mun)}-${s(g._edo)}.html">Más baratas en ${e(g._mun)}</a>`:(g._edo?`<a class="btn a" href="../estado-${s(g._edo)}.html">Más baratas en ${e(g._edo)}</a>`:'')}
+${(()=>{const r=rango(g.id),t=tendencia(g.id,g.regular),v=serie(g.id);
+if(!r||r.n<2)return '';
+const w=600,h=150,mn=r.min,mx2=r.max,rg=(mx2-mn)||1;
+const pts=v.map((p,i)=>`${(i/(v.length-1)*w).toFixed(1)},${(h-((p-mn)/rg)*h*0.78-h*0.11).toFixed(1)}`).join(' ');
+const area=`0,${h} `+pts+` ${w},${h}`;
+const sube=v[v.length-1]>v[0], col=sube?'#dc2626':'#16a34a';
+return `<div class="hcard"><h3>Histórico de precio</h3><div class="hsub">Magna · últimos ${r.n} día(s) registrados</div>
+<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polygon points="${area}" fill="${col}" opacity=".08"/><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<div class="hstats">
+<div><b>Mínimo</b>${mx(r.min)}</div>
+<div><b>Máximo</b>${mx(r.max)}</div>
+<div><b>Actual</b>${g.regular?mx(g.regular):'—'}</div>
+${t?`<div><b>vs. ayer</b>${t.d>0?'+':''}${mx(t.d)}</div>`:''}
+</div></div>`})()}
 <div class="card"><h3>Análisis de precio</h3><p>${e(g.name)}${g._edo?` se ubica en ${g._edo}`:''} y ${g.regular?`vende la gasolina Magna en ${mx(g.regular)} por litro. Esto es ${Math.abs(vsNal)<0.05?'prácticamente igual al':vsNal>0?`${mx(Math.abs(vsNal))} más caro que el`:`${mx(Math.abs(vsNal))} más barato que el`} promedio nacional de ${mx(pReg)}`:'no reportó precio de Magna en el último corte'}. ${g.premium?`El Premium está en ${mx(g.premium)}. `:''}${g.diesel?`El Diésel en ${mx(g.diesel)}. `:''}Los datos provienen del reporte oficial de la CRE del ${HOY}.</p></div>
 ${mismos.length?`<h2>Otras estaciones en ${e(g._edo)}</h2>${tabla(mismos,'../')}`:''}
 <script type="application/ld+json">${JSON.stringify(jl)}<\/script>`,'../'));
