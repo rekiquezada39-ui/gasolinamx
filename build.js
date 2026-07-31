@@ -160,6 +160,11 @@ footer .fin{max-width:1180px;margin:0 auto}
 .geob:disabled{opacity:.7;cursor:wait}
 .geost{margin-top:14px;font-size:.88rem;opacity:.95;min-height:1.2em}
 .geores{margin-top:22px}
+.tabs{display:flex;gap:8px;margin:20px 0 4px;flex-wrap:wrap}
+.tabs button{padding:9px 18px;border-radius:980px;border:1px solid #d2d2d7;background:#fff;color:#1d1d1f;font-size:.88rem;font-family:inherit;cursor:pointer;transition:.16s}
+.tabs button:hover{border-color:#0071e3;color:#0071e3}
+.tabs button.on{background:#1d1d1f;border-color:#1d1d1f;color:#fff;font-weight:500}
+.tip{background:#eef6ff;border-left:3px solid #0071e3;padding:13px 16px;border-radius:9px;font-size:.89rem;color:#1d1d1f;margin:16px 0}
 .dist{display:inline-block;background:#eef6ff;color:#0071e3;font-size:.74rem;font-weight:700;padding:3px 9px;border-radius:980px;margin-left:7px;vertical-align:middle;white-space:nowrap}
 .mejor{background:#dcfce7;color:#15803d}
 .legal{max-width:760px}
@@ -370,27 +375,44 @@ function pinta(la,lo){
   var g=GEO[i],d=km(la,lo,g[0],g[1]);
   if(d<=15)cerca.push({d:d,g:g});
  }
- if(!cerca.length){st.textContent='No encontramos estaciones en un radio de 15 km. Usa el buscador por municipio.';btn.disabled=false;btn.textContent='📍 Buscar cerca de mí';return}
- cerca.sort(function(a,b){return a.g[4]-b.g[4]});
- var top=cerca.slice(0,20);
- var barata=top[0],cercana=cerca.slice().sort(function(a,b){return a.d-b.d})[0];
- var ahorro=(cercana.g[4]-barata.g[4])*50;
+ if(!cerca.length){st.textContent='No encontramos estaciones en 15 km. Usa el buscador por municipio.';btn.disabled=false;btn.textContent='\ud83d\udccd Buscar cerca de m\u00ed';return}
  st.textContent=cerca.length+' estaciones en 15 km a la redonda';
- var html='<h2>Las más baratas cerca de ti</h2>';
- if(ahorro>5)html+='<p class="nota">Yendo a la más barata en vez de la más cercana ahorras <strong>$'+ahorro.toFixed(2)+'</strong> por tanque de 50 L.</p>';
- html+='<table class="tabla"><thead><tr><th></th><th>Estación</th><th>Magna</th><th>Premium</th><th>Diésel</th></tr></thead><tbody>';
- top.forEach(function(o,n){
-  var g=o.g;
-  html+='<tr><td class="rank">'+(n+1)+'</td><td class="nm"><a href="estacion/'+g[3]+'.html">'+g[2]+'</a>'
-   +'<span class="dist'+(n===0?' mejor':'')+'">'+fd(o.d)+'</span>'
-   +'<small>'+(g[7]||'')+'</small></td>'
-   +'<td class="pr g">$'+g[4].toFixed(2)+'</td>'
-   +'<td class="pr">'+(g[5]?'$'+g[5].toFixed(2):'—')+'</td>'
-   +'<td class="pr">'+(g[6]?'$'+g[6].toFixed(2):'—')+'</td></tr>';
+ var porDist=cerca.slice().sort(function(a,b){return a.d-b.d});
+ var porValor=cerca.slice().sort(function(a,b){
+   var ca=a.g[4]*50+(a.d*2/10)*a.g[4], cb=b.g[4]*50+(b.d*2/10)*b.g[4];
+   return ca-cb;
  });
- html+='</tbody></table>';
- res.innerHTML=html;
- btn.disabled=false;btn.textContent='📍 Actualizar mi ubicación';
+ function tabla(arr,modo){
+  var h='<table class="tabla"><thead><tr><th></th><th>Estaci\u00f3n</th><th>Magna</th><th>Premium</th><th>Di\u00e9sel</th></tr></thead><tbody>';
+  arr.forEach(function(o,n){
+   var g=o.g,cls=(n===0)?' mejor':'';
+   h+='<tr><td class="rank">'+(n+1)+'</td><td class="nm"><a href="estacion/'+g[3]+'.html">'+g[2]+'</a>'
+    +'<span class="dist'+cls+'">'+fd(o.d)+'</span><small>'+(g[7]||'')+'</small></td>'
+    +'<td class="pr g">$'+g[4].toFixed(2)+'</td><td class="pr">'+(g[5]?'$'+g[5].toFixed(2):'\u2014')+'</td>'
+    +'<td class="pr">'+(g[6]?'$'+g[6].toFixed(2):'\u2014')+'</td></tr>';
+  });
+  return h+'</tbody></table>';
+ }
+ var A=porDist.slice(0,20), B=porValor.slice(0,20);
+ var mc=porDist[0], mb=cerca.slice().sort(function(a,b){return a.g[4]-b.g[4]})[0];
+ var ahorro=(mc.g[4]-mb.g[4])*50, extra=(mb.d-mc.d)*2/10*mb.g[4];
+ var aviso='';
+ if(ahorro>8&&mb.d>mc.d){
+  var neto=ahorro-extra;
+  aviso='<div class="tip">La m\u00e1s cercana est\u00e1 a <strong>'+fd(mc.d)+'</strong> a $'+mc.g[4].toFixed(2)+'. La m\u00e1s barata est\u00e1 a <strong>'+fd(mb.d)+'</strong> a $'+mb.g[4].toFixed(2)+'.<br>Ir hasta all\u00e1 te ahorra <strong>$'+ahorro.toFixed(2)+'</strong> por tanque, pero gastas ~$'+extra.toFixed(2)+' de combustible extra. '+(neto>15?'<strong>S\u00ed conviene el viaje ($'+neto.toFixed(2)+' netos).</strong>':'<strong>Casi no conviene: mejor la de cerca.</strong>')+'</div>';
+ }
+ res.innerHTML='<h2>Gasolineras cerca de ti</h2>'
+  +'<div class="tabs"><button id="tD" class="on" type="button">M\u00e1s cercanas</button><button id="tV" type="button">Mejor precio-distancia</button></div>'
+  +aviso+'<div id="tabBody">'+tabla(A,'d')+'</div>';
+ document.getElementById('tD').addEventListener('click',function(){
+  this.classList.add('on');document.getElementById('tV').classList.remove('on');
+  document.getElementById('tabBody').innerHTML=tabla(A,'d');
+ });
+ document.getElementById('tV').addEventListener('click',function(){
+  this.classList.add('on');document.getElementById('tD').classList.remove('on');
+  document.getElementById('tabBody').innerHTML=tabla(B,'v');
+ });
+ btn.disabled=false;btn.textContent='\ud83d\udccd Actualizar mi ubicaci\u00f3n';
  res.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 btn.addEventListener('click',function(){
