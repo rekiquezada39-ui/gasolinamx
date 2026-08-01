@@ -365,6 +365,34 @@ footer .fin{max-width:1180px;margin:0 auto}
 .tabla tbody tr.vuelve{animation:escala .42s cubic-bezier(.16,1,.3,1) both}
 
 /* ══ PANEL DE ESTACIONES OCULTAS ══ */
+/* ══ MAPA ══ */
+.mapwrap{border-radius:18px;overflow:hidden;border:1px solid #e8e8ed;margin:18px 0 26px;position:relative;background:#f5f5f7;display:none}
+.mapwrap.on{display:block;animation:escala .45s cubic-bezier(.16,1,.3,1) both}
+.mapa{height:min(62vh,460px);width:100%;background:#eaeaef}
+.mapbar{display:flex;align-items:center;gap:10px;padding:11px 15px;background:#fff;border-top:1px solid #f0f0f3;font-size:.8rem;color:#86868b;flex-wrap:wrap}
+.mapbar .lg2{display:flex;align-items:center;gap:5px}
+.mapbar .pt{width:11px;height:11px;border-radius:50%;display:inline-block;flex-shrink:0}
+.mapbtn{background:#f5f5f7;border:1px solid #d2d2d7;color:#1d1d1f;font-size:.9rem;font-weight:500;font-family:inherit;padding:11px 20px;border-radius:980px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .2s cubic-bezier(.16,1,.3,1),background .2s,border-color .2s}
+.mapbtn:hover{background:#ebebf0;border-color:#86868b}
+.mapbtn:active{transform:scale(.97)}
+.mapbtn.cargando{opacity:.6;pointer-events:none}
+.pin{background:none;border:0}
+.pin i{display:flex;align-items:center;justify-content:center;width:44px;height:24px;border-radius:7px;color:#fff;font-size:11px;font-weight:700;font-style:normal;font-variant-numeric:tabular-nums;box-shadow:0 2px 7px rgba(0,0,0,.35);position:relative;letter-spacing:-.02em}
+.pin i:after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:inherit;border-bottom:0}
+.pin.b i{background:#16a34a;border-top-color:#16a34a}
+.pin.m i{background:#f59e0b;border-top-color:#f59e0b}
+.pin.c i{background:#dc2626;border-top-color:#dc2626}
+.pin.yo i{background:#0071e3;border-top-color:#0071e3;width:24px;border-radius:50%}
+.pin.yo i:after{display:none}
+.leaflet-popup-content-wrapper{border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.18)}
+.leaflet-popup-content{margin:14px 16px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',Helvetica,Arial,sans-serif;font-size:.88rem;line-height:1.45}
+.leaflet-popup-content b{display:block;font-size:.93rem;font-weight:600;margin-bottom:5px;letter-spacing:-.01em}
+.leaflet-popup-content .pp{font-size:1.5rem;font-weight:600;color:#16a34a;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin:3px 0}
+.leaflet-popup-content .ot{color:#86868b;font-size:.8rem}
+.leaflet-popup-content a{color:#0071e3;font-weight:500;display:inline-block;margin-top:8px}
+.leaflet-container{font-family:inherit}
+.leaflet-control-attribution{font-size:10px!important;background:rgba(255,255,255,.86)!important}
+@media(max-width:734px){.mapa{height:min(56vh,380px)}}
 .ocpanel{border:1px solid #e8e8ed;border-radius:18px;margin:0 0 26px;overflow:hidden;display:none;background:#fff}
 .ocpanel.on{display:block;animation:sube .45s cubic-bezier(.16,1,.3,1) both}
 .ocph{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;user-select:none;background:#f5f5f7;transition:background .18s}
@@ -504,6 +532,73 @@ try{var v=localStorage.getItem(KEY);
  document.getElementById('ckNo').addEventListener('click',function(){try{localStorage.setItem(KEY,'0')}catch(e){}box.classList.remove('on')})}
 }catch(e){}
 })();<\/script>
+<script>
+// ══ MAPA: Leaflet + OpenStreetMap, cargado solo cuando el usuario lo pide ══
+(function(){
+ var listo=false, cargando=false, MAPA=null, capa=null;
+ function css(u){var l=document.createElement('link');l.rel='stylesheet';l.href=u;document.head.appendChild(l)}
+ function js(u,cb){var t=document.createElement('script');t.src=u;t.onload=cb;t.onerror=function(){cb(new Error('no cargo'))};document.head.appendChild(t)}
+ function carga(cb){
+  if(listo){cb();return}
+  if(cargando){setTimeout(function(){carga(cb)},120);return}
+  cargando=true;
+  css('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+  js('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',function(err){
+   cargando=false;
+   if(err||!window.L){cb(err||new Error('sin Leaflet'));return}
+   listo=true;cb();
+  });
+ }
+ // color segun que tan barata: b=barata m=media c=cara
+ function clase(p,mn,mx){
+  if(mx<=mn)return 'b';
+  var r=(p-mn)/(mx-mn);
+  return r<=0.33?'b':(r<=0.66?'m':'c');
+ }
+ // pinta el mapa. datos = [{la,lo,nom,slug,reg,pre,die,mun}]
+ window._mapa=function(cont,datos,yo){
+  carga(function(err){
+   if(err){cont.innerHTML='<p style="padding:20px;color:#86868b;font-size:.9rem">No se pudo cargar el mapa. Revisa tu conexión.</p>';return}
+   var precios=datos.map(function(d){return d.reg}).filter(function(x){return x>0});
+   var mn=Math.min.apply(null,precios), mx=Math.max.apply(null,precios);
+   if(MAPA){MAPA.remove();MAPA=null}
+   MAPA=L.map(cont,{scrollWheelZoom:false,zoomControl:true,preferCanvas:true});
+   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:18,minZoom:5,
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
+   }).addTo(MAPA);
+   var pts=[];
+   datos.forEach(function(d){
+    if(!isFinite(d.la)||!isFinite(d.lo))return;
+    var c=clase(d.reg,mn,mx);
+    var ic=L.divIcon({className:'pin '+c,html:'<i>'+d.reg.toFixed(2)+'</i>',iconSize:[44,24],iconAnchor:[22,29],popupAnchor:[0,-30]});
+    var m=L.marker([d.la,d.lo],{icon:ic}).addTo(MAPA);
+    var h='<b>'+d.nom+'</b><div class="pp">$'+d.reg.toFixed(2)+'</div>';
+    var o=[];
+    if(d.pre)o.push('Premium $'+d.pre.toFixed(2));
+    if(d.die)o.push('Diésel $'+d.die.toFixed(2));
+    if(o.length)h+='<div class="ot">'+o.join(' · ')+'</div>';
+    if(d.d!=null)h+='<div class="ot">A '+(d.d<1?Math.round(d.d*1000)+' m':d.d.toFixed(1)+' km')+' de ti</div>';
+    h+='<a href="https://www.google.com/maps/search/?api=1&query='+d.la+','+d.lo+'" target="_blank" rel="noopener nofollow">Cómo llegar →</a>';
+    if(d.slug)h+=' &nbsp;<a href="/estacion/'+d.slug+'">Ver ficha</a>';
+    m.bindPopup(h);
+    pts.push([d.la,d.lo]);
+   });
+   if(yo&&isFinite(yo[0])){
+    L.marker(yo,{icon:L.divIcon({className:'pin yo',html:'<i></i>',iconSize:[24,24],iconAnchor:[12,12]})})
+     .addTo(MAPA).bindPopup('Estás aquí');
+    pts.push(yo);
+   }
+   if(pts.length)MAPA.fitBounds(pts,{padding:[36,36],maxZoom:15});
+   else MAPA.setView([23.6,-102.5],5);
+   // el scroll de la pagina no se secuestra; se activa con clic
+   MAPA.on('click',function(){MAPA.scrollWheelZoom.enable()});
+   MAPA.on('mouseout',function(){MAPA.scrollWheelZoom.disable()});
+   setTimeout(function(){MAPA.invalidateSize()},60);
+  });
+ };
+})();
+<\/script>
 <div class="ocm" id="ocm" role="dialog" aria-modal="true">
  <div class="ocmc">
   <h3>Ocultar esta estación</h3>
@@ -782,6 +877,19 @@ return `<div class="resumen">
 <div><div class="k">Bajaron</div><div class="v">${baja}</div><div class="c">estaciones</div></div>
 </div>`})()}
 ${dif>0?`<p class="nota">La más barata está en <strong>${mx(conR[0].regular)}</strong> y la más cara en <strong>${mx(conR[conR.length-1].regular)}</strong>. Diferencia de <strong>${mx(dif)}</strong> por litro: <strong>${mx(dif*50)}</strong> en un tanque de 50 L.</p>`:'<p class="nota"></p>'}
+<button class="mapbtn" id="mb" type="button">Ver mapa de ${e(mun)}</button>
+<div class="mapwrap" id="mw"><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
+<script>var MP=${JSON.stringify(conR.filter(g=>isFinite(g.x)&&isFinite(g.y)).slice(0,150).map(g=>({la:+g.y.toFixed(5),lo:+g.x.toFixed(5),nom:g.name,slug:g._s,reg:g.regular,pre:g.premium||0,die:g.diesel||0})))};
+(function(){var b=document.getElementById('mb');if(!b)return;
+b.addEventListener('click',function(){
+ if(document.getElementById('mw').classList.contains('on')){
+  document.getElementById('mw').classList.remove('on');b.textContent='Ver mapa de ${e(mun)}';return}
+ b.classList.add('cargando');b.textContent='Cargando mapa...';
+ document.getElementById('mw').classList.add('on');
+ window._mapa(document.getElementById('mapa'),MP,null);
+ setTimeout(function(){b.classList.remove('cargando');b.textContent='Ocultar mapa'},700);
+});})();
+<\/script>
 <h2>Ordenadas de más barata a más cara</h2>
 ${tabla(conR)}
 <div class="card"><h3>Precios en ${e(mun)}</h3><p>En ${e(mun)}, ${edo}, hay ${lista.length} estaciones que reportan precios a la CRE. El promedio de Magna es ${mx(pr)} por litro${dif>0?`, con ${mx(dif)} de diferencia entre la más económica y la más cara`:''}. Los datos corresponden al reporte del ${HOY} y pueden cambiar durante el día.</p></div>
@@ -814,6 +922,7 @@ ${hero}
 <button class="geob" id="geoBtn" type="button">📍 Buscar cerca de mí</button>
 <div class="geost" id="geoSt"></div>
 </div>
+<div class="mapwrap" id="mw"><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span class="lg2"><span class="pt" style="background:#0071e3"></span>Tú</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
 <div class="geores" id="geoRes"></div>
 
 <div class="finder rv"><h3>O busca por nombre</h3><p style="font-size:.88rem;color:#86868b;margin-bottom:12px">Escribe tu municipio o ciudad — por ejemplo: Tlajomulco, Zapopan, Mérida</p><input id="buscador" placeholder="Tu municipio o el nombre de la estación" autocomplete="off" enterkeyhint="search"><div id="resultados"></div></div>
@@ -884,6 +993,16 @@ function pinta(la,lo){
   var neto=ahorro-extra;
   aviso='<div class="tip">La más cercana está a <strong>'+fd(mc.d)+'</strong> a $'+mc.g[4].toFixed(2)+'. La más barata está a <strong>'+fd(mb.d)+'</strong> a $'+mb.g[4].toFixed(2)+'.<br>Ir hasta allá te ahorra <strong>$'+ahorro.toFixed(2)+'</strong> por tanque, pero gastas ~$'+extra.toFixed(2)+' de combustible extra. '+(neto>15?'<strong>Sí conviene el viaje ('+('$'+neto.toFixed(2))+' netos).</strong>':'<strong>Casi no conviene: mejor la de cerca.</strong>')+'</div>';
  }
+ // mostrar el mapa con las estaciones cercanas
+ try{
+  var _mw=document.getElementById('mw');
+  if(_mw&&window._mapa){
+   _mw.classList.add('on');
+   window._mapa(document.getElementById('mapa'),
+    cerca.slice(0,60).map(function(o){return {la:o.g[0],lo:o.g[1],nom:o.g[2],slug:o.g[3],reg:o.g[4],pre:o.g[5],die:o.g[6],d:o.d}}),
+    [la,lo]);
+  }
+ }catch(e){}
  res.innerHTML='<h2>Gasolineras cerca de ti</h2>'
   +'<div class="tabs"><button id="tD" class="on" type="button">Más cercanas</button><button id="tV" type="button">Mejor precio-distancia</button></div>'
   +aviso+'<div id="tabBody">'+tabla(A,'d')+'</div>';
