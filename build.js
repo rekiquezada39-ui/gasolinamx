@@ -69,6 +69,20 @@ async function geocodificar(lista){
 }
 
 // ══ HISTÓRICO DE PRECIOS (se acumula día a día) ══
+// ── Estaciones bloqueadas a mano (reportes de usuarios).
+//    Archivo cerradas.json:  {"12345":"cerro, reporte 3 ago","6789":"precio falso"}
+//    Se edita con:  node cerrar.js 12345 "motivo"
+// ── Reportes automaticos (Google Form + Google Sheet). Opcional.
+//    Lee GUIA-REPORTES.txt para armarlo en 5 minutos. Si lo dejas vacio,
+//    el boton de ocultar sigue funcionando pero solo para cada usuario.
+const FORM_ID='';        // el id largo del Google Form
+const FORM_C_ID='';      // entry.XXXXXXX del campo "id de estacion"
+const FORM_C_MOT='';     // entry.XXXXXXX del campo "motivo"
+const SHEET_CSV='';      // URL de la hoja publicada como CSV
+const UMBRAL_CIERRE=3;   // cuantos reportes de "cerro" para bloquearla sola
+const CFILE='cerradas.json';
+let CERRADAS={};
+try{CERRADAS=JSON.parse(f.readFileSync(CFILE,'utf8'))}catch(x){}
 const HFILE='historial.json';
 const DIAS_HIST=30;
 let HIST={fechas:[],est:{}};
@@ -101,6 +115,27 @@ function guardarHistorial(lista){
 }
 // helpers de tendencia
 function serie(id){const a=HIST.est[id];return a?a.filter(v=>v!==null):[]}
+// ── Frescura del dato: cuantos dias lleva la estacion sin reportar precio.
+//    La CRE deja las gasolineras cerradas en el catalogo, solo dejan de
+//    mandar precio. Asi las detectamos.
+const DIAS_AVISO=3;    // a partir de aqui se avisa que el dato es viejo
+const DIAS_OCULTA=7;   // a partir de aqui no se lista ni se manda a Google
+function diasSinReportar(id){
+ const a=HIST.est[id];
+ if(!a||!a.length)return 0;
+ let d=0;
+ for(let i=a.length-1;i>=0;i--){if(a[i]!==null)break;d++}
+ return d;
+}
+function fechaUltimoDato(id){
+ const a=HIST.est[id];
+ if(!a||!a.length)return null;
+ for(let i=a.length-1;i>=0;i--)if(a[i]!==null)return HIST.fechas[i]||null;
+ return null;
+}
+const fmtFecha=iso=>{if(!iso)return '';const[y,m,d]=iso.split('-');
+ const M=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+ return `${+d} de ${M[+m-1]} de ${y}`};
 function tendencia(id,actual){
  const a=HIST.est[id]; if(!a||a.length<2)return null;
  let prev=null;
@@ -301,6 +336,35 @@ footer .fin{max-width:1180px;margin:0 auto}
 .hstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:0;margin-top:16px;border-top:1px solid #ececee}
 .hstats>div{padding:13px 14px 13px 0;font-size:1.02rem;font-weight:600;font-variant-numeric:tabular-nums}
 .hstats b{display:block;color:#86868b;font-size:.72rem;font-weight:400;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+.btn.r{background:#fff;color:#86868b;border:1px solid #d2d2d7}
+.btn.r:hover{color:#1d1d1f;border-color:#86868b}
+.tabla td.oc{width:34px;padding-right:0;text-align:right}
+.ocb{background:none;border:0;color:#c7c7cc;font-size:1.25rem;line-height:1;cursor:pointer;padding:2px 5px;border-radius:7px;font-family:inherit;transition:.15s}
+.ocb:hover{color:#dc2626;background:#fef2f2}
+button.btn.r.ocb{font-size:.92rem;color:#86868b}
+.ocm{position:fixed;inset:0;z-index:9900;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.42);backdrop-filter:blur(3px)}
+.ocm.on{display:flex}
+.ocmc{background:#fff;border-radius:20px;padding:28px;max-width:420px;width:100%;box-shadow:0 22px 60px rgba(0,0,0,.28)}
+.ocmc h3{font-size:1.16rem;font-weight:600;margin-bottom:5px;letter-spacing:-.02em}
+.ocmc .est{font-size:.87rem;color:#86868b;margin-bottom:20px;line-height:1.4}
+.ocmc label{display:flex;align-items:center;gap:11px;padding:12px 13px;border:1px solid #e8e8ed;border-radius:12px;margin-bottom:8px;cursor:pointer;font-size:.93rem;transition:.15s}
+.ocmc label:hover{background:#f5f5f7;border-color:#d2d2d7}
+.ocmc label input{margin:0;accent-color:#0071e3;flex-shrink:0}
+.ocmc .acc{display:flex;gap:9px;margin-top:19px}
+.ocmc .acc button{flex:1;padding:12px;border-radius:980px;border:0;font-size:.93rem;font-weight:500;font-family:inherit;cursor:pointer;transition:.15s}
+.ocmc .no{background:#f5f5f7;color:#1d1d1f}
+.ocmc .si{background:#0071e3;color:#fff}
+.ocmc .si:hover{background:#0077ed}
+.ocmc .no:hover{background:#ebebf0}
+.ocav{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#1d1d1f;color:#fff;padding:13px 20px;border-radius:14px;font-size:.9rem;z-index:9800;display:flex;align-items:center;gap:14px;box-shadow:0 10px 34px rgba(0,0,0,.3);transition:transform .3s cubic-bezier(.32,.72,0,1);max-width:calc(100vw - 32px)}
+.ocav.on{transform:translateX(-50%) translateY(0)}
+.ocav button{background:none;border:0;color:#5ac8fa;font-size:.9rem;font-weight:500;font-family:inherit;cursor:pointer;padding:0;white-space:nowrap}
+.ocres{font-size:.83rem;color:#0071e3;cursor:pointer;margin:14px 0 0;display:none}
+.ocres.on{display:block}
+@media(max-width:734px){.tabla td.oc{width:30px}.ocmc{padding:22px}}
+.avisoX{background:#fef2f2;border:1px solid #fecaca;border-left:4px solid #dc2626;border-radius:12px;padding:16px 18px;margin:18px 0;font-size:.92rem;line-height:1.5;color:#7f1d1d}
+.avisoW{background:#fffbeb;border:1px solid #fde68a;border-left:4px solid #f59e0b;border-radius:12px;padding:16px 18px;margin:18px 0;font-size:.92rem;line-height:1.5;color:#78350f}
+.frescas{font-size:.82rem;color:#86868b;margin:10px 0 30px}
 .alerta{background:linear-gradient(135deg,#111827,#1f2937);color:#fff;border-radius:20px;padding:28px;margin:26px 0}
 .alerta h3{font-size:1.25rem;font-weight:600;margin-bottom:7px;letter-spacing:-.02em}
 .alerta p{font-size:.92rem;opacity:.85;margin-bottom:18px;max-width:480px}
@@ -391,14 +455,102 @@ try{var v=localStorage.getItem(KEY);
  document.getElementById('ckNo').addEventListener('click',function(){try{localStorage.setItem(KEY,'0')}catch(e){}box.classList.remove('on')})}
 }catch(e){}
 })();<\/script>
+<div class="ocm" id="ocm" role="dialog" aria-modal="true">
+ <div class="ocmc">
+  <h3>Ocultar esta estación</h3>
+  <div class="est" id="ocmNom"></div>
+  <label><input type="radio" name="ocmot" value="cerro" checked> Ya cerró o no existe</label>
+  <label><input type="radio" name="ocmot" value="precio"> El precio no coincide</label>
+  <label><input type="radio" name="ocmot" value="ubicacion"> La ubicación está mal</label>
+  <label><input type="radio" name="ocmot" value="personal"> Solo no me interesa</label>
+  <div class="acc">
+   <button type="button" class="no" id="ocmNo">Cancelar</button>
+   <button type="button" class="si" id="ocmSi">Ocultar</button>
+  </div>
+ </div>
+</div>
+<div class="ocav" id="ocav"><span id="ocavT">Estación oculta</span><button type="button" id="ocavU">Deshacer</button></div>
+<script>
+(function(){
+ var K='oc_gmx', F={f:${JSON.stringify(FORM_ID)},i:${JSON.stringify(FORM_C_ID)},m:${JSON.stringify(FORM_C_MOT)}};
+ function leer(){try{return JSON.parse(localStorage.getItem(K)||'{}')}catch(e){return {}}}
+ function grabar(o){try{localStorage.setItem(K,JSON.stringify(o))}catch(e){}}
+ // ocultar las filas ya marcadas
+ function aplica(){
+  var o=leer(), n=0;
+  document.querySelectorAll('tr[data-eid]').forEach(function(tr){
+   if(o[tr.getAttribute('data-eid')]){tr.style.display='none';n++}
+   else tr.style.display='';
+  });
+  var r=document.getElementById('ocres');
+  if(r){var t=Object.keys(o).length;
+   if(t){r.textContent='Tienes '+t+' estación'+(t>1?'es':'')+' oculta'+(t>1?'s':'')+'. Mostrar de nuevo';r.classList.add('on')}
+   else r.classList.remove('on')}
+  return n;
+ }
+ // mandar el reporte al formulario (si esta configurado)
+ function reporta(id,mot){
+  if(!F.f||!F.i||mot==='personal')return;
+  try{
+   var d=new FormData();
+   d.append(F.i,id); d.append(F.m,mot);
+   fetch('https://docs.google.com/forms/d/e/'+F.f+'/formResponse',
+    {method:'POST',mode:'no-cors',body:d}).catch(function(){});
+  }catch(e){}
+ }
+ var M=document.getElementById('ocm'), AV=document.getElementById('ocav'), pend=null, ultimo=null, tmr=null;
+ function abre(id,nom){
+  if(!M)return;
+  pend={id:id,nom:nom};
+  document.getElementById('ocmNom').textContent=nom||('Estación '+id);
+  M.classList.add('on');
+ }
+ function cierra(){if(M)M.classList.remove('on');pend=null}
+ document.addEventListener('click',function(ev){
+  var b=ev.target.closest('.ocb');
+  if(b){ev.preventDefault();abre(b.getAttribute('data-eid'),b.getAttribute('data-nom'));return}
+  if(ev.target===M)cierra();
+ });
+ var no=document.getElementById('ocmNo'); if(no)no.addEventListener('click',cierra);
+ var si=document.getElementById('ocmSi');
+ if(si)si.addEventListener('click',function(){
+  if(!pend)return;
+  var r=document.querySelector('input[name=ocmot]:checked');
+  var mot=r?r.value:'personal';
+  var o=leer(); o[pend.id]={m:mot,t:Date.now()}; grabar(o);
+  reporta(pend.id,mot);
+  ultimo=pend.id;
+  var esFicha=!document.querySelector('tr[data-eid="'+pend.id+'"]');
+  cierra(); aplica();
+  if(AV){
+   document.getElementById('ocavT').textContent='Estación oculta';
+   AV.classList.add('on');
+   clearTimeout(tmr); tmr=setTimeout(function(){AV.classList.remove('on')},5200);
+  }
+  if(esFicha)setTimeout(function(){location.href='/'},900);
+ });
+ var un=document.getElementById('ocavU');
+ if(un)un.addEventListener('click',function(){
+  if(!ultimo)return;
+  var o=leer(); delete o[ultimo]; grabar(o); ultimo=null;
+  AV.classList.remove('on'); aplica();
+ });
+ document.addEventListener('keydown',function(e){if(e.key==='Escape')cierra()});
+ // enlace para restaurar todas
+ var res=document.getElementById('ocres');
+ if(res)res.addEventListener('click',function(){grabar({});aplica();location.reload()});
+ aplica();
+ window._ocAplica=aplica;   // para re-aplicar tras "cerca de mi"
+})();
+<\/script>
 <template id="ads-tpl">${MTAG}</template>
 </body></html>`;
 const L=(t,d,c,b,r='',nx=false)=>HEAD(t,d,c,r,nx)+`<div class="shell"><aside class="side">${SIDE.replace(/href="/g,'href="'+r)}</aside><main>${b}</main></div>`+FOOT(r);
 const PG=(cur,tot,fn)=>{if(tot<2)return'';let h='<div class="pg">';if(cur>1)h+=`<a href="${fn(cur-1)}">←</a>`;const a=Math.max(1,cur-2),z=Math.min(tot,cur+2);if(a>1)h+=`<a href="${fn(1)}">1</a>`+(a>2?'<span>…</span>':'');for(let i=a;i<=z;i++)h+=i===cur?`<span class="on">${i}</span>`:`<a href="${fn(i)}">${i}</a>`;if(z<tot)h+=(z<tot-1?'<span>…</span>':'')+`<a href="${fn(tot)}">${tot}</a>`;if(cur<tot)h+=`<a href="${fn(cur+1)}">→</a>`;return h+'</div>'};
 const badge=g=>{const t=tendencia(g.id,g.regular);if(!t||Math.abs(t.d)<0.01)return '';
  return `<span class="trend ${t.d>0?'up':'down'}">${t.d>0?'▲':'▼'} ${mx(Math.abs(t.d))}</span>`};
-const fila=(g,i,r='')=>`<tr><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}">${e(g.name)}</a>${badge(g)}<small>${e(g._mun?g._mun+', '+(g._edo||''):(g._edo||'México'))}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td></tr>`;
-const tabla=(arr,r='')=>`<table class="tabla"><thead><tr><th></th><th>Estación</th><th>Magna</th><th>Premium</th><th>Diésel</th></tr></thead><tbody>${arr.map((g,i)=>fila(g,i,r)).join('')}</tbody></table>`;
+const fila=(g,i,r='')=>`<tr data-eid="${g.id}"><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}">${e(g.name)}</a>${badge(g)}<small>${e(g._mun?g._mun+', '+(g._edo||''):(g._edo||'México'))}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td><td class="oc"><button class="ocb" type="button" data-eid="${g.id}" data-nom="${e(g.name)}" aria-label="Ocultar esta estación" title="Ocultar esta estación">&times;</button></td></tr>`;
+const tabla=(arr,r='')=>`<table class="tabla"><thead><tr><th></th><th>Estación</th><th>Magna</th><th>Premium</th><th>Diésel</th><th></th></tr></thead><tbody>${arr.map((g,i)=>fila(g,i,r)).join('')}</tbody></table>`;
 
 (async()=>{
 console.log(`\n⛽ Generando ${N}...\n📥 Bajando datos oficiales de la CRE:`);
@@ -446,7 +598,28 @@ for(const m of xPre.matchAll(/<place place_id="(\d+)">([\s\S]*?)<\/place>/g)){
  const score=r=>(r.regular?1:0)+(r.premium?1:0)+(r.diesel?1:0);
  if(!prev||score(rec)>score(prev))seen.set(id,rec);
 }
-const D=[...seen.values()];
+// ── auto-bloqueo por reportes acumulados de usuarios
+const AUTO={};
+if(SHEET_CSV){
+ try{
+  const csv=await fetch(SHEET_CSV).then(r=>r.text());
+  const cta={};
+  csv.split('\n').slice(1).forEach(ln=>{
+   const c=ln.split(',');
+   if(c.length<3)return;
+   const id=(c[1]||'').replace(/[^0-9]/g,'');
+   const mot=(c[2]||'').toLowerCase();
+   if(!id)return;
+   if(mot.includes('cerr')||mot.includes('existe')){cta[id]=(cta[id]||0)+1}
+  });
+  Object.entries(cta).forEach(([id,n])=>{if(n>=UMBRAL_CIERRE)AUTO[id]=n});
+  const t=Object.keys(cta).length, a=Object.keys(AUTO).length;
+  console.log(`   \u2713 reportes: ${t} estacion(es) reportada(s), ${a} auto-bloqueada(s)`);
+ }catch(e){console.log('   reportes: no se pudo leer la hoja ('+e.message+')')}
+}
+const D=[...seen.values()].filter(g=>!CERRADAS[g.id]&&!AUTO[g.id]);
+{const n=Object.keys(CERRADAS).length;
+ if(n)console.log(`   \u2713 ${n} estacion(es) bloqueada(s) manualmente (cerradas.json)`);}
 console.log(`   ✓ ${D.length.toLocaleString('es-MX')} estaciones con precio válido`);
 await geocodificar(D);
 D.forEach(g=>{const v=(isFinite(g.x)&&isFinite(g.y))?GC[rk(g.x,g.y)]:null;
@@ -456,12 +629,20 @@ D.forEach(g=>{const v=(isFinite(g.x)&&isFinite(g.y))?GC[rk(g.x,g.y)]:null;
 {const antes=D.length;for(let i=D.length-1;i>=0;i--)if(!D[i]._edo)D.splice(i,1);
  if(antes!==D.length)console.log(`   \u2713 ${antes-D.length} estacion(es) fuera de Mexico descartadas`);}
 guardarHistorial(D);
+// marcar frescura de cada estacion
+D.forEach(g=>{g._sin=diasSinReportar(g.id);g._ult=fechaUltimoDato(g.id)});
+{const av=D.filter(g=>g._sin>=DIAS_AVISO&&g._sin<DIAS_OCULTA).length;
+ const oc=D.filter(g=>g._sin>=DIAS_OCULTA).length;
+ if(av||oc)console.log(`   \u2713 frescura: ${av} con aviso, ${oc} inactiva(s) ocultas`);}
+// las inactivas salen de las listas publicas
+const INACTIVAS=D.filter(g=>g._sin>=DIAS_OCULTA);
+const ACT=D.filter(g=>g._sin<DIAS_OCULTA);
 
 // agrupar por estado
-const M={};D.forEach(g=>{if(g._edo)(M[g._edo]=M[g._edo]||[]).push(g)});
+const M={};ACT.forEach(g=>{if(g._edo)(M[g._edo]=M[g._edo]||[]).push(g)});
 const edos=Object.entries(M).sort((a,b)=>a[0].localeCompare(b[0],'es'));
-const conReg=D.filter(g=>g.regular);
-const prom=t=>{const a=D.filter(g=>g[t]);return a.length?a.reduce((s,g)=>s+g[t],0)/a.length:0};
+const conReg=ACT.filter(g=>g.regular);
+const prom=t=>{const a=ACT.filter(g=>g[t]);return a.length?a.reduce((s,g)=>s+g[t],0)/a.length:0};
 const pReg=prom('regular'),pPre=prom('premium'),pDie=prom('diesel');
 const baratas=[...conReg].sort((a,b)=>a.regular-b.regular);
 
@@ -473,7 +654,7 @@ console.log('📄 Generando HTML:');
 
 // ── PÁGINAS POR MUNICIPIO
 const MUN={};
-D.forEach(g=>{if(g._mun&&g._edo){const k=g._edo+'|'+g._mun;(MUN[k]=MUN[k]||[]).push(g)}});
+ACT.forEach(g=>{if(g._mun&&g._edo){const k=g._edo+'|'+g._mun;(MUN[k]=MUN[k]||[]).push(g)}});
 const muns=Object.entries(MUN).filter(([k,l])=>l.length>=2&&l.some(g=>g.regular)).sort((a,b)=>b[1].length-a[1].length);
 const MUNOK=new Set(muns.map(([k])=>k));
 const slugMun=(edo,mun)=>`municipio-${s(mun)}-${s(edo)}`;
@@ -518,18 +699,20 @@ const hero=`<div class="hero">
 <div class="hbox reg"><div class="lbl">Magna</div><div class="val">${mx(pReg)}</div><div class="cap">promedio nacional</div></div>
 <div class="hbox pre"><div class="lbl">Premium</div><div class="val">${mx(pPre)}</div><div class="cap">promedio nacional</div></div>
 <div class="hbox die"><div class="lbl">Diésel</div><div class="val">${mx(pDie)}</div><div class="cap">promedio nacional</div></div>
-</div><p class="nota">Basado en ${D.length.toLocaleString('es-MX')} estaciones · datos de la CRE · ${HOY}</p>`;
+</div><p class="nota">Basado en ${ACT.length.toLocaleString('es-MX')} estaciones · datos de la CRE · ${HOY}</p>`;
 const idxMun=JSON.stringify(muns.map(([k,l])=>{const [ed,mu]=k.split('|');
  const cr=l.filter(g=>g.regular);const mn=cr.length?Math.min(...cr.map(g=>g.regular)):0;
  return [mu,ed,slugMun(ed,mu),l.length,mn]}));
-const idx=JSON.stringify(D.filter(g=>g.regular).slice(0,5000).map(g=>[g.name,g._s,g.regular,(g._mun?g._mun+', ':'')+(g._edo||'')]));
+const idx=JSON.stringify(ACT.filter(g=>g.regular).slice(0,5000).map(g=>[g.name,g._s,g.regular,(g._mun?g._mun+', ':'')+(g._edo||'')]));
 // el indice del buscador va en archivo aparte: la home baja de ~680KB a ~30KB
 f.writeFileSync(P.join(O,'busca.json'),`{"e":${idx},"m":${idxMun}}`);
 f.writeFileSync(P.join(O,'index.html'),L(
  `Precio de la gasolina hoy en México | ${N}`,
  `Precio de gasolina Magna, Premium y Diésel hoy ${HOY}. Consulta las gasolineras más baratas de México con datos oficiales de la CRE.`,DOM+'/',
-`<h1>Precio de la gasolina hoy</h1><p class="sub">Consulta el precio de Magna, Premium y Diésel en ${D.length.toLocaleString('es-MX')} gasolineras de México. Datos oficiales, actualizados a diario.</p>
+`<h1>Precio de la gasolina hoy</h1><p class="sub">Consulta el precio de Magna, Premium y Diésel en ${ACT.length.toLocaleString('es-MX')} gasolineras de México. Datos oficiales, actualizados a diario.</p>
 ${hero}
+<p class="ocres" id="ocres"></p>
+<p class="frescas">${INACTIVAS.length?`Ocultamos ${INACTIVAS.length.toLocaleString('es-MX')} estación(es) que llevan más de ${DIAS_OCULTA} días sin reportar precios a la CRE, porque probablemente ya cerraron.`:'Todas las estaciones mostradas reportaron precio en los últimos días.'}</p>
 <div class="geo">
 <h3>Gasolineras más baratas cerca de ti</h3>
 <p>Activa tu ubicación y te mostramos las estaciones más económicas a tu alrededor, ordenadas por precio y distancia.</p>
@@ -579,13 +762,15 @@ function pinta(la,lo){
    return ca-cb;
  });
  function tabla(arr,modo){
-  var h='<table class="tabla"><thead><tr><th></th><th>Estación</th><th>Magna</th><th>Premium</th><th>Diésel</th></tr></thead><tbody>';
+  var h='<table class="tabla"><thead><tr><th></th><th>Estación</th><th>Magna</th><th>Premium</th><th>Diésel</th><th></th></tr></thead><tbody>';
   arr.forEach(function(o,n){
    var g=o.g,cls=(n===0)?' mejor':'';
-   h+='<tr><td class="rank">'+(n+1)+'</td><td class="nm"><a href="estacion/'+g[3]+'">'+g[2]+'</a>'
+   var _id=(String(g[3]).match(/-(\\d+)$/)||[])[1]||'';
+   h+='<tr data-eid="'+_id+'"><td class="rank">'+(n+1)+'</td><td class="nm"><a href="estacion/'+g[3]+'">'+g[2]+'</a>'
     +'<span class="dist'+cls+'">'+fd(o.d)+'</span><small>'+(g[7]||'')+'</small></td>'
     +'<td class="pr g">$'+g[4].toFixed(2)+'</td><td class="pr">'+(g[5]?'$'+g[5].toFixed(2):'—')+'</td>'
-    +'<td class="pr">'+(g[6]?'$'+g[6].toFixed(2):'—')+'</td></tr>';
+    +'<td class="pr">'+(g[6]?'$'+g[6].toFixed(2):'—')+'</td>'
+    +'<td class="oc"><button class="ocb" type="button" data-eid="'+_id+'" data-nom="'+g[2].replace(/"/g,'&quot;')+'" title="Ocultar">&times;</button></td></tr>';
   });
   return h+'</tbody></table>';
  }
@@ -760,7 +945,8 @@ D.forEach(g=>{
   `Precio de gasolina en ${g.name}${g._edo?', '+g._edo:''} hoy ${HOY}: Magna ${g.regular?mx(g.regular):'no disponible'}.`,
   `${DOM}/estacion/${g._s}`,
 `<p class="crumb"><a href="../">Inicio</a>${g._edo?` › <a href="../estado-${s(g._edo)}">${e(g._edo)}</a>`:''}${(g._mun&&g._edo&&MUNOK.has(g._edo+'|'+g._mun))?` › <a href="../municipio-${s(g._mun)}-${s(g._edo)}">${e(g._mun)}</a>`:''} › ${e(g.name)}</p>
-<h1>${e(g.name)}</h1><p class="sub">${g._mun?e(g._mun)+', ':''}${g._edo?e(g._edo)+' · ':''}Precios del ${HOY}</p>
+<h1>${e(g.name)}</h1><p class="sub">${g._mun?e(g._mun)+', ':''}${g._edo?e(g._edo)+' · ':''}${g._sin>=DIAS_AVISO?`Último dato: ${fmtFecha(g._ult)}`:`Precios del ${HOY}`}</p>
+${g._sin>=DIAS_OCULTA?`<div class="avisoX"><strong>Esta estación podría estar cerrada.</strong> Lleva ${g._sin} días sin reportar precios a la CRE. Los datos que ves son del ${fmtFecha(g._ult)||'último reporte disponible'}. Te recomendamos confirmar antes de ir.</div>`:(g._sin>=DIAS_AVISO?`<div class="avisoW"><strong>Datos no actualizados.</strong> Esta estación no ha reportado precios en ${g._sin} días. La información es del ${fmtFecha(g._ult)||'último reporte'}.</div>`:'')}
 <div class="hero">
 <div class="hbox reg"><div class="lbl">Magna</div><div class="val">${g.regular?mx(g.regular):'—'}</div><div class="cap">por litro</div></div>
 <div class="hbox pre"><div class="lbl">Premium</div><div class="val">${g.premium?mx(g.premium):'—'}</div><div class="cap">por litro</div></div>
@@ -774,6 +960,8 @@ D.forEach(g=>{
  ${vsNal!==null?`<div><b>vs. nacional</b>${vsNal>0?'+':''}${mx(vsNal)}</div>`:''}
 </div>
 ${isFinite(g.x)?`<a class="btn" href="https://www.google.com/maps/search/?api=1&query=${g.y},${g.x}" target="_blank" rel="noopener nofollow">Ver en Google Maps</a>`:''}
+<button class="btn r ocb" type="button" data-eid="${g.id}" data-nom="${e(g.name)}">Ocultar esta estación</button>
+<a class="btn r" href="mailto:${MAIL}?subject=${encodeURIComponent('Reporte: '+g.name+' (ID '+g.id+')')}&body=${encodeURIComponent('Reporto un problema con esta estacion:\n\n'+g.name+'\n'+(g._mun||'')+', '+(g._edo||'')+'\nID CRE: '+g.id+'\n'+DOM+'/estacion/'+g._s+'\n\nQue pasa? (borra lo que no aplique)\n- Ya cerro / no existe\n- El precio no coincide\n- La ubicacion esta mal\n- Otro:\n\n')}">Reportar un problema</a>
 ${(g._mun&&g._edo&&MUNOK.has(g._edo+'|'+g._mun))?`<a class="btn a" href="../municipio-${s(g._mun)}-${s(g._edo)}">Más baratas en ${e(g._mun)}</a>`:(g._edo?`<a class="btn a" href="../estado-${s(g._edo)}">Más baratas en ${e(g._edo)}</a>`:'')}
 ${(()=>{const r=rango(g.id),t=tendencia(g.id,g.regular),v=serie(g.id);
 if(!r||r.n<2)return '';
@@ -1006,7 +1194,7 @@ try{f.writeFileSync(P.join(O,'og.png'),ogPNG(
  console.log('   \u2713 og.png generado')}catch(err){console.log('   og.png fallo:',err.message)}
 // índice geográfico para "cerca de mí" (se carga solo al pedirlo)
 f.writeFileSync(P.join(O,'geo.json'),JSON.stringify(
- D.filter(g=>isFinite(g.x)&&isFinite(g.y)&&g.regular)
+ ACT.filter(g=>isFinite(g.x)&&isFinite(g.y)&&g.regular)
   .map(g=>[+g.y.toFixed(5),+g.x.toFixed(5),g.name,g._s,g.regular,g.premium||0,g.diesel||0,g._mun||''])
 ));
 // ── sw.js de Monetag (verificacion + push notifications)
@@ -1036,7 +1224,26 @@ f.writeFileSync(P.join(O,'404.html'),L(
 </div>
 <p class="nota">Precios del ${HOY} · datos oficiales de la CRE</p>
 </div>`,'',true));
-f.writeFileSync(P.join(O,'_headers'),'/*\n  X-Content-Type-Options: nosniff\n');
+f.writeFileSync(P.join(O,'_headers'),
+`/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Cache-Control: public, max-age=600, stale-while-revalidate=86400
+
+/*.json
+  Cache-Control: public, max-age=600, s-maxage=3600, stale-while-revalidate=86400
+
+/s.css
+  Cache-Control: public, max-age=3600, stale-while-revalidate=604800
+/favicon.svg
+  Cache-Control: public, max-age=86400
+/og.png
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/sw.js
+  Cache-Control: no-cache
+`);
 
 f.writeFileSync(P.join(O,'favicon.svg'),'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 34" fill="none" stroke="#1d1d1f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 31V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v26"/><path d="M1.5 31h16"/><path d="M6 8h7v5H6z"/><path d="M16 12h4a2 2 0 0 1 2 2v10a2.5 2.5 0 0 0 5 0V13l-3.5-4"/></svg>');
 // El sitemap solo lleva paginas con contenido unico. Las 13,797 fichas de estacion

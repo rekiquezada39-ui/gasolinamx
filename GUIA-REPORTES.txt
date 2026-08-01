@@ -1,0 +1,85 @@
+╔══════════════════════════════════════════════════════════════╗
+║  REPORTES AUTOMÁTICOS — 5 minutos, gratis, sin servidor      ║
+╚══════════════════════════════════════════════════════════════╝
+
+El botón "x" YA FUNCIONA sin hacer nada de esto: el usuario oculta
+la estación y desaparece solo para él.
+
+Esta guía es para el paso extra: que los reportes te lleguen a una
+hoja de cálculo y que build.js bloquee SOLO las que varias personas
+reportaron como cerradas. Cero trabajo manual.
+
+
+─── PASO 1: crear el formulario ──────────────────────────────
+
+1. Entra a  forms.google.com  y crea un formulario en blanco
+2. Ponle de título: "Reportes GasolinaMX"
+3. Crea DOS preguntas de "Respuesta corta":
+      Pregunta 1:  id
+      Pregunta 2:  motivo
+4. Arriba a la derecha: Enviar → pestaña del enlace  🔗
+   Copia el enlace. Se ve así:
+
+      https://docs.google.com/forms/d/e/1FAIpQLSxxxxxxxxxxxx/viewform
+                                        └────── esto es FORM_ID ──────┘
+
+   Pega esa parte larga en build.js:
+      const FORM_ID='1FAIpQLSxxxxxxxxxxxx';
+
+
+─── PASO 2: sacar los entry.XXXX de cada campo ───────────────
+
+1. Abre el formulario como si fueras a contestarlo (el enlace de arriba)
+2. Clic derecho en cualquier parte → "Ver código fuente de la página"
+      (en Chromebook: Ctrl+U)
+3. Busca con Ctrl+F la palabra:   entry.
+4. Vas a encontrar dos, en el mismo orden que tus preguntas:
+
+      entry.1234567890   <- el primero es "id"
+      entry.9876543210   <- el segundo es "motivo"
+
+   Pégalos en build.js:
+      const FORM_C_ID ='entry.1234567890';
+      const FORM_C_MOT='entry.9876543210';
+
+
+─── PASO 3: publicar la hoja como CSV ────────────────────────
+
+1. En el formulario, pestaña "Respuestas" → icono verde de Sheets
+   (crea la hoja de cálculo)
+2. Ya en la hoja:  Archivo → Compartir → Publicar en la Web
+3. En el primer menú deja "Todo el documento"
+4. En el segundo menú elige:  Valores separados por comas (.csv)
+5. Clic en "Publicar" → copia la URL que te da
+
+   Pégala en build.js:
+      const SHEET_CSV='https://docs.google.com/spreadsheets/d/e/.../pub?output=csv';
+
+
+─── LISTO ────────────────────────────────────────────────────
+
+Corre:   node build.js
+
+Vas a ver una línea nueva:
+   ✓ reportes: 12 estacion(es) reportada(s), 2 auto-bloqueada(s)
+
+A partir de ahí:
+  • Usuario da clic en "x" y dice "ya cerró"
+  • El reporte llega solo a tu hoja
+  • Cuando 3 personas distintas reportan la misma, build.js la
+    borra del sitio automáticamente al día siguiente
+  • Tú no haces NADA
+
+Para cambiar cuántos reportes se necesitan:
+      const UMBRAL_CIERRE=3;    <- súbelo o bájalo
+
+
+─── NOTAS ────────────────────────────────────────────────────
+
+• El motivo "Solo no me interesa" NO se manda al formulario.
+  Es preferencia personal, no un problema de la estación.
+
+• Si alguien reporta de más, revisa la hoja y borra la fila.
+  También puedes forzar con:  node cerrar.js -q <ID>
+
+• Google Forms aguanta millones de respuestas gratis.
