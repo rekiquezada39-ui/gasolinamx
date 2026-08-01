@@ -1,0 +1,207 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Diagnóstico de anuncios — GasolinaMX</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',Helvetica,Arial,sans-serif;
+ background:#f5f5f7;color:#1d1d1f;line-height:1.5;padding:18px;max-width:640px;margin:0 auto}
+h1{font-size:1.5rem;font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
+.sub{color:#86868b;font-size:.9rem;margin-bottom:22px}
+.t{background:#fff;border-radius:14px;padding:15px 17px;margin-bottom:10px;
+ border-left:4px solid #d2d2d7;transition:border-color .25s}
+.t.ok{border-left-color:#16a34a}
+.t.mal{border-left-color:#dc2626}
+.t.warn{border-left-color:#f59e0b}
+.t .n{font-size:.94rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.t .n .b{margin-left:auto;font-size:.78rem;font-weight:600;padding:3px 10px;border-radius:980px;background:#f5f5f7;color:#86868b}
+.t.ok .b{background:#dcfce7;color:#166534}
+.t.mal .b{background:#fee2e2;color:#991b1b}
+.t.warn .b{background:#fef3c7;color:#92400e}
+.t .d{font-size:.85rem;color:#6e6e73;margin-top:5px;word-break:break-word}
+#res{background:#1d1d1f;color:#fff;border-radius:16px;padding:20px;margin:22px 0}
+#res h2{font-size:1.1rem;margin-bottom:9px}
+#res p{font-size:.9rem;opacity:.88}
+button{background:#0071e3;color:#fff;border:0;padding:13px 24px;border-radius:980px;
+ font-size:.95rem;font-weight:500;font-family:inherit;cursor:pointer;width:100%;margin-top:8px}
+pre{background:#fff;border-radius:12px;padding:14px;font-size:.72rem;overflow-x:auto;
+ margin-top:14px;border:1px solid #e8e8ed;white-space:pre-wrap;word-break:break-all}
+a{color:#0071e3}
+</style></head><body>
+
+<h1>Diagnóstico de anuncios</h1>
+<p class="sub">Abre esta página en el celular donde no ves anuncios. Se ejecuta solo.</p>
+
+<div id="lista"></div>
+
+<div id="res"><h2>Analizando…</h2><p id="veredicto">Espera unos segundos.</p></div>
+
+<button onclick="location.reload()">Volver a probar</button>
+<button onclick="copiar()" style="background:#f5f5f7;color:#1d1d1f;margin-top:10px">Copiar resultado</button>
+
+<pre id="log"></pre>
+
+<script>
+var L=document.getElementById('lista'), LOG=[], T={};
+function add(id,nombre){
+ var d=document.createElement('div');
+ d.className='t'; d.id='t_'+id;
+ d.innerHTML='<div class="n">'+nombre+'<span class="b">…</span></div><div class="d"></div>';
+ L.appendChild(d); T[id]=d; return d;
+}
+function set(id,estado,badge,detalle){
+ var d=T[id]; if(!d)return;
+ d.className='t '+estado;
+ d.querySelector('.b').textContent=badge;
+ d.querySelector('.d').textContent=detalle||'';
+ LOG.push(id+': '+badge+(detalle?' — '+detalle:''));
+}
+
+// ── Pruebas
+add('ua','Dispositivo y navegador');
+add('ls','Almacenamiento local');
+add('ck','Consentimiento de cookies');
+add('tpl','Plantilla de anuncios');
+add('iny','Inyección de scripts');
+add('net1','Conexión a nap5k.com');
+add('net2','Conexión a n6wxm.com');
+add('sw','Service Worker');
+add('notif','Permiso de notificaciones');
+add('bait','Detector de bloqueador');
+
+// 1. UA
+(function(){
+ var ua=navigator.userAgent;
+ var movil=/Android|iPhone|iPad|Mobile/i.test(ua);
+ var marca=(ua.match(/(Chrome|Firefox|Safari|Edg|SamsungBrowser|Opera|OPR|Brave)\/[\d.]+/g)||[]).join(' ');
+ set('ua','ok',movil?'Móvil':'Escritorio',marca+' · '+(navigator.brave?'BRAVE DETECTADO':'')+' · pantalla '+screen.width+'x'+screen.height);
+})();
+
+// 2. localStorage
+(function(){
+ try{
+  localStorage.setItem('_p','1'); localStorage.removeItem('_p');
+  set('ls','ok','Funciona','Se puede guardar el consentimiento');
+ }catch(e){
+  set('ls','mal','BLOQUEADO','El navegador no deja guardar datos. Los anuncios nunca cargarán. Desactiva el modo incógnito o permite cookies.');
+ }
+})();
+
+// 3. consentimiento
+(function(){
+ var v=null;
+ try{v=localStorage.getItem('ck_gmx')}catch(e){}
+ if(v==='1') set('ck','ok','Aceptado','ck_gmx = 1 · los anuncios deben cargar');
+ else if(v==='0') set('ck','mal','RECHAZADO','Le diste "Solo necesarias". Por eso no salen. Borra los datos del sitio y acepta.');
+ else set('ck','warn','Sin respuesta','Todavía no aceptas cookies en este navegador. Ve al sitio y dale Aceptar.');
+})();
+
+// 4 y 5: plantilla + inyección (se prueba con una copia del mecanismo real)
+(function(){
+ var tpl=document.getElementById('ads-tpl');
+ if(!tpl){ set('tpl','warn','No aplica','Esta página de diagnóstico no lleva la plantilla; se prueba la inyección directa abajo.'); }
+ else set('tpl','ok','Presente','');
+ // simular exactamente lo que hace el sitio
+ try{
+  var w=document.createElement('div');
+  w.innerHTML='<scr'+'ipt>window.__probe=1;</scr'+'ipt>';
+  var s0=w.querySelectorAll('script');
+  if(!s0.length){ set('iny','mal','FALLA','El navegador no permite crear scripts desde innerHTML'); return }
+  var n=document.createElement('script');
+  n.textContent=s0[0].textContent;
+  document.body.appendChild(n);
+  setTimeout(function(){
+   if(window.__probe===1) set('iny','ok','Funciona','El mecanismo de inyección del sitio sí ejecuta scripts');
+   else set('iny','mal','FALLA','Los scripts inyectados NO se ejecutan (posible CSP o extensión)');
+  },120);
+ }catch(e){ set('iny','mal','ERROR',e.message) }
+})();
+
+// 6 y 7: red hacia los servidores de anuncios
+function probarRed(id,url,nombre){
+ var t0=Date.now();
+ var s=document.createElement('script');
+ var listo=false;
+ s.onload=function(){ if(listo)return; listo=true;
+  set(id,'ok','Carga OK',nombre+' respondió en '+(Date.now()-t0)+' ms');
+ };
+ s.onerror=function(){ if(listo)return; listo=true;
+  set(id,'mal','BLOQUEADO','No se pudo cargar '+nombre+'. Un bloqueador, el DNS o la red lo están cortando.');
+ };
+ setTimeout(function(){ if(!listo){ listo=true;
+  set(id,'warn','Sin respuesta','Tardó más de 8 s. Puede ser red lenta o bloqueo silencioso.');
+ }},8000);
+ s.src=url;
+ document.head.appendChild(s);
+}
+probarRed('net1','https://nap5k.com/tag.min.js','nap5k.com');
+probarRed('net2','https://n6wxm.com/vignette.min.js','n6wxm.com');
+
+// 8. service worker
+(function(){
+ if(!('serviceWorker' in navigator)){ set('sw','warn','No soportado','Este navegador no permite Service Workers'); return }
+ navigator.serviceWorker.getRegistrations().then(function(r){
+  if(r.length) set('sw','ok','Registrado',r.length+' service worker(s) activos');
+  else set('sw','warn','Ninguno','Aún no se registra el sw.js de Monetag');
+ }).catch(function(e){ set('sw','mal','ERROR',e.message) });
+})();
+
+// 9. notificaciones
+(function(){
+ if(!('Notification' in window)){ set('notif','warn','No soportado',''); return }
+ var p=Notification.permission;
+ set('notif', p==='granted'?'ok':(p==='denied'?'mal':'warn'),
+   p==='granted'?'Permitidas':(p==='denied'?'BLOQUEADAS':'Sin preguntar'),
+   p==='denied'?'Bloqueaste las notificaciones. El push de Monetag no funcionará.':'');
+})();
+
+// 10. detector de adblock (elemento cebo)
+(function(){
+ var b=document.createElement('div');
+ b.className='adsbox ad-banner ads advertisement banner_ad';
+ b.style.cssText='position:absolute;left:-9999px;top:-9999px;width:300px;height:250px';
+ b.innerHTML='&nbsp;';
+ document.body.appendChild(b);
+ setTimeout(function(){
+  var oculto = b.offsetHeight===0 || b.offsetParent===null ||
+     getComputedStyle(b).display==='none' || getComputedStyle(b).visibility==='hidden';
+  if(oculto) set('bait','mal','DETECTADO','Hay un bloqueador de anuncios activo en este navegador. Esa es la causa.');
+  else set('bait','ok','Sin bloqueador','No se detectó ad blocker en la página');
+  b.remove();
+  setTimeout(veredicto,400);
+ },500);
+})();
+
+// ── Veredicto
+function veredicto(){
+ var malos=[], warns=[];
+ for(var k in T){
+  var c=T[k].className;
+  var n=T[k].querySelector('.n').childNodes[0].textContent.trim();
+  if(c.indexOf('mal')>-1) malos.push(n);
+  else if(c.indexOf('warn')>-1) warns.push(n);
+ }
+ var h=document.querySelector('#res h2'), p=document.getElementById('veredicto');
+ if(malos.length===0 && warns.length===0){
+  h.textContent='Todo correcto';
+  p.textContent='Técnicamente los anuncios deberían aparecer. Si no los ves, es fill rate de Monetag: no hay anunciantes disponibles para tu perfil en este momento. Revisa Monetag → Estadísticas filtrando por dispositivo.';
+ } else if(malos.length){
+  h.textContent='Problema encontrado';
+  p.textContent='Fallaron: '+malos.join(', ')+'. Revisa el detalle en rojo arriba.';
+ } else {
+  h.textContent='Advertencias';
+  p.textContent='Revisa: '+warns.join(', ')+'.';
+ }
+ document.getElementById('log').textContent=
+  'DIAGNOSTICO GasolinaMX\n'+new Date().toISOString()+'\n'+navigator.userAgent+'\n\n'+LOG.join('\n');
+}
+setTimeout(veredicto,9000);
+
+function copiar(){
+ var t=document.getElementById('log').textContent;
+ if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){alert('Copiado')});
+ else alert(t);
+}
+</script>
+</body></html>

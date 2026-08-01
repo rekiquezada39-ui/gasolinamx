@@ -1424,6 +1424,8 @@ console.log(`   ✓ 4 páginas legales`);
 
 // ── EXTRAS
 f.writeFileSync(P.join(O,'s.css'),CSS);
+// pagina de diagnostico (no indexable, solo para depurar anuncios)
+try{f.copyFileSync(P.join(__dirname,'diag.html'),P.join(O,'diag.html'))}catch(e){}
 // og.png para redes sociales (WhatsApp, Facebook, X)
 try{f.writeFileSync(P.join(O,'og.png'),ogPNG(
  'GASOLINA HOY',
