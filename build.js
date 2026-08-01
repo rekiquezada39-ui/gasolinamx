@@ -366,8 +366,9 @@ footer .fin{max-width:1180px;margin:0 auto}
 
 /* ══ PANEL DE ESTACIONES OCULTAS ══ */
 /* ══ MAPA ══ */
-.mapwrap{border-radius:18px;overflow:hidden;border:1px solid #e8e8ed;margin:18px 0 26px;position:relative;background:#f5f5f7;display:none}
-.mapwrap.on{display:block;animation:escala .45s cubic-bezier(.16,1,.3,1) both}
+.mapwrap,.mapwrap[hidden]{display:none}
+.mapwrap{border-radius:18px;overflow:hidden;border:1px solid #e8e8ed;margin:18px 0 26px;position:relative;background:#f5f5f7}
+.mapwrap.on,.mapwrap.on[hidden]{display:block;animation:escala .45s cubic-bezier(.16,1,.3,1) both}
 .mapa{height:min(62vh,460px);width:100%;background:#eaeaef}
 .mapbar{display:flex;align-items:center;gap:10px;padding:11px 15px;background:#fff;border-top:1px solid #f0f0f3;font-size:.8rem;color:#86868b;flex-wrap:wrap}
 .mapbar .lg2{display:flex;align-items:center;gap:5px}
@@ -537,17 +538,27 @@ try{var v=localStorage.getItem(KEY);
 (function(){
  var listo=false, cargando=false, MAPA=null, capa=null;
  function css(u){var l=document.createElement('link');l.rel='stylesheet';l.href=u;document.head.appendChild(l)}
- function js(u,cb){var t=document.createElement('script');t.src=u;t.onload=cb;t.onerror=function(){cb(new Error('no cargo'))};document.head.appendChild(t)}
+ // onload recibe un Event (truthy). Hay que validar window.L, no el argumento.
+ function js(u,ok,mal){var t=document.createElement('script');t.async=true;t.src=u;
+  t.onload=function(){ok()};t.onerror=function(){mal()};document.head.appendChild(t)}
+ var CDN=['https://unpkg.com/leaflet@1.9.4/dist/','https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/'];
  function carga(cb){
-  if(listo){cb();return}
+  if(listo||window.L){listo=true;cb(null);return}
   if(cargando){setTimeout(function(){carga(cb)},120);return}
   cargando=true;
-  css('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-  js('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',function(err){
-   cargando=false;
-   if(err||!window.L){cb(err||new Error('sin Leaflet'));return}
-   listo=true;cb();
-  });
+  var n=0;
+  function intenta(){
+   if(n>=CDN.length){cargando=false;cb(new Error('sin CDN'));return}
+   var base=CDN[n++];
+   css(base+'leaflet.css');
+   js(base+'leaflet.js',
+    function(){ // cargo el archivo: ahora si, verificar que L exista
+     if(window.L){listo=true;cargando=false;cb(null)}
+     else intenta();
+    },
+    intenta);
+  }
+  intenta();
  }
  // color segun que tan barata: b=barata m=media c=cara
  function clase(p,mn,mx){
@@ -556,9 +567,13 @@ try{var v=localStorage.getItem(KEY);
   return r<=0.33?'b':(r<=0.66?'m':'c');
  }
  // pinta el mapa. datos = [{la,lo,nom,slug,reg,pre,die,mun}]
- window._mapa=function(cont,datos,yo){
+ window._mapa=function(cont,datos,yo,listoCb){
   carga(function(err){
-   if(err){cont.innerHTML='<p style="padding:20px;color:#86868b;font-size:.9rem">No se pudo cargar el mapa. Revisa tu conexión.</p>';return}
+   if(err||!window.L){
+    cont.innerHTML='<p style="padding:24px;color:#86868b;font-size:.9rem;text-align:center">No se pudo cargar el mapa.<br>Revisa tu conexión e inténtalo de nuevo.</p>';
+    if(listoCb)listoCb(false);
+    return;
+   }
    var precios=datos.map(function(d){return d.reg}).filter(function(x){return x>0});
    var mn=Math.min.apply(null,precios), mx=Math.max.apply(null,precios);
    if(MAPA){MAPA.remove();MAPA=null}
@@ -595,6 +610,7 @@ try{var v=localStorage.getItem(KEY);
    MAPA.on('click',function(){MAPA.scrollWheelZoom.enable()});
    MAPA.on('mouseout',function(){MAPA.scrollWheelZoom.disable()});
    setTimeout(function(){MAPA.invalidateSize()},60);
+   if(listoCb)listoCb(true);
   });
  };
 })();
@@ -878,16 +894,18 @@ return `<div class="resumen">
 </div>`})()}
 ${dif>0?`<p class="nota">La más barata está en <strong>${mx(conR[0].regular)}</strong> y la más cara en <strong>${mx(conR[conR.length-1].regular)}</strong>. Diferencia de <strong>${mx(dif)}</strong> por litro: <strong>${mx(dif*50)}</strong> en un tanque de 50 L.</p>`:'<p class="nota"></p>'}
 <button class="mapbtn" id="mb" type="button">Ver mapa de ${e(mun)}</button>
-<div class="mapwrap" id="mw"><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
+<div class="mapwrap" id="mw" hidden><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
 <script>var MP=${JSON.stringify(conR.filter(g=>isFinite(g.x)&&isFinite(g.y)).slice(0,150).map(g=>({la:+g.y.toFixed(5),lo:+g.x.toFixed(5),nom:g.name,slug:g._s,reg:g.regular,pre:g.premium||0,die:g.diesel||0})))};
 (function(){var b=document.getElementById('mb');if(!b)return;
 b.addEventListener('click',function(){
  if(document.getElementById('mw').classList.contains('on')){
   document.getElementById('mw').classList.remove('on');b.textContent='Ver mapa de ${e(mun)}';return}
  b.classList.add('cargando');b.textContent='Cargando mapa...';
- document.getElementById('mw').classList.add('on');
- window._mapa(document.getElementById('mapa'),MP,null);
- setTimeout(function(){b.classList.remove('cargando');b.textContent='Ocultar mapa'},700);
+ window._mapa(document.getElementById('mapa'),MP,null,function(ok){
+  b.classList.remove('cargando');
+  if(ok){document.getElementById('mw').classList.add('on');b.textContent='Ocultar mapa'}
+  else{b.textContent='Reintentar mapa'}
+ });
 });})();
 <\/script>
 <h2>Ordenadas de más barata a más cara</h2>
@@ -922,7 +940,7 @@ ${hero}
 <button class="geob" id="geoBtn" type="button">📍 Buscar cerca de mí</button>
 <div class="geost" id="geoSt"></div>
 </div>
-<div class="mapwrap" id="mw"><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span class="lg2"><span class="pt" style="background:#0071e3"></span>Tú</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
+<div class="mapwrap" id="mw" hidden><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span class="lg2"><span class="pt" style="background:#0071e3"></span>Tú</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
 <div class="geores" id="geoRes"></div>
 
 <div class="finder rv"><h3>O busca por nombre</h3><p style="font-size:.88rem;color:#86868b;margin-bottom:12px">Escribe tu municipio o ciudad — por ejemplo: Tlajomulco, Zapopan, Mérida</p><input id="buscador" placeholder="Tu municipio o el nombre de la estación" autocomplete="off" enterkeyhint="search"><div id="resultados"></div></div>
@@ -997,10 +1015,10 @@ function pinta(la,lo){
  try{
   var _mw=document.getElementById('mw');
   if(_mw&&window._mapa){
-   _mw.classList.add('on');
    window._mapa(document.getElementById('mapa'),
     cerca.slice(0,60).map(function(o){return {la:o.g[0],lo:o.g[1],nom:o.g[2],slug:o.g[3],reg:o.g[4],pre:o.g[5],die:o.g[6],d:o.d}}),
-    [la,lo]);
+    [la,lo],
+    function(ok){if(ok)_mw.classList.add('on')});
   }
  }catch(e){}
  res.innerHTML='<h2>Gasolineras cerca de ti</h2>'
@@ -1463,7 +1481,8 @@ f.writeFileSync(P.join(O,'_headers'),
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
 
 /sw.js
-  Cache-Control: no-cache
+  Cache-Control: no-store, max-age=0
+  Service-Worker-Allowed: /
 `);
 
 f.writeFileSync(P.join(O,'favicon.svg'),'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 34" fill="none" stroke="#1d1d1f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 31V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v26"/><path d="M1.5 31h16"/><path d="M6 8h7v5H6z"/><path d="M16 12h4a2 2 0 0 1 2 2v10a2.5 2.5 0 0 0 5 0V13l-3.5-4"/></svg>');
