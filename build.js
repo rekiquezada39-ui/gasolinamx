@@ -7,7 +7,7 @@ const MTAG=`<script>(function(s){s.dataset.zone='11471781',s.src='https://nap5k.
 // ════════════════════════════════════
 const s=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70);
 const e=x=>String(x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const mx=n=>'$'+Number(n).toFixed(2);
+const mx=n=>{const v=Number(n);return (v<0?'-$':'$')+Math.abs(v).toFixed(2)};
 // estados chicos primero para que ganen sobre los grandes
 const EDOS=[
 ["Ciudad de México",-99.365,-98.94,19.048,19.593],["Tlaxcala",-98.7,-97.6,19.1,19.75],
@@ -27,6 +27,17 @@ const EDOS=[
 ["Chihuahua",-109.1,-103.2,25.5,31.8],["Sonora",-115.1,-108.4,26.2,32.5],
 ["Baja California",-118.4,-112.6,28.0,32.72],["Baja California Sur",-115.9,-109.4,22.8,28.05]];
 const edoDe=(x,y)=>{for(const[n,x1,x2,y1,y2]of EDOS)if(x>=x1&&x<=x2&&y>=y1&&y<=y2)return n;return null};
+// normaliza nombres de estado que devuelve la API de geocodificacion
+const EDOFIX={'Veracruz':'Veracruz de Ignacio de la Llave','Michoacán':'Michoacán de Ocampo',
+ 'Coahuila':'Coahuila de Zaragoza','México':'Estado de México','Estado de Mexico':'Estado de México',
+ 'Ciudad de Mexico':'Ciudad de México','Distrito Federal':'Ciudad de México'};
+// solo se aceptan estados reales de Mexico
+const EDOMX=new Set(['Aguascalientes','Baja California','Baja California Sur','Campeche','Chiapas',
+ 'Chihuahua','Ciudad de México','Coahuila de Zaragoza','Colima','Durango','Estado de México',
+ 'Guanajuato','Guerrero','Hidalgo','Jalisco','Michoacán de Ocampo','Morelos','Nayarit','Nuevo León',
+ 'Oaxaca','Puebla','Querétaro','Quintana Roo','San Luis Potosí','Sinaloa','Sonora','Tabasco',
+ 'Tamaulipas','Tlaxcala','Veracruz de Ignacio de la Llave','Yucatán','Zacatecas']);
+const limpiaEdo=e=>{if(!e)return null;const x=EDOFIX[e]||e;return EDOMX.has(x)?x:null};
 
 // ══ MUNICIPIOS: geocodificación inversa con caché ══
 const CACHE='.geocache.json';
@@ -343,7 +354,7 @@ footer .fin{max-width:1180px;margin:0 auto}
 const LOGO='<svg viewBox="0 0 30 34" width="27" height="30" fill="none" stroke="#1d1d1f" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 31V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v26"/><path d="M1.5 31h16"/><path d="M6 8h7v5H6z"/><path d="M16 12h4a2 2 0 0 1 2 2v10a2.5 2.5 0 0 0 5 0V13l-3.5-4"/></svg>';
 
 let SIDE='',DRAWER='';
-const HEAD=(t,d,c,r)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${e(t)}</title><meta name="description" content="${e(d)}"><link rel="canonical" href="${c}">${MVERIFY}<meta property="og:title" content="${e(t)}"><meta property="og:description" content="${e(d)}"><meta property="og:type" content="website"><meta property="og:url" content="${c}"><meta property="og:site_name" content="GasolinaMX"><meta property="og:locale" content="es_MX"><meta property="og:image" content="${DOM}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${e(t)}"><meta name="twitter:description" content="${e(d)}"><meta name="twitter:image" content="${DOM}/og.png"><meta name="theme-color" content="#ffffff"><link rel="icon" type="image/svg+xml" href="${r}favicon.svg"><link rel="stylesheet" href="${r}s.css"></head><body>
+const HEAD=(t,d,c,r,nx)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${e(t)}</title><meta name="description" content="${e(d)}"><link rel="canonical" href="${c}">${nx?'<meta name="robots" content="noindex,follow">':''}${MVERIFY}<meta property="og:title" content="${e(t)}"><meta property="og:description" content="${e(d)}"><meta property="og:type" content="website"><meta property="og:url" content="${c}"><meta property="og:site_name" content="GasolinaMX"><meta property="og:locale" content="es_MX"><meta property="og:image" content="${DOM}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${e(t)}"><meta name="twitter:description" content="${e(d)}"><meta name="twitter:image" content="${DOM}/og.png"><meta name="theme-color" content="#ffffff"><link rel="icon" type="image/svg+xml" href="${r}favicon.svg"><link rel="stylesheet" href="${r}s.css"></head><body>
 <header><div class="hin">
 <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
 <a href="${r}" class="lg">${LOGO}<span class="lgt">${N}</span></a>
@@ -374,7 +385,7 @@ try{var v=localStorage.getItem(KEY);
 })();<\/script>
 <template id="ads-tpl">${MTAG}</template>
 </body></html>`;
-const L=(t,d,c,b,r='')=>HEAD(t,d,c,r)+`<div class="shell"><aside class="side">${SIDE.replace(/href="/g,'href="'+r)}</aside><main>${b}</main></div>`+FOOT(r);
+const L=(t,d,c,b,r='',nx=false)=>HEAD(t,d,c,r,nx)+`<div class="shell"><aside class="side">${SIDE.replace(/href="/g,'href="'+r)}</aside><main>${b}</main></div>`+FOOT(r);
 const PG=(cur,tot,fn)=>{if(tot<2)return'';let h='<div class="pg">';if(cur>1)h+=`<a href="${fn(cur-1)}">←</a>`;const a=Math.max(1,cur-2),z=Math.min(tot,cur+2);if(a>1)h+=`<a href="${fn(1)}">1</a>`+(a>2?'<span>…</span>':'');for(let i=a;i<=z;i++)h+=i===cur?`<span class="on">${i}</span>`:`<a href="${fn(i)}">${i}</a>`;if(z<tot)h+=(z<tot-1?'<span>…</span>':'')+`<a href="${fn(tot)}">${tot}</a>`;if(cur<tot)h+=`<a href="${fn(cur+1)}">→</a>`;return h+'</div>'};
 const badge=g=>{const t=tendencia(g.id,g.regular);if(!t||Math.abs(t.d)<0.01)return '';
  return `<span class="trend ${t.d>0?'up':'down'}">${t.d>0?'▲':'▼'} ${mx(Math.abs(t.d))}</span>`};
@@ -431,7 +442,11 @@ const D=[...seen.values()];
 console.log(`   ✓ ${D.length.toLocaleString('es-MX')} estaciones con precio válido`);
 await geocodificar(D);
 D.forEach(g=>{const v=(isFinite(g.x)&&isFinite(g.y))?GC[rk(g.x,g.y)]:null;
- if(v){g._mun=v.m;g._edo=v.e==='Estado de México'?'Estado de México':(v.e||g._edo)}else g._mun=null});
+ if(v){const le=limpiaEdo(v.e);g._mun=v.m;g._edo=le||limpiaEdo(g._edo)}
+ else{g._mun=null;g._edo=limpiaEdo(g._edo)}});
+// descartar estaciones que quedaron fuera de Mexico
+{const antes=D.length;for(let i=D.length-1;i>=0;i--)if(!D[i]._edo)D.splice(i,1);
+ if(antes!==D.length)console.log(`   \u2713 ${antes-D.length} estacion(es) fuera de Mexico descartadas`);}
 guardarHistorial(D);
 
 // agrupar por estado
@@ -500,6 +515,8 @@ const idxMun=JSON.stringify(muns.map(([k,l])=>{const [ed,mu]=k.split('|');
  const cr=l.filter(g=>g.regular);const mn=cr.length?Math.min(...cr.map(g=>g.regular)):0;
  return [mu,ed,slugMun(ed,mu),l.length,mn]}));
 const idx=JSON.stringify(D.filter(g=>g.regular).slice(0,5000).map(g=>[g.name,g._s,g.regular,(g._mun?g._mun+', ':'')+(g._edo||'')]));
+// el indice del buscador va en archivo aparte: la home baja de ~680KB a ~30KB
+f.writeFileSync(P.join(O,'busca.json'),`{"e":${idx},"m":${idxMun}}`);
 f.writeFileSync(P.join(O,'index.html'),L(
  `Precio de la gasolina hoy en México | ${N}`,
  `Precio de gasolina Magna, Premium y Diésel hoy ${HOY}. Consulta las gasolineras más baratas de México con datos oficiales de la CRE.`,DOM+'/',
@@ -659,11 +676,16 @@ try{
 }catch(e){}
 })();
 <\/script>
-<script>var DB=${idx},MU=${idxMun};
+<script>var DB=[],MU=[],_bl=false;
 function nrm(t){return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function _carga(cb){if(_bl){cb();return}
+ fetch('busca.json').then(function(r){return r.json()}).then(function(j){
+  DB=j.e;MU=j.m;_bl=true;cb()}).catch(function(){})}
 document.getElementById('buscador').addEventListener('input',function(ev){
  var q=nrm(ev.target.value.trim()),o=document.getElementById('resultados');
  if(q.length<3){o.innerHTML='';return}
+ if(!_bl){o.innerHTML='<p style="color:#86868b;font-size:.9rem;margin-top:12px">Buscando...</p>';
+  _carga(function(){document.getElementById('buscador').dispatchEvent(new Event('input'))});return}
  var mh=[];for(var i=0;i<MU.length&&mh.length<6;i++){if(nrm(MU[i][0]).indexOf(q)>-1)mh.push(MU[i])}
  var eh=[];for(var j=0;j<DB.length&&eh.length<12;j++){if(nrm(DB[j][0]).indexOf(q)>-1||nrm(DB[j][3]).indexOf(q)>-1)eh.push(DB[j])}
  var html='';
@@ -759,9 +781,41 @@ return `<div class="hcard"><h3>Histórico de precio</h3><div class="hsub">Magna 
 <div><b>Actual</b>${g.regular?mx(g.regular):'—'}</div>
 ${t?`<div><b>vs. ayer</b>${t.d>0?'+':''}${mx(t.d)}</div>`:''}
 </div></div>`})()}
-<div class="card"><h3>Análisis de precio</h3><p>${e(g.name)}${g._edo?` se ubica en ${g._edo}`:''} y ${g.regular?`vende la gasolina Magna en ${mx(g.regular)} por litro. Esto es ${Math.abs(vsNal)<0.05?'prácticamente igual al':vsNal>0?`${mx(Math.abs(vsNal))} más caro que el`:`${mx(Math.abs(vsNal))} más barato que el`} promedio nacional de ${mx(pReg)}`:'no reportó precio de Magna en el último corte'}. ${g.premium?`El Premium está en ${mx(g.premium)}. `:''}${g.diesel?`El Diésel en ${mx(g.diesel)}. `:''}Los datos provienen del reporte oficial de la CRE del ${HOY}.</p></div>
+${(()=>{
+// ── datos unicos de ESTA estacion: ranking, ahorro real, vecinas cercanas
+if(!g.regular)return `<div class="card"><h3>Análisis de precio</h3><p>${e(g.name)} no reportó precio de Magna en el corte de la CRE del ${HOY}.</p></div>`;
+const kMun=g._edo+'|'+g._mun, grupo=(MUNOK.has(kMun)?MUN[kMun]:(M[g._edo]||[])).filter(x=>x.regular);
+const ambito=MUNOK.has(kMun)?g._mun:g._edo;
+const ord=[...grupo].sort((a,b)=>a.regular-b.regular);
+const pos=ord.findIndex(x=>x.id===g.id)+1, tot=ord.length;
+const barata=ord[0], cara=ord[ord.length-1];
+const promL=grupo.reduce((a,x)=>a+x.regular,0)/grupo.length;
+const vsL=g.regular-promL;
+const pct=tot>1?Math.round((1-(pos-1)/(tot-1))*100):100;
+// vecinas por distancia real
+let vec=[];
+if(isFinite(g.x)&&isFinite(g.y)){
+ const R=6371,rad=v=>v*Math.PI/180;
+ vec=grupo.filter(x=>x.id!==g.id&&isFinite(x.x)&&isFinite(x.y)).map(x=>{
+  const da=rad(x.y-g.y),dl=rad(x.x-g.x);
+  const q=Math.sin(da/2)**2+Math.cos(rad(g.y))*Math.cos(rad(x.y))*Math.sin(dl/2)**2;
+  return {g:x,d:R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}})
+  .filter(v2=>v2.d<=8).sort((a,b)=>a.d-b.d).slice(0,6);
+}
+const masBarata=vec.filter(v2=>v2.g.regular<g.regular).sort((a,b)=>a.g.regular-b.g.regular)[0];
+const ahorro40=masBarata?(g.regular-masBarata.g.regular)*40:0;
+const veredicto=pct>=80?['barata','#16a34a']:pct>=55?['competitiva','#0071e3']:pct>=30?['promedio','#86868b']:['cara','#dc2626'];
+return `<div class="card"><h3>Análisis de precio</h3>
+<p><strong>${e(g.name)}</strong> vende la Magna en <strong>${mx(g.regular)}</strong> por litro. Dentro de ${e(ambito)} ocupa el <strong>lugar ${pos} de ${tot}</strong> estaciones ordenadas de más barata a más cara, lo que la coloca como una gasolinera <strong style="color:${veredicto[1]}">${veredicto[0]}</strong> de la zona.</p>
+<p>El promedio local es de ${mx(promL)}, así que esta estación está ${Math.abs(vsL)<0.05?'prácticamente en el promedio':(vsL>0?`<strong>${mx(Math.abs(vsL))} arriba</strong>`:`<strong>${mx(Math.abs(vsL))} abajo</strong>`)} de lo que se cobra en ${e(ambito)}. Contra el promedio nacional de ${mx(pReg)} la diferencia es de ${vsNal>0?'+':''}${mx(vsNal)}.</p>
+${masBarata?`<p>A ${masBarata.d<1?Math.round(masBarata.d*1000)+' metros':masBarata.d.toFixed(1)+' km'} está <a href="${masBarata.g._s}">${e(masBarata.g.name)}</a> vendiendo a ${mx(masBarata.g.regular)}. Llenar un tanque de 40 litros ahí te ahorra <strong>${mx(ahorro40)}</strong>.</p>`:`<p>De las estaciones a menos de 8 km, ninguna vende la Magna más barata que esta. ${vec.length?`Es la mejor opción de las ${vec.length+1} que hay en el radio.`:''}</p>`}
+${g.premium?`<p>El Premium está en ${mx(g.premium)}${g.regular?`, es decir ${mx(g.premium-g.regular)} más que la Magna`:''}. `:''}${g.diesel?`${g.premium?'El':'<p>El'} Diésel en ${mx(g.diesel)}. `:''}${(g.premium||g.diesel)?'</p>':''}
+<p>El rango en ${e(ambito)} va de ${mx(barata.regular)} hasta ${mx(cara.regular)}: una diferencia de <strong>${mx(cara.regular-barata.regular)}</strong> por litro, o ${mx((cara.regular-barata.regular)*40)} en un tanque de 40 litros. Datos del reporte oficial de la CRE del ${HOY}.</p></div>
+${vec.length?`<div class="card"><h3>Gasolineras a menos de 8 km</h3><table class="tabla"><thead><tr><th>Estación</th><th>Distancia</th><th>Magna</th><th>Diferencia</th></tr></thead><tbody>${vec.map(v2=>{
+ const df=v2.g.regular-g.regular;
+ return `<tr><td class="nm"><a href="${v2.g._s}">${e(v2.g.name)}</a></td><td class="pr">${v2.d<1?Math.round(v2.d*1000)+' m':v2.d.toFixed(1)+' km'}</td><td class="pr g">${mx(v2.g.regular)}</td><td class="pr" style="color:${df<0?'#16a34a':df>0?'#dc2626':'#86868b'}">${df>0?'+':''}${Math.abs(df)<0.005?'igual':mx(df)}</td></tr>`}).join('')}</tbody></table></div>`:''}`})()}
 ${mismos.length?`<h2>Otras estaciones en ${e(g._edo)}</h2>${tabla(mismos,'../')}`:''}
-<script type="application/ld+json">${JSON.stringify(jl)}<\/script>`,'../'));
+<script type="application/ld+json">${JSON.stringify(jl)}<\/script>`,'../',true));
 });
 console.log(`   ✓ ${D.length.toLocaleString('es-MX')} fichas de estación`);
 
@@ -961,7 +1015,9 @@ f.writeFileSync(P.join(O,'_redirects'),'/index.html / 200\n');
 f.writeFileSync(P.join(O,'_headers'),'/*\n  X-Content-Type-Options: nosniff\n');
 
 f.writeFileSync(P.join(O,'favicon.svg'),'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 34" fill="none" stroke="#1d1d1f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 31V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v26"/><path d="M1.5 31h16"/><path d="M6 8h7v5H6z"/><path d="M16 12h4a2 2 0 0 1 2 2v10a2.5 2.5 0 0 0 5 0V13l-3.5-4"/></svg>');
-const U=['','baratas','estados','aviso-de-privacidad','terminos','cookies','contacto'].concat(edos.map(([n])=>`estado-${s(n)}`)).concat(muns.map(([k])=>{const[ed,mu]=k.split('|');return slugMun(ed,mu)})).concat(D.map(g=>`estacion/${g._s}`));
+// El sitemap solo lleva paginas con contenido unico. Las 13,797 fichas de estacion
+// son 99% identicas entre si (thin content) -> llevan noindex y NO van al sitemap.
+const U=['','baratas','estados','aviso-de-privacidad','terminos','cookies','contacto'].concat(edos.map(([n])=>`estado-${s(n)}`)).concat(muns.map(([k])=>{const[ed,mu]=k.split('|');return slugMun(ed,mu)}));
 f.writeFileSync(P.join(O,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+U.map(u=>`<url><loc>${DOM}/${u}</loc><lastmod>${ISO}</lastmod></url>`).join('\n')+'\n</urlset>');
 f.writeFileSync(P.join(O,'robots.txt'),`User-agent: *\nAllow: /\nSitemap: ${DOM}/sitemap.xml\n`);
 console.log(`   ✓ sitemap.xml (${U.length.toLocaleString('es-MX')} URLs) + robots.txt`);
