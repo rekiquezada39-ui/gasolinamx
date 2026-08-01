@@ -1012,6 +1012,22 @@ importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw')
 
 // ── compatibilidad: algunos verificadores piden /index.html explícitamente
 f.writeFileSync(P.join(O,'_redirects'),'/index.html / 200\n');
+// ── 404 real. Sin este archivo Cloudflare respondia 200 con la portada
+//    en cualquier URL inventada = soft-404, Google lo castiga.
+f.writeFileSync(P.join(O,'404.html'),L(
+ `Página no encontrada | ${N}`,
+ 'La página que buscas no existe. Consulta los precios de gasolina por estado o municipio.',
+ DOM+'/404',
+`<div class="legal" style="text-align:center;padding:60px 0">
+<h1 style="font-size:4.5rem;margin-bottom:6px">404</h1>
+<p class="sub" style="margin:0 auto 30px">No encontramos esa página. Puede que el enlace esté mal escrito o que la estación ya no exista en el reporte de la CRE.</p>
+<p style="margin-bottom:34px"><a class="btn" href="/">Ir al inicio</a> <a class="btn a" href="/estados">Ver todos los estados</a></p>
+<div class="hero" style="max-width:660px;margin:0 auto 18px">
+<div class="hbox reg"><div class="lbl">Magna</div><div class="val">${mx(pReg)}</div><div class="cap">promedio nacional</div></div>
+<div class="hbox pre"><div class="lbl">Premium</div><div class="val">${mx(pPre)}</div><div class="cap">promedio nacional</div></div>
+</div>
+<p class="nota">Precios del ${HOY} · datos oficiales de la CRE</p>
+</div>`,'',true));
 f.writeFileSync(P.join(O,'_headers'),'/*\n  X-Content-Type-Options: nosniff\n');
 
 f.writeFileSync(P.join(O,'favicon.svg'),'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 34" fill="none" stroke="#1d1d1f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 31V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v26"/><path d="M1.5 31h16"/><path d="M6 8h7v5H6z"/><path d="M16 12h4a2 2 0 0 1 2 2v10a2.5 2.5 0 0 0 5 0V13l-3.5-4"/></svg>');
