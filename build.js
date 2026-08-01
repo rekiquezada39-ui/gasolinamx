@@ -372,11 +372,19 @@ if(b){b.addEventListener('click',function(){t(!d.classList.contains('on'))});s.a
 document.addEventListener('keydown',function(ev){if(ev.key==='Escape')t(false)});d.addEventListener('click',function(ev){if(ev.target.closest('a'))t(false)})}
 // ── Consentimiento de cookies: los anuncios solo cargan si el usuario acepta
 var KEY='ck_gmx',box=document.getElementById('ck');
-function ads(){var f=document.getElementById('ads-tpl');if(!f)return;
+var _adsYa=false;
+function _iny(){if(_adsYa)return;var f=document.getElementById('ads-tpl');if(!f)return;
+ _adsYa=true;
  var h=f.innerHTML,w=document.createElement('div');w.innerHTML=h;
  [].forEach.call(w.querySelectorAll('script'),function(o){var n=document.createElement('script');
   [].forEach.call(o.attributes,function(a){n.setAttribute(a.name,a.value)});
   if(o.textContent)n.textContent=o.textContent;document.body.appendChild(n)});}
+// El <template> vive al final del <body>, asi que este script corre ANTES de que exista.
+// Si el visitante ya habia aceptado, hay que esperar a que el DOM termine de cargar.
+function ads(){
+ if(document.getElementById('ads-tpl')){_iny();return}
+ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_iny,{once:true})}
+ else{setTimeout(_iny,0)}}
 try{var v=localStorage.getItem(KEY);
  if(v==='1'){ads()}else if(v!=='0'&&box){box.classList.add('on')}
  if(box){document.getElementById('ckSi').addEventListener('click',function(){try{localStorage.setItem(KEY,'1')}catch(e){}box.classList.remove('on');ads()});
