@@ -631,7 +631,7 @@ button.btn.r.ocb{font-size:.92rem;color:var(--tx2)}
 const LOGO='<svg viewBox="0 0 34 34" width="30" height="30" fill="none" aria-hidden="true"><rect x="2" y="4" width="17" height="27" rx="3.2" fill="currentColor" opacity=".08"/><path d="M3.6 30.4V6.4a2.8 2.8 0 0 1 2.8-2.8h8.2a2.8 2.8 0 0 1 2.8 2.8v24" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M1.8 30.4h17" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><rect x="6.6" y="8.2" width="7.6" height="5.4" rx="1.1" fill="#0d7a3e"/><rect x="6.6" y="16.4" width="7.6" height="2.2" rx="1.1" fill="#c8102e"/><path d="M18.6 13.4h3.1a2.4 2.4 0 0 1 2.4 2.4v8.7a2.6 2.6 0 0 0 5.2 0v-10l-3.4-3.9" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26.7" cy="26.4" r="2.1" fill="#0d7a3e"/></svg>';
 
 let SIDE='',DRAWER='';
-const HEAD=(t,d,c,r,nx)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${e(t)}</title><meta name="description" content="${e(d)}"><link rel="canonical" href="${c}">${nx?'<meta name="robots" content="noindex,follow">':''}${MVERIFY}<meta property="og:title" content="${e(t)}"><meta property="og:description" content="${e(d)}"><meta property="og:type" content="website"><meta property="og:url" content="${c}"><meta property="og:site_name" content="GasolinaMX"><meta property="og:locale" content="es_MX"><meta property="og:image" content="${DOM}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${e(t)}"><meta name="twitter:description" content="${e(d)}"><meta name="twitter:image" content="${DOM}/og.png"><meta name="theme-color" content="#ffffff"><link rel="icon" type="image/svg+xml" href="${r}favicon.svg"><link rel="manifest" href="${r}manifest.json"><link rel="apple-touch-icon" href="${r}icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="stylesheet" href="${r}s.css"></head><body>
+const HEAD=(t,d,c,r,nx)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${e(t)}</title><meta name="description" content="${e(d)}"><link rel="canonical" href="${c}">${nx?'<meta name="robots" content="noindex,follow">':''}${MVERIFY}<meta property="og:title" content="${e(t)}"><meta property="og:description" content="${e(d)}"><meta property="og:type" content="website"><meta property="og:url" content="${c}"><meta property="og:site_name" content="GasolinaMX"><meta name="application-name" content="GasolinaMX"><meta name="author" content="GasolinaMX"><meta property="og:locale" content="es_MX"><meta property="og:image" content="${DOM}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${e(t)}"><meta name="twitter:description" content="${e(d)}"><meta name="twitter:image" content="${DOM}/og.png"><meta name="theme-color" content="#ffffff"><link rel="icon" href="${r}favicon.ico" sizes="32x32"><link rel="icon" type="image/svg+xml" href="${r}favicon.svg"><link rel="manifest" href="${r}manifest.json"><link rel="apple-touch-icon" href="${r}icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="stylesheet" href="${r}s.css"></head><body>
 <header><div class="hin">
 <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
 <a href="${r}" class="lg">${LOGO}<span class="lgt">Gasolina<em>MX</em></span></a>
@@ -1101,7 +1101,13 @@ muns.forEach(([k,lista])=>{
   `Gasolina más barata en ${mun}, ${edo} hoy | ${N}`,
   `Precio de gasolina en ${mun}, ${edo} hoy ${HOY}: Magna desde ${mx(conR[0].regular)}. ${lista.length} estaciones comparadas.`,
   `${DOM}/${slugMun(edo,mun)}`,
-`<p class="crumb"><a href="./">Inicio</a> › <a href="estados">Estados</a> › <a href="estado-${s(edo)}">${e(edo)}</a> › ${e(mun)}</p>
+`<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[
+ {'@type':'ListItem',position:1,name:'GasolinaMX',item:DOM+'/'},
+ {'@type':'ListItem',position:2,name:'Estados',item:DOM+'/estados'},
+ {'@type':'ListItem',position:3,name:edo,item:`${DOM}/estado-${s(edo)}`},
+ {'@type':'ListItem',position:4,name:mun,item:`${DOM}/${slugMun(edo,mun)}`}
+]})}<\/script>
+<p class="crumb"><a href="./">Inicio</a> › <a href="estados">Estados</a> › <a href="estado-${s(edo)}">${e(edo)}</a> › ${e(mun)}</p>
 <h1>Gasolina en ${e(mun)}</h1><p class="sub">${e(edo)} · ${lista.length} estaciones · precios del ${HOY}</p>
 <div class="hero">
 <div class="hbox reg"><div class="lbl">Magna</div><div class="val">${mx(pr)}</div><div class="cap">promedio local</div></div>
@@ -1152,10 +1158,37 @@ const idxMun=JSON.stringify(muns.map(([k,l])=>{const [ed,mu]=k.split('|');
 const idx=JSON.stringify(ACT.filter(g=>g.regular).slice(0,5000).map(g=>[g.name,g._s,g.regular,(g._mun?g._mun+', ':'')+(g._edo||'')]));
 // el indice del buscador va en archivo aparte: la home baja de ~680KB a ~30KB
 f.writeFileSync(P.join(O,'busca.json'),`{"e":${idx},"m":${idxMun}}`);
+const JLD_SITIO = `<script type="application/ld+json">${JSON.stringify([
+ {'@context':'https://schema.org','@type':'WebSite',
+  name:'GasolinaMX',
+  alternateName:['Gasolina MX','gasolinamx.pages.dev','GasolinaMX México'],
+  url:DOM+'/',
+  inLanguage:'es-MX',
+  description:'Precio de la gasolina hoy en México. Magna, Premium y Diésel en 13,800 gasolineras con datos oficiales de la CRE.',
+  publisher:{'@type':'Organization',name:'GasolinaMX',url:DOM+'/'},
+  potentialAction:{'@type':'SearchAction',
+   target:{'@type':'EntryPoint',urlTemplate:DOM+'/?q={search_term_string}'},
+   'query-input':'required name=search_term_string'}},
+ {'@context':'https://schema.org','@type':'Organization',
+  name:'GasolinaMX',
+  alternateName:'Gasolina MX',
+  url:DOM+'/',
+  logo:{'@type':'ImageObject',url:DOM+'/icon-512.png',width:512,height:512},
+  image:DOM+'/og.png',
+  email:MAIL,
+  areaServed:{'@type':'Country',name:'México'},
+  description:'Consulta gratuita de precios de gasolina en México con datos oficiales de la Comisión Reguladora de Energía.'},
+ {'@context':'https://schema.org','@type':'WebPage',
+  name:'Precio de la gasolina hoy en México',
+  url:DOM+'/',
+  datePublished:'2026-07-30',
+  dateModified:ISO,
+  isPartOf:{'@type':'WebSite',name:'GasolinaMX',url:DOM+'/'}}
+])}<\/script>`;
 f.writeFileSync(P.join(O,'index.html'),L(
  `Precio de la gasolina hoy en México | ${N}`,
- `Precio de gasolina Magna, Premium y Diésel hoy ${HOY}. Consulta las gasolineras más baratas de México con datos oficiales de la CRE.`,DOM+'/',
-`<h1>Precio de la gasolina hoy</h1><p class="sub">Consulta el precio de Magna, Premium y Diésel en ${ACT.length.toLocaleString('es-MX')} gasolineras de México. Datos oficiales, actualizados a diario.</p>
+ `¿Cuánto cuesta la gasolina hoy? Costo y precio de Magna, Premium y Diésel al ${HOY} en ${ACT.length.toLocaleString('es-MX')} gasolineras de México. Datos oficiales de la CRE.`,DOM+'/',
+`<h1>Precio de la gasolina hoy en México</h1><p class="sub">¿Cuánto cuesta la gasolina hoy? Consulta el costo de Magna, Premium y Diésel en ${ACT.length.toLocaleString('es-MX')} gasolineras del país. Datos oficiales de la CRE, actualizados todos los días.</p>
 ${hero}
 <div class="pwa" id="pwa">
  <div class="ic">⛽</div>
@@ -1193,6 +1226,7 @@ ${tabla(baratas.slice(0,25))}
 <div class="est" id="alEst"></div>
 </div>
 
+${JLD_SITIO}
 <h2 class="rv">Consulta por estado<a class="ver" href="estados">Ver todos →</a></h2>
 <div class="chips">${edos.slice(0,12).map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}<span class="nm2">${l.length}</span></a>`).join('')}</div>
 <div class="card"><h3>¿Cómo funciona?</h3><p>Los precios provienen del reporte público de la Comisión Reguladora de Energía (CRE), que obliga a las estaciones a informar sus precios vigentes. La información se descarga y publica automáticamente cada día, por lo que siempre verás las cifras más recientes disponibles. Ten en cuenta que una estación puede modificar su precio durante el día sin reportarlo de inmediato.</p></div>
@@ -1743,6 +1777,17 @@ f.writeFileSync(P.join(O,'_headers'),
   Service-Worker-Allowed: /
 `);
 
+// favicon.ico de 32x32: Google lo usa en los resultados de busqueda
+try{
+ const ic=iconPNG(32);
+ // envoltura ICO que apunta al PNG (formato PNG-in-ICO, soportado desde Vista)
+ const hd=Buffer.alloc(22);
+ hd.writeUInt16LE(0,0); hd.writeUInt16LE(1,2); hd.writeUInt16LE(1,4);
+ hd[6]=32; hd[7]=32; hd[8]=0; hd[9]=0;
+ hd.writeUInt16LE(1,10); hd.writeUInt16LE(32,12);
+ hd.writeUInt32LE(ic.length,14); hd.writeUInt32LE(22,18);
+ f.writeFileSync(P.join(O,'favicon.ico'),Buffer.concat([hd,ic]));
+}catch(err){}
 f.writeFileSync(P.join(O,'favicon.svg'),'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 34" fill="none" stroke="#1d1d1f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 31V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v26"/><path d="M1.5 31h16"/><path d="M6 8h7v5H6z"/><path d="M16 12h4a2 2 0 0 1 2 2v10a2.5 2.5 0 0 0 5 0V13l-3.5-4"/></svg>');
 // El sitemap solo lleva paginas con contenido unico. Las 13,797 fichas de estacion
 // son 99% identicas entre si (thin content) -> llevan noindex y NO van al sitemap.
