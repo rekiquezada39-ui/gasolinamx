@@ -3,6 +3,8 @@ const f=require('fs'),P=require('path'),O='dist';
 const N='GasolinaMX',DOM='https://gasolinamx.pages.dev';
 const MAIL='contacto.gasolinamx@gmail.com';   // <- cambia por el correo de contacto que quieras publicar
 const MVERIFY='<meta name="monetag" content="93992a7ab07c1e69404da37a95d434a1"><meta name="google-site-verification" content="U9iGxs4sIb4prXPIHujTEdxOh7eu-x9UDdaeqOjKHjE">';
+// Zonas de Monetag: [dominio del loader, zone id]
+const ZONAS=[['nap5k.com/tag.min.js','11471781'],['n6wxm.com/vignette.min.js','11471783']];
 const MTAG=`<script>(function(s){s.dataset.zone='11471781',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script><script>(function(s){s.dataset.zone='11471783',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>`;
 // ════════════════════════════════════
 const s=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70);
@@ -515,12 +517,20 @@ document.addEventListener('keydown',function(ev){if(ev.key==='Escape')t(false)})
 // ── Consentimiento de cookies: los anuncios solo cargan si el usuario acepta
 var KEY='ck_gmx',box=document.getElementById('ck');
 var _adsYa=false;
-function _iny(){if(_adsYa)return;var f=document.getElementById('ads-tpl');if(!f)return;
+// Ejecuta el loader de Monetag TAL CUAL, sin reinyectar HTML.
+// Copiar textContent a un <script> nuevo rompia la carga; asi funciona
+// igual que cuando el loader viene escrito directo en la pagina.
+function _iny(){
+ if(_adsYa)return;
+ var Z=window.__ZONAS;
+ if(!Z||!Z.length)return;
+ var host=document.body||document.documentElement;
+ if(!host)return;
  _adsYa=true;
- var h=f.innerHTML,w=document.createElement('div');w.innerHTML=h;
- [].forEach.call(w.querySelectorAll('script'),function(o){var n=document.createElement('script');
-  [].forEach.call(o.attributes,function(a){n.setAttribute(a.name,a.value)});
-  if(o.textContent)n.textContent=o.textContent;document.body.appendChild(n)});
+ for(var i=0;i<Z.length;i++){
+  (function(sc,zona){sc.dataset.zone=zona[1];sc.src='https://'+zona[0]})
+   (host.appendChild(document.createElement('script')),Z[i]);
+ }
  _sw();}
 // Registrar el service worker de Monetag (zona de notificaciones push).
 // Sin esto esa zona nunca genera ingresos. Solo tras aceptar cookies.
@@ -534,8 +544,9 @@ function _sw(){
 // El <template> vive al final del <body>, asi que este script corre ANTES de que exista.
 // Si el visitante ya habia aceptado, hay que esperar a que el DOM termine de cargar.
 function ads(){
- if(document.getElementById('ads-tpl')){_iny();return}
- if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_iny,{once:true})}
+ // window.__ZONAS y document.body existen hasta el final del documento
+ if(window.__ZONAS&&document.body){_iny();return}
+ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){_iny()},{once:true})}
  else{setTimeout(_iny,0)}}
 try{var v=localStorage.getItem(KEY);
  if(v==='1'){ads()}else if(v!=='0'&&box){box.classList.add('on')}
@@ -759,7 +770,7 @@ try{var v=localStorage.getItem(KEY);
  }
 })();
 <\/script>
-<template id="ads-tpl">${MTAG}</template>
+<script>window.__ZONAS=${JSON.stringify(ZONAS)};<\/script>
 </body></html>`;
 const L=(t,d,c,b,r='',nx=false)=>HEAD(t,d,c,r,nx)+`<div class="shell"><aside class="side">${SIDE.replace(/href="/g,'href="'+r)}</aside><main>${b}</main></div>`+FOOT(r);
 const PG=(cur,tot,fn)=>{if(tot<2)return'';let h='<div class="pg">';if(cur>1)h+=`<a href="${fn(cur-1)}">←</a>`;const a=Math.max(1,cur-2),z=Math.min(tot,cur+2);if(a>1)h+=`<a href="${fn(1)}">1</a>`+(a>2?'<span>…</span>':'');for(let i=a;i<=z;i++)h+=i===cur?`<span class="on">${i}</span>`:`<a href="${fn(i)}">${i}</a>`;if(z<tot)h+=(z<tot-1?'<span>…</span>':'')+`<a href="${fn(tot)}">${tot}</a>`;if(cur<tot)h+=`<a href="${fn(cur+1)}">→</a>`;return h+'</div>'};
