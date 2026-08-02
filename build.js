@@ -250,35 +250,6 @@ const CSS=`
  --sh:rgba(0,0,0,.13);        /* sombra */
  --gris:#c7c7cc;
 }
-@media (prefers-color-scheme: dark){
- :root{
-  --tx:#f5f5f7; --tx2:#98989d;
-  --bg:#000; --bg2:#1c1c1e; --bg3:#161618;
-  --bd:#38383a; --bd2:#2c2c2e; --bd3:#242426;
-  --az:#2fbf6d; --az2:#3ed67f; --vd:#2fbf6d; --rj:#ff5c6e; --am:#f5c463;
-  --hd:rgba(0,0,0,.82); --sh:rgba(0,0,0,.6);
-  --gris:#48484a;
- }
- /* fondos claros de avisos y badges -> tonos oscuros legibles */
- .avisoX{background:#2a1416!important;border-color:#5c2326!important;color:#ffb4ab!important}
- .avisoW{background:#2a2110!important;border-color:#5c4a1a!important;color:#ffd98a!important}
- .trend.down,.badge.b{background:#12301c!important;color:#5ee08a!important}
- .trend.up{background:#301418!important;color:#ff8f88!important}
- .alerta{background:linear-gradient(135deg,#1c1c1e,#2c2c2e)!important}
- .tip{background:#0d2136!important;border-color:#1c4a75!important}
- .mejor{background:#12301c!important;color:#5ee08a!important}
- .geo{background:linear-gradient(140deg,#0d7a3e,#0a6234)!important}
- .pwa{background:linear-gradient(135deg,var(--az),#0a6234)!important}
- .ocav{background:#2c2c2e!important}
- .up{background:#f5f5f7!important;color:#000!important}
- img,svg.chart{filter:brightness(.92)}
- .mapa{background:#1c1c1e}
- .leaflet-tile{filter:brightness(.78) contrast(1.08) saturate(.85)}
- .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#1c1c1e;color:#f5f5f7}
- .leaflet-control-attribution{background:rgba(0,0,0,.78)!important;color:#98989d!important}
- .leaflet-control-attribution a{color:var(--az)!important}
- .leaflet-bar a{background:#1c1c1e;color:#f5f5f7;border-color:#38383a}
-}
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--tx);line-height:1.47;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
@@ -289,7 +260,6 @@ header{background:var(--hd);backdrop-filter:saturate(180%) blur(20px);-webkit-ba
 /* franja tricolor bajo el header */
 header:after{content:'';position:absolute;left:0;right:0;bottom:-3px;height:3px;
  background:linear-gradient(90deg,#0d7a3e 0 33.33%,#f0f0f0 33.33% 66.66%,#c8102e 66.66%)}
-@media (prefers-color-scheme: dark){header:after{background:linear-gradient(90deg,#0d7a3e 0 33.33%,#3a3a3c 33.33% 66.66%,#c8102e 66.66%)}}
 .hin{max-width:1180px;margin:0 auto;padding:0 26px;height:70px;display:flex;align-items:center;gap:28px}
 .burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;background:none;border:0;cursor:pointer;margin-left:-9px;flex-shrink:0}
 .burger span{display:block;width:21px;height:1.8px;background:var(--tx);border-radius:2px;transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .2s;margin:0 auto}
@@ -503,7 +473,7 @@ footer .fin{max-width:1180px;margin:0 auto}
 .pin.b i{background:var(--vd);border-top-color:var(--vd)}
 .pin.m i{background:var(--am);border-top-color:var(--am)}
 .pin.c i{background:var(--rj);border-top-color:var(--rj)}
-.pin.yo i{background:var(--az);border-top-color:var(--az);width:24px;border-radius:50%}
+.pin.yo i{background:#0a84ff;border-top-color:#0a84ff;width:26px;height:26px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 10px rgba(10,132,255,.55)}
 .pin.yo i:after{display:none}
 .leaflet-popup-content-wrapper{border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.18)}
 .leaflet-popup-content{margin:14px 16px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',Helvetica,Arial,sans-serif;font-size:.88rem;line-height:1.45}
@@ -604,19 +574,64 @@ button.btn.r.ocb{font-size:.92rem;color:var(--tx2)}
 #ckNo:hover{background:rgba(0,113,227,.06)}
 @media(max-width:1000px){.shell{grid-template-columns:1fr;gap:0}.side{display:none}.burger{display:flex}.hnav{display:none}}
 @media(max-width:734px){
- .hin{height:60px;gap:12px;padding:0 16px}.lgt{font-size:1.2rem}.upd{font-size:.7rem}
- .shell{padding:0 16px}main{padding:26px 0 66px}
- h1{font-size:1.95rem}.sub{font-size:.98rem;margin-bottom:30px}
- h2{font-size:1.28rem;margin:46px 0 18px}
- .hbox{padding:20px 18px}.hbox .val{font-size:2rem}
- .tabla{font-size:.87rem}.tabla td{padding:13px 10px 13px 0}.tabla .nm{max-width:190px}
+ .hin{height:56px;gap:10px;padding:0 14px}.lgt{font-size:1.14rem}.upd{display:none}
+ .shell{padding:0 14px}main{padding:22px 0 60px}
+ h1{font-size:1.72rem;letter-spacing:-.03em}
+ main>h1:after{width:46px;height:3px;margin-top:12px}
+ .sub{font-size:.95rem;margin-bottom:24px}
+ h2{font-size:1.2rem;margin:38px 0 15px;gap:8px}
+ h2 .ver{font-size:.8rem}
+ /* PRECIOS: 3 columnas apretadas en vez de apiladas */
+ .hero{grid-template-columns:repeat(3,1fr);border-radius:14px}
+ .hbox{padding:14px 8px;text-align:center}
+ .hbox .lbl{font-size:.62rem;letter-spacing:.02em;margin-bottom:5px}
+ .hbox .val{font-size:1.32rem;letter-spacing:-.02em}
+ .hbox .cap{display:none}
+ .nota{font-size:.78rem;margin-bottom:30px}
+ /* TABLA: ocultar Premium y Diesel, dejar respirar el nombre */
+ .tabla{font-size:.92rem}
+ .tabla thead th{font-size:.66rem;padding:0 8px 9px 0}
+ .tabla td{padding:12px 8px 12px 0}
+ .tabla .rank{font-size:.8rem;padding-right:8px;width:22px}
+ .tabla .nm{max-width:none;font-size:.9rem;line-height:1.32}
+ .tabla .nm small{font-size:.74rem;margin-top:3px}
+ .tabla .pr{font-size:.95rem;font-weight:600}
+ .tabla th:nth-child(4),.tabla td:nth-child(4),
+ .tabla th:nth-child(5),.tabla td:nth-child(5){display:none}
+ .tabla td.oc{width:38px}
+ .ocb{font-size:1.15rem;padding:11px 9px;margin:-9px -4px -9px 0}
+ /* resto */
  .chips{grid-template-columns:1fr}
- .finder{padding:20px}
+ .finder{padding:18px;border-radius:14px}
+ .geo{padding:20px;border-radius:14px}
+ .geo h3{font-size:1.05rem}.geo p{font-size:.88rem}
+ .card,.hcard{padding:18px;border-radius:14px}
+ .card p{font-size:.94rem}
+ .dt{grid-template-columns:1fr 1fr;gap:1px}
+ .dt>div{padding:12px 14px;font-size:.88rem}
+ .crumb{font-size:.78rem;margin-bottom:14px}
+ .btn,.shr{padding:11px 18px;font-size:.88rem}
+ .pwa{padding:13px 14px;gap:10px;border-radius:14px}
+ .pwa .ic{width:32px;height:32px;font-size:.95rem}
+ .pwa .tx b{font-size:.88rem}.pwa .tx span{font-size:.76rem}
+ .pwa button{padding:8px 14px;font-size:.82rem}
+ .ocph{padding:14px 16px}.ocit{padding:12px 16px}
+ .mapbar{font-size:.72rem;gap:7px;padding:9px 12px}
+ .tabs button{font-size:.85rem;padding:9px 14px}
+}
+/* pantallas muy chicas (360px y menos) */
+@media(max-width:400px){
+ h1{font-size:1.54rem}
+ .hbox .val{font-size:1.16rem}
+ .hbox .lbl{font-size:.58rem}
+ .tabla{font-size:.87rem}
+ .tabla .nm{font-size:.86rem}
+ .shell{padding:0 11px}
 }`;
 const LOGO='<svg viewBox="0 0 34 34" width="30" height="30" fill="none" aria-hidden="true"><rect x="2" y="4" width="17" height="27" rx="3.2" fill="currentColor" opacity=".08"/><path d="M3.6 30.4V6.4a2.8 2.8 0 0 1 2.8-2.8h8.2a2.8 2.8 0 0 1 2.8 2.8v24" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M1.8 30.4h17" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><rect x="6.6" y="8.2" width="7.6" height="5.4" rx="1.1" fill="#0d7a3e"/><rect x="6.6" y="16.4" width="7.6" height="2.2" rx="1.1" fill="#c8102e"/><path d="M18.6 13.4h3.1a2.4 2.4 0 0 1 2.4 2.4v8.7a2.6 2.6 0 0 0 5.2 0v-10l-3.4-3.9" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26.7" cy="26.4" r="2.1" fill="#0d7a3e"/></svg>';
 
 let SIDE='',DRAWER='';
-const HEAD=(t,d,c,r,nx)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${e(t)}</title><meta name="description" content="${e(d)}"><link rel="canonical" href="${c}">${nx?'<meta name="robots" content="noindex,follow">':''}${MVERIFY}<meta property="og:title" content="${e(t)}"><meta property="og:description" content="${e(d)}"><meta property="og:type" content="website"><meta property="og:url" content="${c}"><meta property="og:site_name" content="GasolinaMX"><meta property="og:locale" content="es_MX"><meta property="og:image" content="${DOM}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${e(t)}"><meta name="twitter:description" content="${e(d)}"><meta name="twitter:image" content="${DOM}/og.png"><meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)"><meta name="color-scheme" content="light dark"><link rel="icon" type="image/svg+xml" href="${r}favicon.svg"><link rel="manifest" href="${r}manifest.json"><link rel="apple-touch-icon" href="${r}icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="stylesheet" href="${r}s.css"></head><body>
+const HEAD=(t,d,c,r,nx)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${e(t)}</title><meta name="description" content="${e(d)}"><link rel="canonical" href="${c}">${nx?'<meta name="robots" content="noindex,follow">':''}${MVERIFY}<meta property="og:title" content="${e(t)}"><meta property="og:description" content="${e(d)}"><meta property="og:type" content="website"><meta property="og:url" content="${c}"><meta property="og:site_name" content="GasolinaMX"><meta property="og:locale" content="es_MX"><meta property="og:image" content="${DOM}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${e(t)}"><meta name="twitter:description" content="${e(d)}"><meta name="twitter:image" content="${DOM}/og.png"><meta name="theme-color" content="#ffffff"><link rel="icon" type="image/svg+xml" href="${r}favicon.svg"><link rel="manifest" href="${r}manifest.json"><link rel="apple-touch-icon" href="${r}icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="stylesheet" href="${r}s.css"></head><body>
 <header><div class="hin">
 <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
 <a href="${r}" class="lg">${LOGO}<span class="lgt">Gasolina<em>MX</em></span></a>
@@ -636,7 +651,7 @@ document.addEventListener('keydown',function(ev){if(ev.key==='Escape')t(false)})
 var KEY='ck_gmx',box=document.getElementById('ck');
 var _adsYa=false;
 // Ejecuta el loader de Monetag TAL CUAL, sin reinyectar HTML.
-// Copiar textContent a un <script> nuevo rompia la carga; asi funciona
+// Copiar textContent a un script nuevo rompia la carga; asi funciona
 // igual que cuando el loader viene escrito directo en la pagina.
 function _iny(){
  if(_adsYa)return;
@@ -966,7 +981,7 @@ const PG=(cur,tot,fn)=>{if(tot<2)return'';let h='<div class="pg">';if(cur>1)h+=`
 const badge=g=>{const t=tendencia(g.id,g.regular);if(!t||Math.abs(t.d)<0.01)return '';
  return `<span class="trend ${t.d>0?'up':'down'}">${t.d>0?'▲':'▼'} ${mx(Math.abs(t.d))}</span>`};
 const fila=(g,i,r='')=>`<tr data-eid="${g.id}"><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}">${e(g.name)}</a>${badge(g)}<small>${e(g._mun?g._mun+', '+(g._edo||''):(g._edo||'México'))}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td><td class="oc"><button class="ocb" type="button" data-eid="${g.id}" data-nom="${e(g.name)}" aria-label="Ocultar esta estación" title="Ocultar esta estación">&times;</button></td></tr>`;
-const tabla=(arr,r='')=>`<table class="tabla" data-ord><thead><tr><th></th><th class="ord" data-c="1" data-t="t">Estación</th><th class="ord asc" data-c="2" data-t="n">Magna</th><th class="ord" data-c="3" data-t="n">Premium</th><th class="ord" data-c="4" data-t="n">Diésel</th><th></th></tr></thead><tbody>${arr.map((g,i)=>fila(g,i,r)).join('')}</tbody></table>`;
+const tabla=(arr,r='')=>`<table class="tabla" data-ord><thead><tr><th></th><th class="ord" data-c="1" data-t="t">Estación</th><th class="ord asc" data-c="2" data-t="n">Magna</th><th class="ord solo-pc" data-c="3" data-t="n">Premium</th><th class="ord solo-pc" data-c="4" data-t="n">Diésel</th><th></th></tr></thead><tbody>${arr.map((g,i)=>fila(g,i,r)).join('')}</tbody></table>`;
 
 (async()=>{
 console.log(`\n⛽ Generando ${N}...\n📥 Bajando datos oficiales de la CRE:`);
@@ -1156,7 +1171,7 @@ ${hero}
 <button class="geob" id="geoBtn" type="button">📍 Buscar cerca de mí</button>
 <div class="geost" id="geoSt"></div>
 </div>
-<div class="mapwrap" id="mw" hidden><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span class="lg2"><span class="pt" style="background:#0071e3"></span>Tú</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
+<div class="mapwrap" id="mw" hidden><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span class="lg2"><span class="pt" style="background:#0a84ff"></span>Tú</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
 <div class="geores" id="geoRes"></div>
 
 <div class="finder rv"><h3>O busca por nombre</h3><p style="font-size:.88rem;color:#86868b;margin-bottom:12px">Escribe tu municipio o ciudad — por ejemplo: Tlajomulco, Zapopan, Mérida</p><input id="buscador" placeholder="Tu municipio o el nombre de la estación" autocomplete="off" enterkeyhint="search"><div id="resultados"></div></div>
