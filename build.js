@@ -306,6 +306,19 @@ h2 .ver:hover{text-decoration:underline}
 .hbox.reg:before{background:#0d7a3e}
 .hbox.pre:before{background:#c8102e}
 .hbox.die:before{background:var(--tx2)}
+.faq{margin:8px 0 10px}
+.faq details{border:1px solid var(--bd2);border-radius:14px;margin-bottom:9px;overflow:hidden;background:var(--bg)}
+.faq summary{padding:16px 18px;font-size:.97rem;font-weight:500;cursor:pointer;list-style:none;
+ display:flex;align-items:center;gap:12px;transition:background .18s}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:after{content:'+';margin-left:auto;font-size:1.3rem;font-weight:300;color:var(--tx2);
+ transition:transform .28s cubic-bezier(.16,1,.3,1);line-height:1}
+.faq details[open] summary:after{transform:rotate(45deg)}
+.faq summary:hover{background:var(--bg2)}
+.faq details[open] summary{border-bottom:1px solid var(--bd3)}
+.faq p{padding:15px 18px 18px;font-size:.93rem;line-height:1.62;color:var(--tx)}
+@media(max-width:734px){.faq summary{padding:14px 15px;font-size:.92rem}.faq p{padding:13px 15px 16px;font-size:.89rem}}
+.jg{font-weight:400;opacity:.62;text-transform:none;letter-spacing:0}
 .hbox .lbl{font-size:.78rem;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:9px}
 .hbox .val{font-size:2.5rem;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
 .hbox .cap{font-size:.8rem;color:var(--tx2);margin-top:7px}
@@ -1098,8 +1111,8 @@ muns.forEach(([k,lista])=>{
  const pd=(a=>a.length?a.reduce((x,g)=>x+g.diesel,0)/a.length:0)(lista.filter(g=>g.diesel));
  const dif=conR.length>1?conR[conR.length-1].regular-conR[0].regular:0;
  f.writeFileSync(P.join(O,slugMun(edo,mun)+'.html'),L(
-  `Gasolina más barata en ${mun}, ${edo} hoy | ${N}`,
-  `Precio de gasolina en ${mun}, ${edo} hoy ${HOY}: Magna desde ${mx(conR[0].regular)}. ${lista.length} estaciones comparadas.`,
+  `Precio de la gasolina hoy en ${mun} | Cuánto cuesta el litro`,
+  `¿Cuánto cuesta la gasolina hoy en ${mun}, ${edo}? Costo por litro de Magna (verde), Premium (roja) y Diésel en ${lista.length} gasolineras. La más barata desde ${mx(conR[0].regular)}. Datos oficiales de la CRE, ${HOY}.`,
   `${DOM}/${slugMun(edo,mun)}`,
 `<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[
  {'@type':'ListItem',position:1,name:'GasolinaMX',item:DOM+'/'},
@@ -1108,10 +1121,10 @@ muns.forEach(([k,lista])=>{
  {'@type':'ListItem',position:4,name:mun,item:`${DOM}/${slugMun(edo,mun)}`}
 ]})}<\/script>
 <p class="crumb"><a href="./">Inicio</a> › <a href="estados">Estados</a> › <a href="estado-${s(edo)}">${e(edo)}</a> › ${e(mun)}</p>
-<h1>Gasolina en ${e(mun)}</h1><p class="sub">${e(edo)} · ${lista.length} estaciones · precios del ${HOY}</p>
+<h1>Precio de la gasolina hoy en ${e(mun)}</h1><p class="sub">¿Cuánto cuesta el litro en ${e(mun)}, ${e(edo)}? Costo de Magna (verde), Premium (roja) y Diésel en ${lista.length} gasolineras · ${HOY}</p>
 <div class="hero">
-<div class="hbox reg"><div class="lbl">Magna</div><div class="val">${mx(pr)}</div><div class="cap">promedio local</div></div>
-<div class="hbox pre"><div class="lbl">Premium</div><div class="val">${pp?mx(pp):'—'}</div><div class="cap">promedio local</div></div>
+<div class="hbox reg"><div class="lbl">Magna <span class="jg">verde</span></div><div class="val">${mx(pr)}</div><div class="cap">promedio local</div></div>
+<div class="hbox pre"><div class="lbl">Premium <span class="jg">roja</span></div><div class="val">${pp?mx(pp):'—'}</div><div class="cap">promedio local</div></div>
 <div class="hbox die"><div class="lbl">Diésel</div><div class="val">${pd?mx(pd):'—'}</div><div class="cap">promedio local</div></div>
 </div>
 ${(()=>{let sube=0,baja=0,sumd=0,nd=0;
@@ -1148,8 +1161,8 @@ console.log(`   ✓ ${muns.length} páginas de municipio`);
 
 // ── PORTADA
 const hero=`<div class="hero">
-<div class="hbox reg"><div class="lbl">Magna</div><div class="val">${mx(pReg)}</div><div class="cap">promedio nacional</div></div>
-<div class="hbox pre"><div class="lbl">Premium</div><div class="val">${mx(pPre)}</div><div class="cap">promedio nacional</div></div>
+<div class="hbox reg"><div class="lbl">Magna <span class="jg">verde</span></div><div class="val">${mx(pReg)}</div><div class="cap">promedio nacional</div></div>
+<div class="hbox pre"><div class="lbl">Premium <span class="jg">roja</span></div><div class="val">${mx(pPre)}</div><div class="cap">promedio nacional</div></div>
 <div class="hbox die"><div class="lbl">Diésel</div><div class="val">${mx(pDie)}</div><div class="cap">promedio nacional</div></div>
 </div><p class="nota">Basado en ${ACT.length.toLocaleString('es-MX')} estaciones · datos de la CRE · ${HOY}</p>`;
 const idxMun=JSON.stringify(muns.map(([k,l])=>{const [ed,mu]=k.split('|');
@@ -1186,9 +1199,9 @@ const JLD_SITIO = `<script type="application/ld+json">${JSON.stringify([
   isPartOf:{'@type':'WebSite',name:'GasolinaMX',url:DOM+'/'}}
 ])}<\/script>`;
 f.writeFileSync(P.join(O,'index.html'),L(
- `Precio de la gasolina hoy en México | ${N}`,
+ `Precio de la gasolina hoy en México | Magna, Premium y Diésel`,
  `¿Cuánto cuesta la gasolina hoy? Costo y precio de Magna, Premium y Diésel al ${HOY} en ${ACT.length.toLocaleString('es-MX')} gasolineras de México. Datos oficiales de la CRE.`,DOM+'/',
-`<h1>Precio de la gasolina hoy en México</h1><p class="sub">¿Cuánto cuesta la gasolina hoy? Consulta el costo de Magna, Premium y Diésel en ${ACT.length.toLocaleString('es-MX')} gasolineras del país. Datos oficiales de la CRE, actualizados todos los días.</p>
+`<h1>Precio de la gasolina hoy en México</h1><p class="sub">¿Cuánto cuesta la gasolina hoy? Consulta cuánto está el costo por litro de Magna, Premium y Diésel en ${ACT.length.toLocaleString('es-MX')} gasolineras del país. Datos oficiales de la CRE, actualizados todos los días.</p>
 ${hero}
 <div class="pwa" id="pwa">
  <div class="ic">⛽</div>
@@ -1226,6 +1239,23 @@ ${tabla(baratas.slice(0,25))}
 <div class="est" id="alEst"></div>
 </div>
 
+<h2 class="rv">Preguntas frecuentes</h2>
+<div class="faq">
+<details><summary>¿Cuánto cuesta la gasolina hoy en México?</summary><p>Hoy ${HOY} el costo promedio nacional es de <strong>${mx(pReg)}</strong> por litro de Magna, <strong>${mx(pPre)}</strong> de Premium y <strong>${mx(pDie)}</strong> de Diésel. El precio cambia todos los días y varía según el estado y la gasolinera. Aquí mostramos el precio de ${ACT.length.toLocaleString('es-MX')} estaciones con datos oficiales de la CRE.</p></details>
+<details><summary>¿Cuál es la gasolina verde y cuál la roja?</summary><p>La <strong>gasolina verde es la Magna</strong> (87 octanos), la más común y la más barata. La <strong>gasolina roja es la Premium</strong> (91 o más octanos), que cuesta en promedio ${mx(pPre-pReg)} más por litro. Los nombres vienen del color de la manguera y del logo en el surtidor.</p></details>
+<details><summary>¿Conviene cargar Premium en vez de Magna?</summary><p>Solo si el manual de tu carro lo pide. La Premium tiene mayor octanaje, lo que evita la detonación prematura en motores de alta compresión o turbo. En un motor normal <strong>no da más rendimiento ni más potencia</strong>: es dinero tirado. Hoy la diferencia es de ${mx(pPre-pReg)} por litro, o sea ${mx((pPre-pReg)*40)} en un tanque de 40 litros.</p></details>
+<details><summary>¿Cuánto cuesta llenar el tanque?</summary><p>Con el precio promedio de hoy: un tanque de <strong>40 litros</strong> de Magna cuesta ${mx(pReg*40)}, uno de <strong>50 litros</strong> ${mx(pReg*50)}, y uno de <strong>60 litros</strong> ${mx(pReg*60)}. Si cargas en la gasolinera más barata de tu zona en vez de la más cara, puedes ahorrar hasta ${mx((baratas[baratas.length-1].regular-baratas[0].regular)*40)} por tanque.</p></details>
+<details><summary>¿De dónde salen estos precios?</summary><p>Del reporte público que la <strong>Comisión Reguladora de Energía (CRE)</strong> obliga a publicar a todos los permisionarios de gasolina en México. Descargamos ese archivo todos los días de forma automática. No son estimaciones ni datos de usuarios: son los precios que cada gasolinera reportó oficialmente.</p></details>
+<details><summary>¿Cada cuánto se actualizan?</summary><p>Todos los días a las 7:00 de la mañana, hora del centro de México. Además guardamos el histórico para que puedas ver si una gasolinera subió o bajó su precio en los últimos días.</p></details>
+</div>
+<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@type':'FAQPage',mainEntity:[
+ ['¿Cuánto cuesta la gasolina hoy en México?',`Hoy el costo promedio nacional es de ${mx(pReg)} por litro de Magna, ${mx(pPre)} de Premium y ${mx(pDie)} de Diésel, según datos oficiales de la CRE de ${ACT.length} estaciones.`],
+ ['¿Cuál es la gasolina verde y cuál la roja?',`La gasolina verde es la Magna de 87 octanos, la más barata. La gasolina roja es la Premium de 91 o más octanos, que cuesta ${mx(pPre-pReg)} más por litro.`],
+ ['¿Conviene cargar Premium en vez de Magna?','Solo si el manual de tu carro lo pide. En un motor normal la Premium no da más rendimiento ni más potencia.'],
+ ['¿Cuánto cuesta llenar el tanque?',`Con el precio promedio de hoy, un tanque de 40 litros de Magna cuesta ${mx(pReg*40)} y uno de 50 litros ${mx(pReg*50)}.`],
+ ['¿De dónde salen estos precios?','Del reporte público diario de la Comisión Reguladora de Energía (CRE) de México.'],
+ ['¿Cada cuánto se actualizan?','Todos los días a las 7:00 de la mañana, hora del centro de México.']
+].map(([q,a])=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))})}<\/script>
 ${JLD_SITIO}
 <h2 class="rv">Consulta por estado<a class="ver" href="estados">Ver todos →</a></h2>
 <div class="chips">${edos.slice(0,12).map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}<span class="nm2">${l.length}</span></a>`).join('')}</div>
@@ -1416,14 +1446,14 @@ edos.forEach(([n,lista])=>{
  const pd=(a=>a.length?a.reduce((s,g)=>s+g.diesel,0)/a.length:0)(lista.filter(g=>g.diesel));
  const dif=conR.length>1?conR[conR.length-1].regular-conR[0].regular:0;
  f.writeFileSync(P.join(O,`estado-${s(n)}.html`),L(
-  `Precio de la gasolina en ${n} hoy | ${N}`,
-  `Precio de gasolina en ${n} hoy ${HOY}: Magna ${mx(pr)} promedio. ${lista.length} estaciones. Encuentra la más barata.`,
+  `Precio de la gasolina en ${n} hoy | Costo por litro`,
+  `¿Cuánto está la gasolina en ${n} hoy ${HOY}? Costo por litro de Magna (verde), Premium (roja) y Diésel en ${lista.length} gasolineras del estado. Datos oficiales de la CRE.`,
   `${DOM}/estado-${s(n)}`,
 `<p class="crumb"><a href="./">Inicio</a> › <a href="estados">Estados</a> › ${e(n)}</p>
 <h1>Gasolina en ${e(n)}</h1><p class="sub">${lista.length} estaciones registradas · precios del ${HOY}</p>
 <div class="hero">
-<div class="hbox reg"><div class="lbl">Magna</div><div class="val">${mx(pr)}</div><div class="cap">promedio en ${e(n)}</div></div>
-<div class="hbox pre"><div class="lbl">Premium</div><div class="val">${pp?mx(pp):'—'}</div><div class="cap">promedio en ${e(n)}</div></div>
+<div class="hbox reg"><div class="lbl">Magna <span class="jg">verde</span></div><div class="val">${mx(pr)}</div><div class="cap">promedio en ${e(n)}</div></div>
+<div class="hbox pre"><div class="lbl">Premium <span class="jg">roja</span></div><div class="val">${pp?mx(pp):'—'}</div><div class="cap">promedio en ${e(n)}</div></div>
 <div class="hbox die"><div class="lbl">Diésel</div><div class="val">${pd?mx(pd):'—'}</div><div class="cap">promedio en ${e(n)}</div></div>
 </div>
 ${dif>0?`<p class="nota">Diferencia entre la más cara y la más barata: <strong>${mx(dif)}</strong> por litro. En un tanque de 50 litros son <strong>${mx(dif*50)}</strong> de ahorro.</p>`:'<p class="nota"></p>'}
@@ -1452,8 +1482,8 @@ D.forEach(g=>{
 <h1>${e(g.name)}</h1><p class="sub">${g._mun?e(g._mun)+', ':''}${g._edo?e(g._edo)+' · ':''}${g._sin>=DIAS_AVISO?`Último dato: ${fmtFecha(g._ult)}`:`Precios del ${HOY}`}</p>
 ${g._sin>=DIAS_OCULTA?`<div class="avisoX"><strong>Esta estación podría estar cerrada.</strong> Lleva ${g._sin} días sin reportar precios a la CRE. Los datos que ves son del ${fmtFecha(g._ult)||'último reporte disponible'}. Te recomendamos confirmar antes de ir.</div>`:(g._sin>=DIAS_AVISO?`<div class="avisoW"><strong>Datos no actualizados.</strong> Esta estación no ha reportado precios en ${g._sin} días. La información es del ${fmtFecha(g._ult)||'último reporte'}.</div>`:'')}
 <div class="hero">
-<div class="hbox reg"><div class="lbl">Magna</div><div class="val">${g.regular?mx(g.regular):'—'}</div><div class="cap">por litro</div></div>
-<div class="hbox pre"><div class="lbl">Premium</div><div class="val">${g.premium?mx(g.premium):'—'}</div><div class="cap">por litro</div></div>
+<div class="hbox reg"><div class="lbl">Magna <span class="jg">verde</span></div><div class="val">${g.regular?mx(g.regular):'—'}</div><div class="cap">por litro</div></div>
+<div class="hbox pre"><div class="lbl">Premium <span class="jg">roja</span></div><div class="val">${g.premium?mx(g.premium):'—'}</div><div class="cap">por litro</div></div>
 <div class="hbox die"><div class="lbl">Diésel</div><div class="val">${g.diesel?mx(g.diesel):'—'}</div><div class="cap">por litro</div></div>
 </div>
 <div class="dt">
@@ -1750,8 +1780,8 @@ f.writeFileSync(P.join(O,'404.html'),L(
 <p class="sub" style="margin:0 auto 30px">No encontramos esa página. Puede que el enlace esté mal escrito o que la estación ya no exista en el reporte de la CRE.</p>
 <p style="margin-bottom:34px"><a class="btn" href="/">Ir al inicio</a> <a class="btn a" href="/estados">Ver todos los estados</a></p>
 <div class="hero" style="max-width:660px;margin:0 auto 18px">
-<div class="hbox reg"><div class="lbl">Magna</div><div class="val">${mx(pReg)}</div><div class="cap">promedio nacional</div></div>
-<div class="hbox pre"><div class="lbl">Premium</div><div class="val">${mx(pPre)}</div><div class="cap">promedio nacional</div></div>
+<div class="hbox reg"><div class="lbl">Magna <span class="jg">verde</span></div><div class="val">${mx(pReg)}</div><div class="cap">promedio nacional</div></div>
+<div class="hbox pre"><div class="lbl">Premium <span class="jg">roja</span></div><div class="val">${mx(pPre)}</div><div class="cap">promedio nacional</div></div>
 </div>
 <p class="nota">Precios del ${HOY} · datos oficiales de la CRE</p>
 </div>`,'',true));
