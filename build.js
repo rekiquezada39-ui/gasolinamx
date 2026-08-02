@@ -520,7 +520,17 @@ function _iny(){if(_adsYa)return;var f=document.getElementById('ads-tpl');if(!f)
  var h=f.innerHTML,w=document.createElement('div');w.innerHTML=h;
  [].forEach.call(w.querySelectorAll('script'),function(o){var n=document.createElement('script');
   [].forEach.call(o.attributes,function(a){n.setAttribute(a.name,a.value)});
-  if(o.textContent)n.textContent=o.textContent;document.body.appendChild(n)});}
+  if(o.textContent)n.textContent=o.textContent;document.body.appendChild(n)});
+ _sw();}
+// Registrar el service worker de Monetag (zona de notificaciones push).
+// Sin esto esa zona nunca genera ingresos. Solo tras aceptar cookies.
+function _sw(){
+ if(!('serviceWorker' in navigator))return;
+ if(location.protocol!=='https:')return;
+ try{
+  navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(function(){});
+ }catch(e){}
+}
 // El <template> vive al final del <body>, asi que este script corre ANTES de que exista.
 // Si el visitante ya habia aceptado, hay que esperar a que el DOM termine de cargar.
 function ads(){

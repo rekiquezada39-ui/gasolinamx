@@ -69,6 +69,8 @@ add('net2','Conexión a n6wxm.com');
 add('sw','Service Worker');
 add('notif','Permiso de notificaciones');
 add('bait','Detector de bloqueador');
+add('real','Prueba REAL de anuncio');
+add('vis','Elementos que aparecieron');
 
 // 1. UA
 (function(){
@@ -173,6 +175,53 @@ probarRed('net2','https://n6wxm.com/vignette.min.js','n6wxm.com');
  },500);
 })();
 
+// 11 y 12: ejecutar el loader REAL y observar que pasa en el DOM
+(function(){
+ var antes=document.querySelectorAll('iframe,ins,div[id],div[class]').length;
+ var creados=[], errores=[];
+ // observar todo lo que se agregue al DOM
+ var obs=null;
+ if(window.MutationObserver){
+  obs=new MutationObserver(function(muts){
+   muts.forEach(function(m){
+    [].forEach.call(m.addedNodes,function(n){
+     if(n.nodeType!==1)return;
+     var t=n.tagName.toLowerCase();
+     if(t==='iframe'||t==='ins'||(t==='div'&&(n.id||n.className))){
+      creados.push(t+(n.id?'#'+n.id:'')+(n.className?'.'+String(n.className).split(' ')[0]:''));
+     }
+    });
+   });
+  });
+  obs.observe(document.documentElement,{childList:true,subtree:true});
+ }
+ window.onerror=function(msg,src){ if(src&&/nap5k|n6wxm|3nbf4/.test(src)) errores.push(msg); };
+
+ // el loader EXACTO que usa el sitio
+ try{
+  (function(sc){sc.dataset.zone='11471781',sc.src='https://nap5k.com/tag.min.js'})
+   ([document.documentElement,document.body].filter(Boolean).pop()
+     .appendChild(document.createElement('script')));
+  set('real','warn','Ejecutando…','Se lanzó el loader de la zona 11471781');
+ }catch(e){ set('real','mal','ERROR',e.message); }
+
+ setTimeout(function(){
+  if(obs)obs.disconnect();
+  var despues=document.querySelectorAll('iframe,ins,div[id],div[class]').length;
+  var nuevos=despues-antes;
+  if(errores.length){
+   set('real','mal','ERROR DE SCRIPT',errores.slice(0,2).join(' | '));
+  } else if(creados.length){
+   set('real','ok','El anuncio SÍ se inyectó','Monetag creó '+creados.length+' elemento(s)');
+  } else {
+   set('real','mal','NO SE INYECTÓ NADA','El script cargó pero no creó ningún anuncio. Causas: sin inventario (fill rate) para tu perfil, o el navegador lo bloqueó silenciosamente.');
+  }
+  set('vis', creados.length?'ok':'warn', nuevos>0?(nuevos+' nuevos'):'0 nuevos',
+      creados.length? creados.slice(0,6).join(', ') : 'No apareció ningún iframe ni contenedor de anuncio');
+  veredicto();
+ },7000);
+})();
+
 // ── Veredicto
 function veredicto(){
  var malos=[], warns=[];
@@ -196,7 +245,7 @@ function veredicto(){
  document.getElementById('log').textContent=
   'DIAGNOSTICO GasolinaMX\n'+new Date().toISOString()+'\n'+navigator.userAgent+'\n\n'+LOG.join('\n');
 }
-setTimeout(veredicto,9000);
+setTimeout(veredicto,12000);
 
 function copiar(){
  var t=document.getElementById('log').textContent;
