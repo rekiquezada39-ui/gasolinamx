@@ -230,6 +230,16 @@ function ogPNG(titulo,sub,mg,pm,ds,pie){
 
 const HOY=new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric',timeZone:'America/Mexico_City'});
 const ISO=new Date().toISOString().slice(0,10);
+const HOY_EN=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric',timeZone:'America/Mexico_City'});
+
+// ══ CONVERSION A USD/GALON (para los turistas gringos) ══
+// 1 galon US = 3.785411784 litros. El tipo de cambio se baja en vivo con respaldo.
+const GAL=3.785411784;
+let FX=17.25;                       // respaldo si la API falla
+let FX_OK=false;
+const usdGal=v=>{const n=Number(v);
+ if(!isFinite(n)||n<=0)return '';
+ return '$'+((n/FX)*GAL).toFixed(2)};
 
 const CSS=`
 :root{
@@ -324,6 +334,28 @@ h2 .ver:hover{text-decoration:underline}
 .hbox .cap{font-size:.8rem;color:var(--tx2);margin-top:7px}
 .hbox.reg .val{color:var(--vd)}.hbox.pre .val{color:var(--rj)}.hbox.die .val{color:var(--tx)}
 .nota{font-size:.82rem;color:var(--tx2);margin-bottom:44px}
+/* ══ BLOQUE EN INGLES (turistas) ══ */
+.en{margin:46px 0 10px;padding:26px 24px;border:1px solid var(--bd);border-radius:16px;
+ background:linear-gradient(180deg,#f7fbf8,#fff)}
+.en h2{font-size:1.24rem;margin:0 0 8px;padding-left:0;border:0}
+.en h2:before{display:none}
+.ensub{font-size:.9rem;color:var(--tx2);margin-bottom:20px;max-width:62ch}
+.engrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.enbox{background:#fff;border:1px solid var(--bd);border-radius:13px;padding:15px 16px}
+.enk{font-size:.74rem;font-weight:650;color:var(--tx2);margin-bottom:7px;line-height:1.35}
+.enj{font-weight:450;opacity:.8}
+.env{font-size:1.62rem;font-weight:750;letter-spacing:-.03em;color:#0d7a3e;line-height:1}
+.enu{font-size:.8rem;font-weight:600;opacity:.62;margin-left:2px}
+.enc{font-size:.76rem;color:var(--tx2);margin-top:6px}
+.ennota{font-size:.9rem;margin-bottom:14px;line-height:1.6}
+.enfaq{border-top:1px solid var(--bd);padding-top:13px;margin-bottom:12px}
+.enfaq summary{cursor:pointer;font-weight:620;font-size:.92rem;padding:5px 0}
+.enfaq summary:hover{color:#0d7a3e}
+.enfaq ul{margin:11px 0 4px;padding-left:20px}
+.enfaq li{font-size:.88rem;line-height:1.65;margin-bottom:8px;color:var(--tx2)}
+.enfaq li strong{color:var(--tx)}
+.enfx{font-size:.76rem;color:var(--tx2);margin:0}
+@media(max-width:734px){.en{padding:20px 16px;margin:34px 0 6px}.env{font-size:1.4rem}}
 /* BUSCADOR */
 .finder{background:var(--bg2);border-radius:18px;padding:26px;margin-bottom:20px}
 .finder h3{font-size:1.12rem;font-weight:600;margin-bottom:14px}
@@ -996,8 +1028,44 @@ const badge=g=>{const t=tendencia(g.id,g.regular);if(!t||Math.abs(t.d)<0.01)retu
 const fila=(g,i,r='')=>`<tr data-eid="${g.id}"><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}">${e(g.name)}</a>${badge(g)}<small>${e(g._mun?g._mun+', '+(g._edo||''):(g._edo||'México'))}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td><td class="oc"><button class="ocb" type="button" data-eid="${g.id}" data-nom="${e(g.name)}" aria-label="Ocultar esta estación" title="Ocultar esta estación">&times;</button></td></tr>`;
 const tabla=(arr,r='')=>`<table class="tabla" data-ord><thead><tr><th></th><th class="ord" data-c="1" data-t="t">Estación</th><th class="ord asc" data-c="2" data-t="n">Magna</th><th class="ord solo-pc" data-c="3" data-t="n">Premium</th><th class="ord solo-pc" data-c="4" data-t="n">Diésel</th><th></th></tr></thead><tbody>${arr.map((g,i)=>fila(g,i,r)).join('')}</tbody></table>`;
 
+// ══ BLOQUE EN INGLES PARA TURISTAS ══
+// Google ya manda trafico gringo ("gas prices near me") a las paginas de municipio.
+// Este bloque les da el precio en USD por galon, que es lo unico que entienden.
+const EN_MUN=(mun,edo,pr,pp,pd,nEst,masBarata,precioBarata)=>{
+ if(!pr)return '';
+ const tank=(pr/FX)*GAL*15;            // tanque tipico gringo: 15 galones
+ return `<section class="en" id="en" lang="en">
+<h2>Gas Prices in ${e(mun)}, Mexico — Today</h2>
+<p class="ensub">Live prices from ${nEst} gas stations in ${e(mun)}, ${e(edo)}, converted to US dollars per gallon. Official data from Mexico's energy regulator (CRE), updated ${HOY_EN}.</p>
+<div class="engrid">
+<div class="enbox"><div class="enk">Regular <span class="enj">(Magna, green pump)</span></div><div class="env">${usdGal(pr)}<span class="enu">/gal</span></div><div class="enc">${mx(pr)} per liter</div></div>
+${pp?`<div class="enbox"><div class="enk">Premium <span class="enj">(red pump)</span></div><div class="env">${usdGal(pp)}<span class="enu">/gal</span></div><div class="enc">${mx(pp)} per liter</div></div>`:''}
+${pd?`<div class="enbox"><div class="enk">Diesel</div><div class="env">${usdGal(pd)}<span class="enu">/gal</span></div><div class="enc">${mx(pd)} per liter</div></div>`:''}
+</div>
+<p class="ennota">Filling a 15-gallon tank with regular costs about <strong>${'$'+tank.toFixed(2)} USD</strong> here.${masBarata?` The cheapest station right now is <strong>${e(masBarata)}</strong> at <strong>${usdGal(precioBarata)}/gal</strong>.`:''}</p>
+<details class="enfaq"><summary>Tips for filling up in Mexico</summary>
+<ul>
+<li><strong>Prices are per liter, not per gallon.</strong> One US gallon is 3.79 liters, so multiply the pump price by about 3.79 to compare with home.</li>
+<li><strong>Magna (green) is regular</strong>, roughly 87 octane. <strong>Premium (red)</strong> is around 91 octane. Diesel is its own pump.</li>
+<li><strong>Attendants pump for you.</strong> Full self-service is rare. A tip of 5 to 10 pesos is customary.</li>
+<li><strong>Check the pump reads zero</strong> before they start. Say "de cero, por favor."</li>
+<li><strong>Cash is safest.</strong> Many stations take cards, but small-town ones may not.</li>
+<li><strong>Prices include tax</strong> — what you see on the sign is what you pay.</li>
+</ul></details>
+<p class="enfx">Converted at 1 USD = ${FX.toFixed(2)} MXN. Prices change daily; confirm at the pump.</p>
+</section>`};
+
 (async()=>{
 console.log(`\n⛽ Generando ${N}...\n📥 Bajando datos oficiales de la CRE:`);
+// tipo de cambio USD/MXN en vivo (con respaldo si falla: no rompe el build)
+try{
+ const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),12000);
+ const rfx=await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=MXN',{signal:ctl.signal});
+ clearTimeout(tm);
+ if(rfx.ok){const j=await rfx.json();const v=j&&j.rates&&j.rates.MXN;
+  if(isFinite(v)&&v>5&&v<60){FX=v;FX_OK=true;console.log(`   ✓ tipo de cambio: 1 USD = ${FX.toFixed(4)} MXN`)}}
+}catch(err){}
+if(!FX_OK)console.log(`   ⚠ tipo de cambio no disponible — se usa el respaldo ${FX}`);
 const UA={'User-Agent':N+'/1.0'};
 let xPre='',xPla='';
 for(let i=0;i<4;i++){try{
@@ -1110,9 +1178,14 @@ muns.forEach(([k,lista])=>{
  const pp=(a=>a.length?a.reduce((x,g)=>x+g.premium,0)/a.length:0)(lista.filter(g=>g.premium));
  const pd=(a=>a.length?a.reduce((x,g)=>x+g.diesel,0)/a.length:0)(lista.filter(g=>g.diesel));
  const dif=conR.length>1?conR[conR.length-1].regular-conR[0].regular:0;
+ // Titulo bilingue, pero solo si cabe: Google corta cerca de 60-65 caracteres.
+ // Si el nombre del municipio es largo, se queda solo en español (que es la busqueda principal).
+ const _tBi=`Gasolina hoy en ${mun} | Gas Prices in ${mun}, Mexico`;
+ const _tEs=`Precio de la gasolina hoy en ${mun} | Cuánto cuesta el litro`;
+ const _tit=_tBi.length<=65?_tBi:(mun.length<=34?`Gasolina en ${mun} | Gas Prices, Mexico`:_tEs);
  f.writeFileSync(P.join(O,slugMun(edo,mun)+'.html'),L(
-  `Precio de la gasolina hoy en ${mun} | Cuánto cuesta el litro`,
-  `¿Cuánto cuesta la gasolina hoy en ${mun}, ${edo}? Costo por litro de Magna (verde), Premium (roja) y Diésel en ${lista.length} gasolineras. La más barata desde ${mx(conR[0].regular)}. Datos oficiales de la CRE, ${HOY}.`,
+  _tit,
+  `¿Cuánto cuesta la gasolina hoy en ${mun}, ${edo}? Costo por litro de Magna, Premium y Diésel en ${lista.length} gasolineras, desde ${mx(conR[0].regular)}. Gas prices in ${mun}, Mexico today: ${usdGal(pr)} per gallon regular. Datos oficiales CRE, ${HOY}.`,
   `${DOM}/${slugMun(edo,mun)}`,
 `<script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[
  {'@type':'ListItem',position:1,name:'GasolinaMX',item:DOM+'/'},
@@ -1154,6 +1227,7 @@ b.addEventListener('click',function(){
 <\/script>
 <h2>Ordenadas de más barata a más cara</h2>
 ${tabla(conR)}
+${EN_MUN(mun,edo,pr,pp,pd,lista.length,conR[0]&&conR[0].name,conR[0]&&conR[0].regular)}
 <div class="card"><h3>Precios en ${e(mun)}</h3><p>En ${e(mun)}, ${edo}, hay ${lista.length} estaciones que reportan precios a la CRE. El promedio de Magna es ${mx(pr)} por litro${dif>0?`, con ${mx(dif)} de diferencia entre la más económica y la más cara`:''}. Los datos corresponden al reporte del ${HOY} y pueden cambiar durante el día.</p></div>
 <p style="margin-top:26px"><a class="btn a" href="estado-${s(edo)}">Ver todo ${e(edo)}</a></p>`));
 });
