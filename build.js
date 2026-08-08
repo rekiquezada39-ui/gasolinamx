@@ -291,7 +291,7 @@ header:after{content:'';position:absolute;left:0;right:0;bottom:-3px;height:3px;
 .lgt em{font-style:normal;color:var(--az)}
 .hnav{display:flex;gap:30px;font-size:.86rem;margin-left:10px}
 .hnav a{opacity:.8;transition:opacity .2s}.hnav a:hover{opacity:1}
-.upd{margin-left:auto;font-size:.76rem;color:var(--tx2);white-space:nowrap}
+.upd{font-size:.76rem;color:var(--tx2);white-space:nowrap}
 .scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:9400;opacity:0;transition:opacity .3s;backdrop-filter:blur(2px)}
 .scrim.on{display:block;opacity:1}
 .drawer{position:fixed;top:0;left:0;bottom:0;width:min(85vw,320px);background:var(--bg);z-index:9500;transform:translateX(-100%);transition:transform .36s cubic-bezier(.32,.72,0,1);overflow-y:auto;box-shadow:2px 0 26px rgba(0,0,0,.13)}
@@ -343,7 +343,15 @@ h2 .ver:hover{text-decoration:underline}
 .hbox .cap{font-size:.8rem;color:var(--tx2);margin-top:7px}
 .hbox.reg .val{color:var(--vd)}.hbox.pre .val{color:var(--rj)}.hbox.die .val{color:var(--tx)}
 .nota{font-size:.82rem;color:var(--tx2);margin-bottom:44px}
-/* ══ SELECTOR DE IDIOMA ══ */
+/* ══ SWITCH DE IDIOMA EN EL HEADER ══ */
+.lgsw{display:flex;gap:3px;margin-left:auto;background:var(--bg2);padding:3px;border-radius:980px;flex-shrink:0}
+.lgsw button{font:inherit;font-size:.98rem;line-height:1;padding:5px 9px;border:0;border-radius:980px;
+ background:transparent;cursor:pointer;opacity:.42;transition:all .18s;filter:grayscale(1)}
+.lgsw button:hover{opacity:.75;filter:grayscale(.3)}
+.lgsw button.on{background:#fff;opacity:1;filter:none;box-shadow:0 1px 3px rgba(0,0,0,.13)}
+.hin .upd{margin-left:14px}
+@media(max-width:734px){.hin .upd{display:none}.lgsw{margin-left:auto}}
+/* ══ SELECTOR DE IDIOMA (viejo, ya no se usa) ══ */
 .lang{display:flex;align-items:center;gap:8px;margin:0 0 18px;flex-wrap:wrap}
 .lang .lbl2{font-size:.76rem;color:var(--tx2);margin-right:2px}
 .lang button{font:inherit;font-size:.82rem;font-weight:600;padding:7px 14px;border-radius:980px;
@@ -700,13 +708,14 @@ const HEAD=(t,d,c,r,nx)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UT
 <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
 <a href="${r}" class="lg">${LOGO}<span class="lgt">Gasolina<em>MX</em></span></a>
 <nav class="hnav"><a href="${r}"><span data-en="Home">Inicio</span></a><a href="${r}estados"><span data-en="States">Estados</span></a><a href="${r}baratas"><span data-en="Cheapest">Más baratas</span></a></nav>
-<span class="upd">Actualizado ${HOY}</span>
+<div class="lgsw"><button id="lgEs" type="button" class="on" title="Español">🇲🇽</button><button id="lgEn" type="button" title="English">🇺🇸</button></div>
+<span class="upd"><span data-en="Updated">Actualizado</span> <span data-en="${HOY_EN}">${HOY}</span></span>
 </div></header>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer"><div class="dhead">${LOGO}<span class="lgt">Gasolina<em>MX</em></span></div><div class="dbody">${DRAWER.replace(/href="/g,'href="'+r)}</div></aside>`;
-const FOOT=(r)=>`<footer><div class="fin"><p>${N}. Precios de gasolina en México actualizados diariamente.</p><p style="margin-top:9px">Datos oficiales de la Comisión Reguladora de Energía (CRE). Los precios pueden variar; verifica en la estación antes de cargar. Última actualización: ${HOY}.</p>
-<nav class="fnav"><a href="${r}aviso-de-privacidad">Aviso de privacidad</a><a href="${r}terminos">Términos de uso</a><a href="${r}cookies">Cookies</a><a href="${r}contacto">Contacto</a></nav></div></footer>
-<div id="ck" role="dialog" aria-label="Aviso de cookies"><p>Usamos cookies propias y de terceros para mostrar publicidad y analizar el tráfico. Consulta el <a href="${r}aviso-de-privacidad">aviso de privacidad</a> y la <a href="${r}cookies">política de cookies</a>.</p><div class="ckb"><button id="ckNo" type="button">Solo necesarias</button><button id="ckSi" type="button">Aceptar</button></div></div>
+const FOOT=(r)=>`<footer><div class="fin"><p>${N}. <span data-en="Gas prices in Mexico, updated daily.">Precios de gasolina en México actualizados diariamente.</span></p><p style="margin-top:9px"><span data-en="Official data from Mexico's energy regulator (CRE). Prices can change; confirm at the pump before filling up. Last updated:">Datos oficiales de la Comisión Reguladora de Energía (CRE). Los precios pueden variar; verifica en la estación antes de cargar. Última actualización:</span> <span data-en="${HOY_EN}">${HOY}</span>.</p>
+<nav class="fnav"><a href="${r}aviso-de-privacidad"><span data-en="Privacy">Aviso de privacidad</span></a><a href="${r}terminos"><span data-en="Terms">Términos de uso</span></a><a href="${r}cookies"><span data-en="Cookies">Cookies</span></a><a href="${r}contacto"><span data-en="Contact">Contacto</span></a></nav></div></footer>
+<div id="ck" role="dialog" aria-label="Aviso de cookies"><p><span data-en="We use our own and third-party cookies to show ads and measure traffic. See our">Usamos cookies propias y de terceros para mostrar publicidad y analizar el tráfico. Consulta el</span> <a href="${r}aviso-de-privacidad"><span data-en="privacy policy">aviso de privacidad</span></a> <span data-en="and">y la</span> <a href="${r}cookies"><span data-en="cookie policy">política de cookies</span></a>.</p><div class="ckb"><button id="ckNo" type="button"><span data-en="Necessary only">Solo necesarias</span></button><button id="ckSi" type="button"><span data-en="Accept">Aceptar</span></button></div></div>
 <script>(function(){var b=document.getElementById('burger'),d=document.getElementById('drawer'),s=document.getElementById('scrim');
 function t(o){b.classList.toggle('open',o);d.classList.toggle('on',o);s.classList.toggle('on',o);document.body.classList.toggle('lock',o)}
 if(b){b.addEventListener('click',function(){t(!d.classList.contains('on'))});s.addEventListener('click',function(){t(false)});
@@ -1020,6 +1029,8 @@ try{var v=localStorage.getItem(KEY);
   if(bI)bI.classList.toggle('on',en);
   var fx=document.getElementById('lgfx');
   if(fx)fx.textContent=en?('1 USD = '+FX.toFixed(2)+' MXN · prices per US gallon'):'';
+  // avisar al buscador que cambio el idioma
+  window.__EN=en;
  }
 
  function init(){
@@ -1284,10 +1295,6 @@ muns.forEach(([k,lista])=>{
  {'@type':'ListItem',position:4,name:mun,item:`${DOM}/${slugMun(edo,mun)}`}
 ]})}<\/script>
 <p class="crumb"><a href="./">${tr('Inicio','Home')}</a> › <a href="estados">${tr('Estados','States')}</a> › <a href="estado-${s(edo)}">${e(edo)}</a> › ${e(mun)}</p>
-<div class="lang"><span class="lbl2">${tr('Idioma','Language')}:</span>
-<button id="lgEs" type="button" class="on">🇲🇽 Español</button>
-<button id="lgEn" type="button">🇺🇸 English</button>
-<span class="fx" id="lgfx"></span></div>
 <h1>${tr('Precio de la gasolina hoy en '+mun,'Gas Prices in '+mun+', Mexico — Today')}</h1><p class="sub">${tr(`¿Cuánto cuesta el litro en ${mun}, ${edo}? Costo de Magna (verde), Premium (roja) y Diésel en ${lista.length} gasolineras · ${HOY}`,`Live prices from ${lista.length} gas stations in ${mun}, ${edo}, in US dollars per gallon. Official CRE data · ${HOY_EN}`)}</p>
 <div class="hero">
 <div class="hbox reg"><div class="lbl">${tr('Magna','Regular')} <span class="jg">${tr('verde','green')}</span></div><div class="val">${pz(pr)}</div><div class="cap">${tr('promedio local','local average')} · <span class="unid">MXN/L</span></div></div>
@@ -1329,10 +1336,10 @@ console.log(`   ✓ ${muns.length} páginas de municipio`);
 
 // ── PORTADA
 const hero=`<div class="hero">
-<div class="hbox reg"><div class="lbl">Magna <span class="jg">verde</span></div><div class="val">${mx(pReg)}</div><div class="cap">promedio nacional</div></div>
-<div class="hbox pre"><div class="lbl">Premium <span class="jg">roja</span></div><div class="val">${mx(pPre)}</div><div class="cap">promedio nacional</div></div>
-<div class="hbox die"><div class="lbl">Diésel</div><div class="val">${mx(pDie)}</div><div class="cap">promedio nacional</div></div>
-</div><p class="nota">Basado en ${ACT.length.toLocaleString('es-MX')} estaciones · datos de la CRE · ${HOY}</p>`;
+<div class="hbox reg"><div class="lbl">${tr('Magna','Regular')} <span class="jg">${tr('verde','green')}</span></div><div class="val">${pz(pReg)}</div><div class="cap">${tr('promedio nacional','national average')} · <span class="unid">MXN/L</span></div></div>
+<div class="hbox pre"><div class="lbl">Premium <span class="jg">${tr('roja','red')}</span></div><div class="val">${pz(pPre)}</div><div class="cap">${tr('promedio nacional','national average')} · <span class="unid">MXN/L</span></div></div>
+<div class="hbox die"><div class="lbl">${tr('Diésel','Diesel')}</div><div class="val">${pz(pDie)}</div><div class="cap">${tr('promedio nacional','national average')} · <span class="unid">MXN/L</span></div></div>
+</div><p class="nota">${tr(`Basado en ${ACT.length.toLocaleString('es-MX')} estaciones · datos de la CRE · ${HOY}`,`Based on ${ACT.length.toLocaleString('en-US')} stations · CRE data · ${HOY_EN}`)}</p>`;
 const idxMun=JSON.stringify(muns.map(([k,l])=>{const [ed,mu]=k.split('|');
  const cr=l.filter(g=>g.regular);const mn=cr.length?Math.min(...cr.map(g=>g.regular)):0;
  return [mu,ed,slugMun(ed,mu),l.length,mn]}));
@@ -1369,7 +1376,7 @@ const JLD_SITIO = `<script type="application/ld+json">${JSON.stringify([
 f.writeFileSync(P.join(O,'index.html'),L(
  `Precio de la gasolina hoy en México | Magna, Premium y Diésel`,
  `¿Cuánto cuesta la gasolina hoy? Costo y precio de Magna, Premium y Diésel al ${HOY} en ${ACT.length.toLocaleString('es-MX')} gasolineras de México. Datos oficiales de la CRE.`,DOM+'/',
-`<h1>Precio de la gasolina hoy en México</h1><p class="sub">¿Cuánto cuesta la gasolina hoy? Consulta cuánto está el costo por litro de Magna, Premium y Diésel en ${ACT.length.toLocaleString('es-MX')} gasolineras del país. Datos oficiales de la CRE, actualizados todos los días.</p>
+`<h1>${tr('Precio de la gasolina hoy en México','Gas Prices in Mexico Today')}</h1><p class="sub">${tr(`¿Cuánto cuesta la gasolina hoy? Consulta cuánto está el costo por litro de Magna, Premium y Diésel en ${ACT.length.toLocaleString('es-MX')} gasolineras del país. Datos oficiales de la CRE, actualizados todos los días.`,`Live gas prices from ${ACT.length.toLocaleString('en-US')} stations across Mexico, in US dollars per gallon. Regular (Magna), Premium and Diesel. Official CRE data, updated daily.`)}</p>
 ${hero}
 <div class="pwa" id="pwa">
  <div class="ic">⛽</div>
@@ -1581,11 +1588,12 @@ document.getElementById('buscador').addEventListener('input',function(ev){
  if(q.length<3){o.innerHTML='';return}
  if(!_bl){o.innerHTML='<p style="color:#86868b;font-size:.9rem;margin-top:12px">Buscando...</p>';
   _carga(function(){document.getElementById('buscador').dispatchEvent(new Event('input'))});return}
+ var _P=function(v){return window.__EN?'$'+((v/window.__FX)*3.785411784).toFixed(2):'$'+v.toFixed(2)};
  var mh=[];for(var i=0;i<MU.length&&mh.length<6;i++){if(nrm(MU[i][0]).indexOf(q)>-1)mh.push(MU[i])}
  var eh=[];for(var j=0;j<DB.length&&eh.length<12;j++){if(nrm(DB[j][0]).indexOf(q)>-1||nrm(DB[j][3]).indexOf(q)>-1)eh.push(DB[j])}
  var html='';
- if(mh.length)html+='<p style="font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:#86868b;font-weight:600;margin:14px 0 8px">Municipios</p><table class="tabla"><tbody>'+mh.map(function(a){return '<tr><td class="nm"><a href="'+a[2]+'"><strong>'+a[0]+'</strong></a><small>'+a[1]+' · '+a[3]+' estaciones</small></td><td class="pr g">desde $'+a[4].toFixed(2)+'</td></tr>'}).join('')+'</tbody></table>';
- if(eh.length)html+='<p style="font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:#86868b;font-weight:600;margin:18px 0 8px">Estaciones</p><table class="tabla"><tbody>'+eh.map(function(a){return '<tr><td class="nm"><a href="estacion/'+a[1]+'">'+a[0]+'</a><small>'+a[3]+'</small></td><td class="pr g">$'+a[2].toFixed(2)+'</td></tr>'}).join('')+'</tbody></table>';
+ if(mh.length)html+='<p style="font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:#86868b;font-weight:600;margin:14px 0 8px">'+(window.__EN?'Cities':'Municipios')+'</p><table class="tabla"><tbody>'+mh.map(function(a){return '<tr><td class="nm"><a href="'+a[2]+'"><strong>'+a[0]+'</strong></a><small>'+a[1]+' · '+a[3]+(window.__EN?' stations':' estaciones')+'</small></td><td class="pr g">'+(window.__EN?'from ':'desde ')+_P(a[4])+'</td></tr>'}).join('')+'</tbody></table>';
+ if(eh.length)html+='<p style="font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:#86868b;font-weight:600;margin:18px 0 8px">'+(window.__EN?'Stations':'Estaciones')+'</p><table class="tabla"><tbody>'+eh.map(function(a){return '<tr><td class="nm"><a href="estacion/'+a[1]+'">'+a[0]+'</a><small>'+a[3]+'</small></td><td class="pr g">'+_P(a[2])+'</td></tr>'}).join('')+'</tbody></table>';
  o.innerHTML=html||'<p style="color:#86868b;font-size:.9rem;margin-top:12px">Sin resultados para "'+ev.target.value+'"</p>';
 });<\/script>`));
 
@@ -1593,16 +1601,16 @@ document.getElementById('buscador').addEventListener('input',function(ev){
 f.writeFileSync(P.join(O,'baratas.html'),L(
  `Gasolina más barata de México hoy | ${N}`,
  `Las 200 gasolineras más baratas de México hoy ${HOY}. Precio de Magna desde ${mx(baratas[0].regular)}.`,DOM+'/baratas',
-`<p class="crumb"><a href="./">Inicio</a> › Más baratas</p>
-<h1>Gasolina más barata de México</h1><p class="sub">Las 200 estaciones con el precio de Magna más bajo del país, según el último reporte de la CRE.</p>
+`<p class="crumb"><a href="./">${tr('Inicio','Home')}</a> › ${tr('Más baratas','Cheapest')}</p>
+<h1>${tr('Gasolina más barata de México','Cheapest Gas in Mexico')}</h1><p class="sub">${tr('Las 200 estaciones con el precio de Magna más bajo del país, según el último reporte de la CRE.','The 200 stations with the lowest regular price in Mexico, from the latest official CRE report.')}</p>
 ${tabla(baratas.slice(0,200))}`));
 
 // ── ESTADOS (índice)
 f.writeFileSync(P.join(O,'estados.html'),L(
  `Precio de la gasolina por estado | ${N}`,
  `Precio promedio de gasolina en los ${edos.length} estados de México. Consulta Magna, Premium y Diésel por entidad.`,DOM+'/estados',
-`<p class="crumb"><a href="./">Inicio</a> › Estados</p>
-<h1>Precio por estado</h1><p class="sub">${edos.length} entidades · ${D.length.toLocaleString('es-MX')} estaciones registradas</p>
+`<p class="crumb"><a href="./">${tr('Inicio','Home')}</a> › ${tr('Estados','States')}</p>
+<h1>${tr('Precio por estado','Gas Prices by State')}</h1><p class="sub">${tr(`${edos.length} entidades · ${D.length.toLocaleString('es-MX')} estaciones registradas`,`${edos.length} states · ${D.length.toLocaleString('en-US')} stations`)}</p>
 <div class="chips">${edos.map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}<span class="nm2">${l.length}</span></a>`).join('')}</div>`));
 
 // ── PÁGINA POR ESTADO
@@ -1617,18 +1625,18 @@ edos.forEach(([n,lista])=>{
   `Precio de la gasolina en ${n} hoy | Costo por litro`,
   `¿Cuánto está la gasolina en ${n} hoy ${HOY}? Costo por litro de Magna (verde), Premium (roja) y Diésel en ${lista.length} gasolineras del estado. Datos oficiales de la CRE.`,
   `${DOM}/estado-${s(n)}`,
-`<p class="crumb"><a href="./">Inicio</a> › <a href="estados">Estados</a> › ${e(n)}</p>
-<h1>Gasolina en ${e(n)}</h1><p class="sub">${lista.length} estaciones registradas · precios del ${HOY}</p>
+`<p class="crumb"><a href="./">${tr('Inicio','Home')}</a> › <a href="estados">${tr('Estados','States')}</a> › ${e(n)}</p>
+<h1>${tr('Gasolina en '+n,'Gas Prices in '+n+', Mexico')}</h1><p class="sub">${tr(`${lista.length} estaciones registradas · precios del ${HOY}`,`${lista.length} stations · prices as of ${HOY_EN}`)}</p>
 <div class="hero">
-<div class="hbox reg"><div class="lbl">Magna <span class="jg">verde</span></div><div class="val">${mx(pr)}</div><div class="cap">promedio en ${e(n)}</div></div>
-<div class="hbox pre"><div class="lbl">Premium <span class="jg">roja</span></div><div class="val">${pp?mx(pp):'—'}</div><div class="cap">promedio en ${e(n)}</div></div>
-<div class="hbox die"><div class="lbl">Diésel</div><div class="val">${pd?mx(pd):'—'}</div><div class="cap">promedio en ${e(n)}</div></div>
+<div class="hbox reg"><div class="lbl">${tr('Magna','Regular')} <span class="jg">${tr('verde','green')}</span></div><div class="val">${pz(pr)}</div><div class="cap">${tr('promedio en '+n,'average in '+n)} · <span class="unid">MXN/L</span></div></div>
+<div class="hbox pre"><div class="lbl">Premium <span class="jg">${tr('roja','red')}</span></div><div class="val">${pz(pp)}</div><div class="cap">${tr('promedio en '+n,'average in '+n)} · <span class="unid">MXN/L</span></div></div>
+<div class="hbox die"><div class="lbl">${tr('Diésel','Diesel')}</div><div class="val">${pz(pd)}</div><div class="cap">${tr('promedio en '+n,'average in '+n)} · <span class="unid">MXN/L</span></div></div>
 </div>
 ${dif>0?`<p class="nota">Diferencia entre la más cara y la más barata: <strong>${mx(dif)}</strong> por litro. En un tanque de 50 litros son <strong>${mx(dif*50)}</strong> de ahorro.</p>`:'<p class="nota"></p>'}
 ${(()=>{const mm={};lista.forEach(g=>{if(g._mun)(mm[g._mun]=mm[g._mun]||[]).push(g)});
 const arr=Object.entries(mm).filter(([m,l])=>MUNOK.has(n+'|'+m)).sort((a,b)=>b[1].length-a[1].length);
-return arr.length?`<h2 class="rv">Busca por municipio</h2><div class="chips">${arr.map(([m,l])=>`<a href="municipio-${s(m)}-${s(n)}">${e(m)}<span class="nm2">${l.length}</span></a>`).join('')}</div>`:''})()}
-<h2>Las más baratas de ${e(n)}</h2>
+return arr.length?`<h2 class="rv">${tr('Busca por municipio','Browse by city')}</h2><div class="chips">${arr.map(([m,l])=>`<a href="municipio-${s(m)}-${s(n)}">${e(m)}<span class="nm2">${l.length}</span></a>`).join('')}</div>`:''})()}
+<h2>${tr('Las más baratas de '+n,'Cheapest in '+n)}</h2>
 ${tabla(conR.slice(0,60))}
 <div class="card"><h3>Sobre los precios en ${e(n)}</h3><p>En ${e(n)} hay ${lista.length} estaciones de servicio que reportan precios a la CRE. El promedio de Magna es de ${mx(pr)} por litro${dif>0?`, con una diferencia de ${mx(dif)} entre la estación más económica y la más cara`:''}. Los precios mostrados corresponden al último reporte disponible y pueden cambiar durante el día.</p></div>`));
  npe++;
@@ -1646,25 +1654,25 @@ D.forEach(g=>{
   `${g.name} — Precio de gasolina hoy | ${N}`,
   `Precio de gasolina en ${g.name}${g._edo?', '+g._edo:''} hoy ${HOY}: Magna ${g.regular?mx(g.regular):'no disponible'}.`,
   `${DOM}/estacion/${g._s}`,
-`<p class="crumb"><a href="../">Inicio</a>${g._edo?` › <a href="../estado-${s(g._edo)}">${e(g._edo)}</a>`:''}${(g._mun&&g._edo&&MUNOK.has(g._edo+'|'+g._mun))?` › <a href="../municipio-${s(g._mun)}-${s(g._edo)}">${e(g._mun)}</a>`:''} › ${e(g.name)}</p>
+`<p class="crumb"><a href="../">${tr('Inicio','Home')}</a>${g._edo?` › <a href="../estado-${s(g._edo)}">${e(g._edo)}</a>`:''}${(g._mun&&g._edo&&MUNOK.has(g._edo+'|'+g._mun))?` › <a href="../municipio-${s(g._mun)}-${s(g._edo)}">${e(g._mun)}</a>`:''} › ${e(g.name)}</p>
 <h1>${e(g.name)}</h1><p class="sub">${g._mun?e(g._mun)+', ':''}${g._edo?e(g._edo)+' · ':''}${g._sin>=DIAS_AVISO?`Último dato: ${fmtFecha(g._ult)}`:`Precios del ${HOY}`}</p>
 ${g._sin>=DIAS_OCULTA?`<div class="avisoX"><strong>Esta estación podría estar cerrada.</strong> Lleva ${g._sin} días sin reportar precios a la CRE. Los datos que ves son del ${fmtFecha(g._ult)||'último reporte disponible'}. Te recomendamos confirmar antes de ir.</div>`:(g._sin>=DIAS_AVISO?`<div class="avisoW"><strong>Datos no actualizados.</strong> Esta estación no ha reportado precios en ${g._sin} días. La información es del ${fmtFecha(g._ult)||'último reporte'}.</div>`:'')}
 <div class="hero">
-<div class="hbox reg"><div class="lbl">Magna <span class="jg">verde</span></div><div class="val">${g.regular?mx(g.regular):'—'}</div><div class="cap">por litro</div></div>
-<div class="hbox pre"><div class="lbl">Premium <span class="jg">roja</span></div><div class="val">${g.premium?mx(g.premium):'—'}</div><div class="cap">por litro</div></div>
-<div class="hbox die"><div class="lbl">Diésel</div><div class="val">${g.diesel?mx(g.diesel):'—'}</div><div class="cap">por litro</div></div>
+<div class="hbox reg"><div class="lbl">${tr('Magna','Regular')} <span class="jg">${tr('verde','green')}</span></div><div class="val">${pz(g.regular)}</div><div class="cap"><span class="unid">MXN/L</span></div></div>
+<div class="hbox pre"><div class="lbl">Premium <span class="jg">${tr('roja','red')}</span></div><div class="val">${pz(g.premium)}</div><div class="cap"><span class="unid">MXN/L</span></div></div>
+<div class="hbox die"><div class="lbl">${tr('Diésel','Diesel')}</div><div class="val">${pz(g.diesel)}</div><div class="cap"><span class="unid">MXN/L</span></div></div>
 </div>
 <div class="dt">
- <div><b>Municipio</b>${e(g._mun||'—')}</div>
- <div><b>Estado</b>${e(g._edo||'—')}</div>
- <div><b>ID CRE</b>${e(g.id)}</div>
- ${isFinite(g.x)?`<div><b>Coordenadas</b>${g.y.toFixed(4)}, ${g.x.toFixed(4)}</div>`:''}
- ${vsNal!==null?`<div><b>vs. nacional</b>${vsNal>0?'+':''}${mx(vsNal)}</div>`:''}
+ <div><b>${tr('Municipio','City')}</b>${e(g._mun||'—')}</div>
+ <div><b>${tr('Estado','State')}</b>${e(g._edo||'—')}</div>
+ <div><b>${tr('ID CRE','CRE ID')}</b>${e(g.id)}</div>
+ ${isFinite(g.x)?`<div><b>${tr('Coordenadas','Coordinates')}</b>${g.y.toFixed(4)}, ${g.x.toFixed(4)}</div>`:''}
+ ${vsNal!==null?`<div><b>${tr('vs. nacional','vs. national')}</b>${vsNal>0?'+':''}${pz(Math.abs(vsNal))}</div>`:''}
 </div>
-${isFinite(g.x)?`<a class="btn" href="https://www.google.com/maps/search/?api=1&query=${g.y},${g.x}" target="_blank" rel="noopener nofollow">Ver en Google Maps</a>`:''}
-<button class="shr" type="button" data-tx="${e(g.name)}${g.regular?` — Magna a ${mx(g.regular)}`:''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>Compartir</button>
-<button class="btn r ocb" type="button" data-eid="${g.id}" data-nom="${e(g.name)}">Ocultar esta estación</button>
-<a class="btn r" href="mailto:${MAIL}?subject=${encodeURIComponent('Reporte: '+g.name+' (ID '+g.id+')')}&body=${encodeURIComponent('Reporto un problema con esta estacion:\n\n'+g.name+'\n'+(g._mun||'')+', '+(g._edo||'')+'\nID CRE: '+g.id+'\n'+DOM+'/estacion/'+g._s+'\n\nQue pasa? (borra lo que no aplique)\n- Ya cerro / no existe\n- El precio no coincide\n- La ubicacion esta mal\n- Otro:\n\n')}">Reportar un problema</a>
+${isFinite(g.x)?`<a class="btn" href="https://www.google.com/maps/search/?api=1&query=${g.y},${g.x}" target="_blank" rel="noopener nofollow">${tr('Ver en Google Maps','Open in Google Maps')}</a>`:''}
+<button class="shr" type="button" data-tx="${e(g.name)}${g.regular?` — Magna a ${mx(g.regular)}`:''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>${tr('Compartir','Share')}</button>
+<button class="btn r ocb" type="button" data-eid="${g.id}" data-nom="${e(g.name)}">${tr('Ocultar esta estación','Hide this station')}</button>
+<a class="btn r" href="mailto:${MAIL}?subject=${encodeURIComponent('Reporte: '+g.name+' (ID '+g.id+')')}&body=${encodeURIComponent('Reporto un problema con esta estacion:\n\n'+g.name+'\n'+(g._mun||'')+', '+(g._edo||'')+'\nID CRE: '+g.id+'\n'+DOM+'/estacion/'+g._s+'\n\nQue pasa? (borra lo que no aplique)\n- Ya cerro / no existe\n- El precio no coincide\n- La ubicacion esta mal\n- Otro:\n\n')}">${tr('Reportar un problema','Report a problem')}</a>
 ${(g._mun&&g._edo&&MUNOK.has(g._edo+'|'+g._mun))?`<a class="btn a" href="../municipio-${s(g._mun)}-${s(g._edo)}">Más baratas en ${e(g._mun)}</a>`:(g._edo?`<a class="btn a" href="../estado-${s(g._edo)}">Más baratas en ${e(g._edo)}</a>`:'')}
 ${(()=>{const r=rango(g.id),t=tendencia(g.id,g.regular),v=serie(g.id);
 if(!r||r.n<2)return '';
