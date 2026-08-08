@@ -343,14 +343,31 @@ h2 .ver:hover{text-decoration:underline}
 .hbox .cap{font-size:.8rem;color:var(--tx2);margin-top:7px}
 .hbox.reg .val{color:var(--vd)}.hbox.pre .val{color:var(--rj)}.hbox.die .val{color:var(--tx)}
 .nota{font-size:.82rem;color:var(--tx2);margin-bottom:44px}
-/* ══ SWITCH DE IDIOMA EN EL HEADER ══ */
-.lgsw{display:flex;gap:3px;margin-left:auto;background:var(--bg2);padding:3px;border-radius:980px;flex-shrink:0}
-.lgsw button{font:inherit;font-size:.98rem;line-height:1;padding:5px 9px;border:0;border-radius:980px;
- background:transparent;cursor:pointer;opacity:.42;transition:all .18s;filter:grayscale(1)}
-.lgsw button:hover{opacity:.75;filter:grayscale(.3)}
-.lgsw button.on{background:#fff;opacity:1;filter:none;box-shadow:0 1px 3px rgba(0,0,0,.13)}
-.hin .upd{margin-left:14px}
-@media(max-width:734px){.hin .upd{display:none}.lgsw{margin-left:auto}}
+/* ══ SWITCH DE IDIOMA — grande, arriba del contenido ══ */
+.lgsw{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 22px;
+ padding:13px 15px;background:var(--bg2);border:1px solid var(--bd2);border-radius:15px}
+.lgsw .lgt2{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+ color:var(--tx2);margin-right:2px}
+.lgsw button{font:inherit;display:inline-flex;align-items:center;gap:9px;
+ padding:11px 19px;border-radius:12px;border:2px solid var(--bd);background:#fff;
+ color:var(--tx2);cursor:pointer;transition:all .18s;line-height:1.15}
+.lgsw button .fl{font-size:1.5rem;line-height:1;filter:grayscale(.65);transition:filter .18s}
+.lgsw button .tt{font-size:.96rem;font-weight:700;letter-spacing:-.015em}
+.lgsw button .mo{font-size:.68rem;font-weight:650;opacity:.62;padding:2px 7px;
+ border-radius:980px;background:var(--bg2);margin-left:1px}
+.lgsw button:hover{border-color:var(--vd);color:var(--tx)}
+.lgsw button:hover .fl{filter:grayscale(.2)}
+.lgsw button.on{border-color:var(--vd);background:var(--vd);color:#fff;
+ box-shadow:0 3px 12px rgba(13,122,62,.28)}
+.lgsw button.on .fl{filter:none}
+.lgsw button.on .mo{background:rgba(255,255,255,.24);opacity:1;color:#fff}
+@media(max-width:560px){
+ .lgsw{gap:8px;padding:11px 12px}
+ .lgsw .lgt2{width:100%;margin-bottom:1px}
+ .lgsw button{flex:1;justify-content:center;padding:11px 10px;gap:7px}
+ .lgsw button .tt{font-size:.9rem}
+ .lgsw button .mo{display:none}
+}
 /* ══ SELECTOR DE IDIOMA (viejo, ya no se usa) ══ */
 .lang{display:flex;align-items:center;gap:8px;margin:0 0 18px;flex-wrap:wrap}
 .lang .lbl2{font-size:.76rem;color:var(--tx2);margin-right:2px}
@@ -708,7 +725,6 @@ const HEAD=(t,d,c,r,nx)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UT
 <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
 <a href="${r}" class="lg">${LOGO}<span class="lgt">Gasolina<em>MX</em></span></a>
 <nav class="hnav"><a href="${r}"><span data-en="Home">Inicio</span></a><a href="${r}estados"><span data-en="States">Estados</span></a><a href="${r}baratas"><span data-en="Cheapest">Más baratas</span></a></nav>
-<div class="lgsw"><button id="lgEs" type="button" class="on" title="Español">🇲🇽</button><button id="lgEn" type="button" title="English">🇺🇸</button></div>
 <span class="upd"><span data-en="Updated">Actualizado</span> <span data-en="${HOY_EN}">${HOY}</span></span>
 </div></header>
 <div class="scrim" id="scrim"></div>
@@ -846,19 +862,19 @@ try{var v=localStorage.getItem(KEY);
 <\/script>
 <div class="ocm" id="ocm" role="dialog" aria-modal="true">
  <div class="ocmc">
-  <h3>Ocultar esta estación</h3>
+  <h3><span data-en="Hide this station">Ocultar esta estación</span></h3>
   <div class="est" id="ocmNom"></div>
-  <label><input type="radio" name="ocmot" value="cerro" checked> Ya cerró o no existe</label>
-  <label><input type="radio" name="ocmot" value="precio"> El precio no coincide</label>
-  <label><input type="radio" name="ocmot" value="ubicacion"> La ubicación está mal</label>
-  <label><input type="radio" name="ocmot" value="personal"> Solo no me interesa</label>
+  <label><input type="radio" name="ocmot" value="cerro" checked> <span data-en="It closed or doesn't exist">Ya cerró o no existe</span></label>
+  <label><input type="radio" name="ocmot" value="precio"> <span data-en="The price is wrong">El precio no coincide</span></label>
+  <label><input type="radio" name="ocmot" value="ubicacion"> <span data-en="The location is wrong">La ubicación está mal</span></label>
+  <label><input type="radio" name="ocmot" value="personal"> <span data-en="Just not interested">Solo no me interesa</span></label>
   <div class="acc">
-   <button type="button" class="no" id="ocmNo">Cancelar</button>
-   <button type="button" class="si" id="ocmSi">Ocultar</button>
+   <button type="button" class="no" id="ocmNo"><span data-en="Cancel">Cancelar</span></button>
+   <button type="button" class="si" id="ocmSi"><span data-en="Hide">Ocultar</span></button>
   </div>
  </div>
 </div>
-<div class="ocav" id="ocav"><span id="ocavT">Estación oculta</span><button type="button" id="ocavU">Deshacer</button></div>
+<div class="ocav" id="ocav"><span id="ocavT"><span data-en="Station hidden">Estación oculta</span></span><button type="button" id="ocavU"><span data-en="Undo">Deshacer</span></button></div>
 <script>
 (function(){
  var K='oc_gmx', F={f:${JSON.stringify(FORM_ID)},i:${JSON.stringify(FORM_C_ID)},m:${JSON.stringify(FORM_C_MOT)}};
@@ -951,7 +967,7 @@ try{var v=localStorage.getItem(KEY);
   var esFicha=!document.querySelector('tr[data-eid="'+pend.id+'"]');
   cierra(); aplica(true);
   if(AV){
-   document.getElementById('ocavT').textContent='Estación oculta';
+   document.getElementById('ocavT').textContent=T('Estación oculta','Station hidden');
    AV.classList.add('on');
    clearTimeout(tmr); tmr=setTimeout(function(){AV.classList.remove('on')},5200);
   }
@@ -986,6 +1002,8 @@ try{var v=localStorage.getItem(KEY);
 (function(){
  var FX=${FX}, GAL=3.785411784, K='gmx_lang';
  window.__FX=FX;
+ // T(es,en) -> devuelve el texto segun el idioma activo
+ window.T=function(es,en){return window.__EN?en:es};
  var esEN=false;
 
  function aUSD(mxnLitro){return '$'+((mxnLitro/FX)*GAL).toFixed(2)}
@@ -1020,6 +1038,12 @@ try{var v=localStorage.getItem(KEY);
   // la unidad que se muestra en los encabezados y cajas
   var u=document.querySelectorAll('.unid');
   for(var i=0;i<u.length;i++)u[i].textContent=en?'USD/gal':'MXN/L';
+  // placeholders de inputs
+  var ph=document.querySelectorAll('[data-ph-en]');
+  for(var k=0;k<ph.length;k++){
+   if(!ph[k].getAttribute('data-ph-es'))ph[k].setAttribute('data-ph-es',ph[k].placeholder||'');
+   ph[k].placeholder=en?ph[k].getAttribute('data-ph-en'):ph[k].getAttribute('data-ph-es');
+  }
   // el bloque largo en ingles solo estorba cuando ya todo esta en ingles
   var sec=document.getElementById('en');
   if(sec)sec.style.display=en?'none':'';
@@ -1122,7 +1146,10 @@ try{var v=localStorage.getItem(KEY);
 window.__ZONAS=${JSON.stringify(ZONAS)};
 <\/script>
 </body></html>`;
-const L=(t,d,c,b,r='',nx=false)=>HEAD(t,d,c,r,nx)+`<div class="shell"><aside class="side">${SIDE.replace(/href="/g,'href="'+r)}</aside><main>${b}</main></div>`+FOOT(r);
+const LGSW=`<div class="lgsw"><span class="lgt2"><span data-en="Language">Idioma</span></span>
+<button id="lgEs" type="button" class="on"><span class="fl">🇲🇽</span><span class="tt">Español</span><span class="mo">MXN/L</span></button>
+<button id="lgEn" type="button"><span class="fl">🇺🇸</span><span class="tt">English</span><span class="mo">USD/gal</span></button></div>`;
+const L=(t,d,c,b,r='',nx=false)=>HEAD(t,d,c,r,nx)+`<div class="shell"><aside class="side">${SIDE.replace(/href="/g,'href="'+r)}</aside><main>${LGSW}${b}</main></div>`+FOOT(r);
 const PG=(cur,tot,fn)=>{if(tot<2)return'';let h='<div class="pg">';if(cur>1)h+=`<a href="${fn(cur-1)}">←</a>`;const a=Math.max(1,cur-2),z=Math.min(tot,cur+2);if(a>1)h+=`<a href="${fn(1)}">1</a>`+(a>2?'<span>…</span>':'');for(let i=a;i<=z;i++)h+=i===cur?`<span class="on">${i}</span>`:`<a href="${fn(i)}">${i}</a>`;if(z<tot)h+=(z<tot-1?'<span>…</span>':'')+`<a href="${fn(tot)}">${tot}</a>`;if(cur<tot)h+=`<a href="${fn(cur+1)}">→</a>`;return h+'</div>'};
 const badge=g=>{const t=tendencia(g.id,g.regular);if(!t||Math.abs(t.d)<0.01)return '';
  return `<span class="trend ${t.d>0?'up':'down'}">${t.d>0?'▲':'▼'} ${mx(Math.abs(t.d))}</span>`};
@@ -1259,8 +1286,8 @@ const prom=t=>{const a=ACT.filter(g=>g[t]);return a.length?a.reduce((s,g)=>s+g[t
 const pReg=prom('regular'),pPre=prom('premium'),pDie=prom('diesel');
 const baratas=[...conReg].sort((a,b)=>a.regular-b.regular);
 
-SIDE=`<div class="sttl">Consultar</div><a href="./">Inicio</a><a href="baratas">Más baratas</a><a href="estados">Todos los estados</a><div class="sttl">Estados</div>`+edos.map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}</a>`).join('');
-DRAWER=`<a href="./">Inicio</a><a href="baratas">Más baratas de México</a><a href="estados">Todos los estados</a><div class="dsep"></div><div class="dttl">Estados</div>`+edos.map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}<span class="n">${l.length}</span></a>`).join('');
+SIDE=`<div class="sttl"><span data-en="Browse">Consultar</span></div><a href="./"><span data-en="Home">Inicio</span></a><a href="baratas"><span data-en="Cheapest">Más baratas</span></a><a href="estados"><span data-en="All states">Todos los estados</span></a><div class="sttl"><span data-en="States">Estados</span></div>`+edos.map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}</a>`).join('');
+DRAWER=`<a href="./"><span data-en="Home">Inicio</span></a><a href="baratas"><span data-en="Cheapest in Mexico">Más baratas de México</span></a><a href="estados"><span data-en="All states">Todos los estados</span></a><div class="dsep"></div><div class="dttl"><span data-en="States">Estados</span></div>`+edos.map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}<span class="n">${l.length}</span></a>`).join('');
 
 f.rmSync(O,{recursive:true,force:true});f.mkdirSync(P.join(O,'estacion'),{recursive:true});
 console.log('📄 Generando HTML:');
@@ -1380,33 +1407,33 @@ f.writeFileSync(P.join(O,'index.html'),L(
 ${hero}
 <div class="pwa" id="pwa">
  <div class="ic">⛽</div>
- <div class="tx"><b>Instala GasolinaMX</b><span>Consulta los precios sin abrir el navegador</span></div>
- <button type="button" id="pwaSi">Instalar</button>
+ <div class="tx"><b><span data-en="Install GasolinaMX">Instala GasolinaMX</span></b><span data-en="Check prices without opening the browser">Consulta los precios sin abrir el navegador</span></div>
+ <button type="button" id="pwaSi"><span data-en="Install">Instalar</span></button>
  <button type="button" class="x" id="pwaNo" aria-label="Ahora no">&times;</button>
 </div>
-<p class="frescas">${INACTIVAS.length?`Ocultamos ${INACTIVAS.length.toLocaleString('es-MX')} estación(es) que llevan más de ${DIAS_OCULTA} días sin reportar precios a la CRE, porque probablemente ya cerraron.`:'Todas las estaciones mostradas reportaron precio en los últimos días.'}</p>
+<p class="frescas">${INACTIVAS.length?tr(`Ocultamos ${INACTIVAS.length.toLocaleString('es-MX')} estación(es) que llevan más de ${DIAS_OCULTA} días sin reportar precios a la CRE, porque probablemente ya cerraron.`,`We hid ${INACTIVAS.length.toLocaleString('en-US')} station(s) that haven't reported prices to the CRE in over ${DIAS_OCULTA} days — they've likely closed.`):tr('Todas las estaciones mostradas reportaron precio en los últimos días.','All stations shown reported a price in the last few days.')}</p>
 
 <div class="geo rv">
-<h3>Gasolineras más baratas cerca de ti</h3>
-<p>Activa tu ubicación y te mostramos las estaciones más económicas a tu alrededor, ordenadas por precio y distancia.</p>
-<button class="geob" id="geoBtn" type="button">📍 Buscar cerca de mí</button>
+<h3>${tr("Gasolineras más baratas cerca de ti","Cheapest gas stations near you")}</h3>
+<p>${tr("Activa tu ubicación y te mostramos las estaciones más económicas a tu alrededor, ordenadas por precio y distancia.","Turn on location and we'll show the cheapest stations around you, sorted by price and distance.")}</p>
+<button class="geob" id="geoBtn" type="button">📍 <span data-en="Search near me">Buscar cerca de mí</span></button>
 <div class="geost" id="geoSt"></div>
 </div>
 <div class="mapwrap" id="mw" hidden><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span class="lg2"><span class="pt" style="background:#0a84ff"></span>Tú</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
 <div class="geores" id="geoRes"></div>
 
-<div class="finder rv"><h3>O busca por nombre</h3><p style="font-size:.88rem;color:#86868b;margin-bottom:12px">Escribe tu municipio o ciudad — por ejemplo: Tlajomulco, Zapopan, Mérida</p><input id="buscador" placeholder="Tu municipio o el nombre de la estación" autocomplete="off" enterkeyhint="search"><div id="resultados"></div></div>
+<div class="finder rv"><h3>${tr("O busca por nombre","Or search by name")}</h3><p style="font-size:.88rem;color:#86868b;margin-bottom:12px">${tr("Escribe tu municipio o ciudad — por ejemplo: Tlajomulco, Zapopan, Mérida","Type a city — for example: Cancun, Monterrey, Tijuana")}</p><input id="buscador" data-ph-en="Your city or the station name" placeholder="Tu municipio o el nombre de la estación" autocomplete="off" enterkeyhint="search"><div id="resultados"></div></div>
 
 <div class="ocpanel" id="ocpanel">
- <div class="ocph" id="ocph"><span class="ic" id="ocpn">0</span><span class="tt">Estaciones que ocultaste</span><span class="fl">▾</span></div>
- <div class="ocpb"><div id="ocpl"></div><div class="ocpf"><button type="button" id="ocpAll">Mostrar todas de nuevo</button></div></div>
+ <div class="ocph" id="ocph"><span class="ic" id="ocpn">0</span><span class="tt"><span data-en="Stations you hid">Estaciones que ocultaste</span></span><span class="fl">▾</span></div>
+ <div class="ocpb"><div id="ocpl"></div><div class="ocpf"><button type="button" id="ocpAll"><span data-en="Show all again">Mostrar todas de nuevo</span></button></div></div>
 </div>
 
-<h2 class="rv">Las 25 más baratas del país<a class="ver" href="baratas">Ver 200 →</a></h2>
+<h2 class="rv">${tr("Las 25 más baratas del país","The 25 cheapest in Mexico")}<a class="ver" href="baratas"><span data-en="See 200 →">Ver 200 →</span></a></h2>
 ${tabla(baratas.slice(0,25))}
 <div class="alerta rv">
-<h3>Avísame cuando baje el precio</h3>
-<p>Activa las notificaciones y te avisamos cuando alguna gasolinera cerca de ti baje del precio que elijas.</p>
+<h3>${tr("Avísame cuando baje el precio","Alert me when prices drop")}</h3>
+<p>${tr("Activa las notificaciones y te avisamos cuando alguna gasolinera cerca de ti baje del precio que elijas.","Turn on notifications and we'll alert you when a nearby station drops below the price you pick.")}</p>
 <div class="row">
 <input id="alPrecio" type="number" step="0.10" min="15" max="40" placeholder="23.50" inputmode="decimal">
 <button id="alBtn" type="button">Activar alerta</button>
@@ -1414,14 +1441,14 @@ ${tabla(baratas.slice(0,25))}
 <div class="est" id="alEst"></div>
 </div>
 
-<h2 class="rv">Preguntas frecuentes</h2>
+<h2 class="rv">${tr("Preguntas frecuentes","Frequently asked questions")}</h2>
 <div class="faq">
-<details><summary>¿Cuánto cuesta la gasolina hoy en México?</summary><p>Hoy ${HOY} el costo promedio nacional es de <strong>${mx(pReg)}</strong> por litro de Magna, <strong>${mx(pPre)}</strong> de Premium y <strong>${mx(pDie)}</strong> de Diésel. El precio cambia todos los días y varía según el estado y la gasolinera. Aquí mostramos el precio de ${ACT.length.toLocaleString('es-MX')} estaciones con datos oficiales de la CRE.</p></details>
-<details><summary>¿Cuál es la gasolina verde y cuál la roja?</summary><p>La <strong>gasolina verde es la Magna</strong> (87 octanos), la más común y la más barata. La <strong>gasolina roja es la Premium</strong> (91 o más octanos), que cuesta en promedio ${mx(pPre-pReg)} más por litro. Los nombres vienen del color de la manguera y del logo en el surtidor.</p></details>
-<details><summary>¿Conviene cargar Premium en vez de Magna?</summary><p>Solo si el manual de tu carro lo pide. La Premium tiene mayor octanaje, lo que evita la detonación prematura en motores de alta compresión o turbo. En un motor normal <strong>no da más rendimiento ni más potencia</strong>: es dinero tirado. Hoy la diferencia es de ${mx(pPre-pReg)} por litro, o sea ${mx((pPre-pReg)*40)} en un tanque de 40 litros.</p></details>
-<details><summary>¿Cuánto cuesta llenar el tanque?</summary><p>Con el precio promedio de hoy: un tanque de <strong>40 litros</strong> de Magna cuesta ${mx(pReg*40)}, uno de <strong>50 litros</strong> ${mx(pReg*50)}, y uno de <strong>60 litros</strong> ${mx(pReg*60)}. Si cargas en la gasolinera más barata de tu zona en vez de la más cara, puedes ahorrar hasta ${mx((baratas[baratas.length-1].regular-baratas[0].regular)*40)} por tanque.</p></details>
-<details><summary>¿De dónde salen estos precios?</summary><p>Del reporte público que la <strong>Comisión Reguladora de Energía (CRE)</strong> obliga a publicar a todos los permisionarios de gasolina en México. Descargamos ese archivo todos los días de forma automática. No son estimaciones ni datos de usuarios: son los precios que cada gasolinera reportó oficialmente.</p></details>
-<details><summary>¿Cada cuánto se actualizan?</summary><p>Todos los días a las 7:00 de la mañana, hora del centro de México. Además guardamos el histórico para que puedas ver si una gasolinera subió o bajó su precio en los últimos días.</p></details>
+<details><summary>${tr("¿Cuánto cuesta la gasolina hoy en México?","How much is gas in Mexico today?")}</summary><p>${tr(`Hoy ${HOY} el costo promedio nacional es de ${mx(pReg)} por litro de Magna, ${mx(pPre)} de Premium y ${mx(pDie)} de Diésel. El precio cambia todos los días y varía según el estado y la gasolinera. Aquí mostramos el precio de ${ACT.length.toLocaleString('es-MX')} estaciones con datos oficiales de la CRE.`,`As of ${HOY_EN} the national average is ${usdGal(pReg)} per gallon for Regular (Magna), ${usdGal(pPre)} for Premium and ${usdGal(pDie)} for Diesel. Prices change daily and vary by state and station. We show prices from ${ACT.length.toLocaleString('en-US')} stations using official CRE data.`)}</p></details>
+<details><summary>${tr("¿Cuál es la gasolina verde y cuál la roja?","What are the green and red pumps?")}</summary><p>${tr(`La gasolina verde es la Magna (87 octanos), la más común y la más barata. La gasolina roja es la Premium (91 o más octanos), que cuesta en promedio ${mx(pPre-pReg)} más por litro. Los nombres vienen del color de la manguera y del logo en el surtidor.`,`The green pump is Magna (87 octane) — regular unleaded, the most common and cheapest. The red pump is Premium (91+ octane), which costs about ${usdGal(pPre-pReg)} more per gallon. The names come from the hose and logo colors at the pump.`)}</p></details>
+<details><summary>${tr("¿Conviene cargar Premium en vez de Magna?","Is Premium worth it over Regular?")}</summary><p>${tr(`Solo si el manual de tu carro lo pide. La Premium tiene mayor octanaje, lo que evita la detonación prematura en motores de alta compresión o turbo. En un motor normal no da más rendimiento ni más potencia: es dinero tirado. Hoy la diferencia es de ${mx(pPre-pReg)} por litro, o sea ${mx((pPre-pReg)*40)} en un tanque de 40 litros.`,`Only if your owner's manual calls for it. Premium's higher octane prevents knock in high-compression or turbo engines. In a regular engine it gives no extra power or mileage — it's wasted money. Today the gap is ${usdGal(pPre-pReg)} per gallon, about ${'$'+(((pPre-pReg)/FX)*GAL*15).toFixed(2)} on a 15-gallon fill.`)}</p></details>
+<details><summary>${tr("¿Cuánto cuesta llenar el tanque?","How much does a full tank cost?")}</summary><p>${tr(`Con el precio promedio de hoy: un tanque de 40 litros de Magna cuesta ${mx(pReg*40)}, uno de 50 litros ${mx(pReg*50)}, y uno de 60 litros ${mx(pReg*60)}. Si cargas en la gasolinera más barata de tu zona en vez de la más cara, puedes ahorrar hasta ${mx((baratas[baratas.length-1].regular-baratas[0].regular)*40)} por tanque.`,`At today's average: a 12-gallon tank of Regular runs ${'$'+((pReg/FX)*GAL*12).toFixed(2)}, a 15-gallon ${'$'+((pReg/FX)*GAL*15).toFixed(2)}, and a 20-gallon ${'$'+((pReg/FX)*GAL*20).toFixed(2)}. Filling at the cheapest station in your area instead of the priciest can save you up to ${'$'+(((baratas[baratas.length-1].regular-baratas[0].regular)/FX)*GAL*15).toFixed(2)} per tank.`)}</p></details>
+<details><summary>${tr("¿De dónde salen estos precios?","Where do these prices come from?")}</summary><p>${tr("Del reporte público que la Comisión Reguladora de Energía (CRE) obliga a publicar a todos los permisionarios de gasolina en México. Descargamos ese archivo todos los días de forma automática. No son estimaciones ni datos de usuarios: son los precios que cada gasolinera reportó oficialmente.","From the public report that Mexico's energy regulator (CRE) requires every fuel retailer to publish. We download that file automatically every day. These aren't estimates or crowdsourced guesses — they're the prices each station officially reported.")}</p></details>
+<details><summary>${tr("¿Cada cuánto se actualizan?","How often is this updated?")}</summary><p>${tr("Todos los días a las 7:00 de la mañana, hora del centro de México. Además guardamos el histórico para que puedas ver si una gasolinera subió o bajó su precio en los últimos días.","Every day at 7:00 AM Mexico City time. We also keep price history so you can see whether a station raised or lowered its price in recent days.")}</p></details>
 </div>
 <script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@type':'FAQPage',mainEntity:[
  ['¿Cuánto cuesta la gasolina hoy en México?',`Hoy el costo promedio nacional es de ${mx(pReg)} por litro de Magna, ${mx(pPre)} de Premium y ${mx(pDie)} de Diésel, según datos oficiales de la CRE de ${ACT.length} estaciones.`],
@@ -1432,9 +1459,9 @@ ${tabla(baratas.slice(0,25))}
  ['¿Cada cuánto se actualizan?','Todos los días a las 7:00 de la mañana, hora del centro de México.']
 ].map(([q,a])=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))})}<\/script>
 ${JLD_SITIO}
-<h2 class="rv">Consulta por estado<a class="ver" href="estados">Ver todos →</a></h2>
+<h2 class="rv">${tr("Consulta por estado","Browse by state")}<a class="ver" href="estados"><span data-en="See all →">Ver todos →</span></a></h2>
 <div class="chips">${edos.slice(0,12).map(([n,l])=>`<a href="estado-${s(n)}">${e(n)}<span class="nm2">${l.length}</span></a>`).join('')}</div>
-<div class="card"><h3>¿Cómo funciona?</h3><p>Los precios provienen del reporte público de la Comisión Reguladora de Energía (CRE), que obliga a las estaciones a informar sus precios vigentes. La información se descarga y publica automáticamente cada día, por lo que siempre verás las cifras más recientes disponibles. Ten en cuenta que una estación puede modificar su precio durante el día sin reportarlo de inmediato.</p></div>
+<div class="card"><h3>${tr("¿Cómo funciona?","How it works")}</h3><p>${tr("Los precios provienen del reporte público de la Comisión Reguladora de Energía (CRE), que obliga a las estaciones a informar sus precios vigentes. La información se descarga y publica automáticamente cada día, por lo que siempre verás las cifras más recientes disponibles. Ten en cuenta que una estación puede modificar su precio durante el día sin reportarlo de inmediato.","Prices come from the public report by Mexico's energy regulator (CRE), which requires stations to disclose their current prices. We download and publish that data automatically every day, so you always see the latest figures available. Note that a station can change its price during the day without reporting it immediately.")}</p></div>
 
 <script>
 (function(){
@@ -1451,7 +1478,7 @@ function pinta(la,lo){
   var g=GEO[i],d=km(la,lo,g[0],g[1]);
   if(d<=15)cerca.push({d:d,g:g});
  }
- if(!cerca.length){st.textContent='No encontramos estaciones en 15 km. Usa el buscador por municipio.';btn.disabled=false;btn.textContent='📍 Buscar cerca de mí';return}
+ if(!cerca.length){st.textContent=T('No encontramos estaciones en 15 km. Usa el buscador por municipio.','No stations found within 10 miles. Try searching by city.');btn.disabled=false;btn.textContent=T('📍 Buscar cerca de mí','📍 Search near me');return}
  st.textContent=cerca.length+' estaciones en 15 km a la redonda';
  // dos criterios
  var porDist=cerca.slice().sort(function(a,b){return a.d-b.d});
@@ -1502,24 +1529,24 @@ function pinta(la,lo){
   this.classList.add('on');document.getElementById('tD').classList.remove('on');
   document.getElementById('tabBody').innerHTML=tabla(B,'v');
  });
- btn.disabled=false;btn.textContent='📍 Actualizar mi ubicación';
+ btn.disabled=false;btn.textContent=T('📍 Actualizar mi ubicación','📍 Update my location');
  res.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 btn.addEventListener('click',function(){
- if(!navigator.geolocation){st.textContent='Tu navegador no soporta geolocalización.';return}
- btn.disabled=true;btn.textContent='Buscando…';st.textContent='Solicitando permiso de ubicación…';
+ if(!navigator.geolocation){st.textContent=T('Tu navegador no soporta geolocalización.','Your browser does not support geolocation.');return}
+ btn.disabled=true;btn.textContent=T('Buscando…','Searching…');st.textContent=T('Solicitando permiso de ubicación…','Requesting location permission…');
  navigator.geolocation.getCurrentPosition(function(pos){
   var la=pos.coords.latitude,lo=pos.coords.longitude;
-  st.textContent='Ubicación obtenida. Calculando…';
+  st.textContent=T('Ubicación obtenida. Calculando…','Location found. Calculating…');
   if(GEO){pinta(la,lo);return}
   fetch('geo.json').then(function(r){return r.json()}).then(function(d){GEO=d;pinta(la,lo)})
-   .catch(function(){st.textContent='No pudimos cargar los datos. Reintenta.';btn.disabled=false;btn.textContent='📍 Buscar cerca de mí'});
+   .catch(function(){st.textContent=T('No pudimos cargar los datos. Reintenta.','Could not load the data. Please retry.');btn.disabled=false;btn.textContent=T('📍 Buscar cerca de mí','📍 Search near me')});
  },function(err){
   var m='No pudimos obtener tu ubicación.';
   if(err.code===1)m='Permiso denegado. Actívalo en los ajustes del navegador o usa el buscador por municipio.';
   else if(err.code===2)m='Ubicación no disponible. Revisa que el GPS esté encendido.';
   else if(err.code===3)m='Se agotó el tiempo de espera. Reintenta.';
-  st.textContent=m;btn.disabled=false;btn.textContent='📍 Buscar cerca de mí';
+  st.textContent=m;btn.disabled=false;btn.textContent=T('📍 Buscar cerca de mí','📍 Search near me');
  },{enableHighAccuracy:true,timeout:12000,maximumAge:300000});
 });
 })();
@@ -1535,12 +1562,12 @@ try{var g=JSON.parse(localStorage.getItem(KEY)||'null');
 }catch(e){}
 b.addEventListener('click',function(){
  var p=parseFloat(inp.value);
- if(!p||p<15||p>40){est.textContent='Escribe un precio entre $15 y $40.';return}
- if(!('Notification' in window)){est.textContent='Tu navegador no soporta notificaciones.';return}
- b.disabled=true;est.textContent='Solicitando permiso…';
+ if(!p||p<15||p>40){est.textContent=T('Escribe un precio entre $15 y $40.','Enter a price between $15 and $40 MXN/L.');return}
+ if(!('Notification' in window)){est.textContent=T('Tu navegador no soporta notificaciones.','Your browser does not support notifications.');return}
+ b.disabled=true;est.textContent=T('Solicitando permiso…','Requesting permission…');
  Notification.requestPermission().then(function(perm){
   b.disabled=false;
-  if(perm!=='granted'){est.textContent='Permiso denegado. Actívalo en los ajustes del navegador.';return}
+  if(perm!=='granted'){est.textContent=T('Permiso denegado. Actívalo en los ajustes del navegador.','Permission denied. Enable it in your browser settings.');return}
   function guarda(la,lo){
    try{localStorage.setItem(KEY,JSON.stringify({p:p,la:la,lo:lo,t:Date.now()}))}catch(e){}
    est.textContent='Listo. Te avisaremos si una gasolinera cerca baja de $'+p.toFixed(2)+'.';
@@ -1632,13 +1659,13 @@ edos.forEach(([n,lista])=>{
 <div class="hbox pre"><div class="lbl">Premium <span class="jg">${tr('roja','red')}</span></div><div class="val">${pz(pp)}</div><div class="cap">${tr('promedio en '+n,'average in '+n)} · <span class="unid">MXN/L</span></div></div>
 <div class="hbox die"><div class="lbl">${tr('Diésel','Diesel')}</div><div class="val">${pz(pd)}</div><div class="cap">${tr('promedio en '+n,'average in '+n)} · <span class="unid">MXN/L</span></div></div>
 </div>
-${dif>0?`<p class="nota">Diferencia entre la más cara y la más barata: <strong>${mx(dif)}</strong> por litro. En un tanque de 50 litros son <strong>${mx(dif*50)}</strong> de ahorro.</p>`:'<p class="nota"></p>'}
+${dif>0?`<p class="nota">${tr(`Diferencia entre la más cara y la más barata: ${mx(dif)} por litro. En un tanque de 50 litros son ${mx(dif*50)} de ahorro.`,`Gap between priciest and cheapest: ${usdGal(dif)} per gallon. On a 15-gallon fill that's ${'$'+((dif/FX)*GAL*15).toFixed(2)} saved.`)}</p>`:'<p class="nota"></p>'}
 ${(()=>{const mm={};lista.forEach(g=>{if(g._mun)(mm[g._mun]=mm[g._mun]||[]).push(g)});
 const arr=Object.entries(mm).filter(([m,l])=>MUNOK.has(n+'|'+m)).sort((a,b)=>b[1].length-a[1].length);
 return arr.length?`<h2 class="rv">${tr('Busca por municipio','Browse by city')}</h2><div class="chips">${arr.map(([m,l])=>`<a href="municipio-${s(m)}-${s(n)}">${e(m)}<span class="nm2">${l.length}</span></a>`).join('')}</div>`:''})()}
 <h2>${tr('Las más baratas de '+n,'Cheapest in '+n)}</h2>
 ${tabla(conR.slice(0,60))}
-<div class="card"><h3>Sobre los precios en ${e(n)}</h3><p>En ${e(n)} hay ${lista.length} estaciones de servicio que reportan precios a la CRE. El promedio de Magna es de ${mx(pr)} por litro${dif>0?`, con una diferencia de ${mx(dif)} entre la estación más económica y la más cara`:''}. Los precios mostrados corresponden al último reporte disponible y pueden cambiar durante el día.</p></div>`));
+<div class="card"><h3>${tr('Sobre los precios en '+n,'About prices in '+n)}</h3><p>${tr(`En ${n} hay ${lista.length} estaciones de servicio que reportan precios a la CRE. El promedio de Magna es de ${mx(pr)} por litro${dif>0?`, con una diferencia de ${mx(dif)} entre la estación más económica y la más cara`:''}. Los precios mostrados corresponden al último reporte disponible y pueden cambiar durante el día.`,`${lista.length} stations in ${n} report prices to Mexico's energy regulator (CRE). Regular averages ${usdGal(pr)} per gallon${dif>0?`, with a ${usdGal(dif)} gap between the cheapest and priciest station`:''}. Prices are from the latest available report and can change during the day.`)}</p></div>`));
  npe++;
 });
 console.log(`   ✓ ${npe} páginas de estado`);
@@ -1690,7 +1717,7 @@ ${t?`<div><b>vs. ayer</b>${t.d>0?'+':''}${mx(t.d)}</div>`:''}
 </div></div>`})()}
 ${(()=>{
 // ── datos unicos de ESTA estacion: ranking, ahorro real, vecinas cercanas
-if(!g.regular)return `<div class="card rv"><h3>Análisis de precio</h3><p>${e(g.name)} no reportó precio de Magna en el corte de la CRE del ${HOY}.</p></div>`;
+if(!g.regular)return `<div class="card rv"><h3>${tr('Análisis de precio','Price analysis')}</h3><p>${tr(`${g.name} no reportó precio de Magna en el corte de la CRE del ${HOY}.`,`${g.name} did not report a Regular price in the CRE update of ${HOY_EN}.`)}</p></div>`;
 const kMun=g._edo+'|'+g._mun, grupo=(MUNOK.has(kMun)?MUN[kMun]:(M[g._edo]||[])).filter(x=>x.regular);
 const ambito=MUNOK.has(kMun)?g._mun:g._edo;
 const ord=[...grupo].sort((a,b)=>a.regular-b.regular);
@@ -1711,17 +1738,17 @@ if(isFinite(g.x)&&isFinite(g.y)){
 }
 const masBarata=vec.filter(v2=>v2.g.regular<g.regular).sort((a,b)=>a.g.regular-b.g.regular)[0];
 const ahorro40=masBarata?(g.regular-masBarata.g.regular)*40:0;
-const veredicto=pct>=80?['barata','#16a34a']:pct>=55?['competitiva','#0071e3']:pct>=30?['promedio','#86868b']:['cara','#dc2626'];
-return `<div class="card rv"><h3>Análisis de precio</h3>
-<p><strong>${e(g.name)}</strong> vende la Magna en <strong>${mx(g.regular)}</strong> por litro. Dentro de ${e(ambito)} ocupa el <strong>lugar ${pos} de ${tot}</strong> estaciones ordenadas de más barata a más cara, lo que la coloca como una gasolinera <strong style="color:${veredicto[1]}">${veredicto[0]}</strong> de la zona.</p>
-<p>El promedio local es de ${mx(promL)}, así que esta estación está ${Math.abs(vsL)<0.05?'prácticamente en el promedio':(vsL>0?`<strong>${mx(Math.abs(vsL))} arriba</strong>`:`<strong>${mx(Math.abs(vsL))} abajo</strong>`)} de lo que se cobra en ${e(ambito)}. Contra el promedio nacional de ${mx(pReg)} la diferencia es de ${vsNal>0?'+':''}${mx(vsNal)}.</p>
-${masBarata?`<p>A ${masBarata.d<1?Math.round(masBarata.d*1000)+' metros':masBarata.d.toFixed(1)+' km'} está <a href="${masBarata.g._s}">${e(masBarata.g.name)}</a> vendiendo a ${mx(masBarata.g.regular)}. Llenar un tanque de 40 litros ahí te ahorra <strong>${mx(ahorro40)}</strong>.</p>`:`<p>De las estaciones a menos de 8 km, ninguna vende la Magna más barata que esta. ${vec.length?`Es la mejor opción de las ${vec.length+1} que hay en el radio.`:''}</p>`}
+const veredicto=pct>=80?['barata','#16a34a','cheap']:pct>=55?['competitiva','#0071e3','competitively priced']:pct>=30?['promedio','#86868b','average']:['cara','#dc2626','pricey'];
+return `<div class="card rv"><h3>${tr('Análisis de precio','Price analysis')}</h3>
+<p>${tr(`${g.name} vende la Magna en ${mx(g.regular)} por litro. Dentro de ${ambito} ocupa el lugar ${pos} de ${tot} estaciones ordenadas de más barata a más cara, lo que la coloca como una gasolinera ${veredicto[0]} de la zona.`,`${g.name} sells Regular at ${usdGal(g.regular)} per gallon. Within ${ambito} it ranks ${pos} of ${tot} stations sorted cheapest to priciest, making it a ${veredicto[2]||veredicto[0]} station for the area.`)}</p>
+<p>${tr(`El promedio local es de ${mx(promL)}, así que esta estación está ${Math.abs(vsL)<0.05?'prácticamente en el promedio':(vsL>0?mx(Math.abs(vsL))+' arriba':mx(Math.abs(vsL))+' abajo')} de lo que se cobra en ${ambito}. Contra el promedio nacional de ${mx(pReg)} la diferencia es de ${vsNal>0?'+':''}${mx(vsNal)}.`,`The local average is ${usdGal(promL)}, so this station sits ${Math.abs(vsL)<0.05?'right at the average':(vsL>0?usdGal(Math.abs(vsL))+' above':usdGal(Math.abs(vsL))+' below')} what ${ambito} charges. Against the national average of ${usdGal(pReg)} the gap is ${vsNal>0?'+':'-'}${usdGal(Math.abs(vsNal))}.`)}</p>
+${masBarata?`<p>${tr(`A ${masBarata.d<1?Math.round(masBarata.d*1000)+' metros':masBarata.d.toFixed(1)+' km'} está ${masBarata.g.name} vendiendo a ${mx(masBarata.g.regular)}. Llenar un tanque de 40 litros ahí te ahorra ${mx(ahorro40)}.`,`${masBarata.d<1?Math.round(masBarata.d*3280.84)+' ft':(masBarata.d*0.621371).toFixed(1)+' mi'} away, ${masBarata.g.name} sells at ${usdGal(masBarata.g.regular)}. Filling a 15-gallon tank there saves you ${'$'+(((g.regular-masBarata.g.regular)/FX)*GAL*15).toFixed(2)}.`)} <a href="${masBarata.g._s}">${tr('Ver ficha','Details')}</a></p>`:`<p>${tr(`De las estaciones a menos de 8 km, ninguna vende la Magna más barata que esta.${vec.length?` Es la mejor opción de las ${vec.length+1} que hay en el radio.`:''}`,`No station within 5 miles sells Regular cheaper than this one.${vec.length?` It's the best of the ${vec.length+1} in range.`:''}`)}</p>`}
 ${g.premium?`<p>El Premium está en ${mx(g.premium)}${g.regular?`, es decir ${mx(g.premium-g.regular)} más que la Magna`:''}. `:''}${g.diesel?`${g.premium?'El':'<p>El'} Diésel en ${mx(g.diesel)}. `:''}${(g.premium||g.diesel)?'</p>':''}
-<p>El rango en ${e(ambito)} va de ${mx(barata.regular)} hasta ${mx(cara.regular)}: una diferencia de <strong>${mx(cara.regular-barata.regular)}</strong> por litro, o ${mx((cara.regular-barata.regular)*40)} en un tanque de 40 litros. Datos del reporte oficial de la CRE del ${HOY}.</p></div>
-${vec.length?`<div class="card rv"><h3>Gasolineras a menos de 8 km</h3><table class="tabla"><thead><tr><th>Estación</th><th>Distancia</th><th>Magna</th><th>Diferencia</th></tr></thead><tbody>${vec.map(v2=>{
+<p>${tr(`El rango en ${ambito} va de ${mx(barata.regular)} hasta ${mx(cara.regular)}: una diferencia de ${mx(cara.regular-barata.regular)} por litro, o ${mx((cara.regular-barata.regular)*40)} en un tanque de 40 litros. Datos del reporte oficial de la CRE del ${HOY}.`,`Prices in ${ambito} range from ${usdGal(barata.regular)} to ${usdGal(cara.regular)}: a gap of ${usdGal(cara.regular-barata.regular)} per gallon, or ${'$'+(((cara.regular-barata.regular)/FX)*GAL*15).toFixed(2)} on a 15-gallon fill. Data from the official CRE report of ${HOY_EN}.`)}</p></div>
+${vec.length?`<div class="card rv"><h3>${tr('Gasolineras a menos de 8 km','Stations within 5 miles')}</h3><table class="tabla"><thead><tr><th>${tr('Estación','Station')}</th><th>${tr('Distancia','Distance')}</th><th>${tr('Magna','Regular')}</th><th>${tr('Diferencia','Difference')}</th></tr></thead><tbody>${vec.map(v2=>{
  const df=v2.g.regular-g.regular;
  return `<tr><td class="nm"><a href="${v2.g._s}">${e(v2.g.name)}</a></td><td class="pr">${v2.d<1?Math.round(v2.d*1000)+' m':v2.d.toFixed(1)+' km'}</td><td class="pr g">${mx(v2.g.regular)}</td><td class="pr" style="color:${df<0?'#16a34a':df>0?'#dc2626':'#86868b'}">${df>0?'+':''}${Math.abs(df)<0.005?'igual':mx(df)}</td></tr>`}).join('')}</tbody></table></div>`:''}`})()}
-${mismos.length?`<h2>Otras estaciones en ${e(g._edo)}</h2>${tabla(mismos,'../')}`:''}
+${mismos.length?`<h2>${tr('Otras estaciones en '+g._edo,'Other stations in '+g._edo)}</h2>${tabla(mismos,'../')}`:''}
 <script type="application/ld+json">${JSON.stringify(jl)}<\/script>`,'../',true));
 });
 console.log(`   ✓ ${D.length.toLocaleString('es-MX')} fichas de estación`);
