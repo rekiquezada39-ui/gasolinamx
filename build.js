@@ -241,6 +241,15 @@ const usdGal=v=>{const n=Number(v);
  if(!isFinite(n)||n<=0)return '';
  return '$'+((n/FX)*GAL).toFixed(2)};
 
+// ══ PIEZAS PARA EL CAMBIO DE IDIOMA ══
+// pz() marca un precio para que el JS lo pueda convertir a USD/galon al vuelo.
+// El HTML se sirve SIEMPRE en español (asi lo indexa Google); el switch es del lado del cliente.
+const pz=v=>{const n=Number(v);
+ if(!isFinite(n)||n<=0)return '<span class="pz">—</span>';
+ return `<span class="pz" data-v="${n.toFixed(2)}">${mx(n)}</span>`};
+// tr() imprime el español y guarda el inglés en data-en
+const tr=(es,en)=>`<span data-en="${e(en)}">${e(es)}</span>`;
+
 const CSS=`
 :root{
  --tx:#1d1d1f;      /* texto principal */
@@ -334,6 +343,16 @@ h2 .ver:hover{text-decoration:underline}
 .hbox .cap{font-size:.8rem;color:var(--tx2);margin-top:7px}
 .hbox.reg .val{color:var(--vd)}.hbox.pre .val{color:var(--rj)}.hbox.die .val{color:var(--tx)}
 .nota{font-size:.82rem;color:var(--tx2);margin-bottom:44px}
+/* ══ SELECTOR DE IDIOMA ══ */
+.lang{display:flex;align-items:center;gap:8px;margin:0 0 18px;flex-wrap:wrap}
+.lang .lbl2{font-size:.76rem;color:var(--tx2);margin-right:2px}
+.lang button{font:inherit;font-size:.82rem;font-weight:600;padding:7px 14px;border-radius:980px;
+ border:1px solid var(--bd);background:#fff;color:var(--tx2);cursor:pointer;
+ display:inline-flex;align-items:center;gap:6px;transition:all .18s}
+.lang button:hover{border-color:var(--vd);color:var(--tx)}
+.lang button.on{background:var(--vd);border-color:var(--vd);color:#fff}
+.lang .fx{font-size:.72rem;color:var(--tx2);margin-left:auto}
+@media(max-width:520px){.lang .fx{margin-left:0;width:100%;margin-top:4px}}
 /* ══ BLOQUE EN INGLES (turistas) ══ */
 .en{margin:46px 0 10px;padding:26px 24px;border:1px solid var(--bd);border-radius:16px;
  background:linear-gradient(180deg,#f7fbf8,#fff)}
@@ -680,7 +699,7 @@ const HEAD=(t,d,c,r,nx)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UT
 <header><div class="hin">
 <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
 <a href="${r}" class="lg">${LOGO}<span class="lgt">Gasolina<em>MX</em></span></a>
-<nav class="hnav"><a href="${r}">Inicio</a><a href="${r}estados">Estados</a><a href="${r}baratas">Más baratas</a></nav>
+<nav class="hnav"><a href="${r}"><span data-en="Home">Inicio</span></a><a href="${r}estados"><span data-en="States">Estados</span></a><a href="${r}baratas"><span data-en="Cheapest">Más baratas</span></a></nav>
 <span class="upd">Actualizado ${HOY}</span>
 </div></header>
 <div class="scrim" id="scrim"></div>
@@ -787,14 +806,16 @@ try{var v=localStorage.getItem(KEY);
     var c=clase(d.reg,mn,mx);
     var ic=L.divIcon({className:'pin '+c,html:'<i>'+d.reg.toFixed(2)+'</i>',iconSize:[44,24],iconAnchor:[22,29],popupAnchor:[0,-30]});
     var m=L.marker([d.la,d.lo],{icon:ic}).addTo(MAPA);
-    var h='<b>'+d.nom+'</b><div class="pp">$'+d.reg.toFixed(2)+'</div>';
+    var _en=document.documentElement.lang==='en';
+    var _p=function(v){return _en?'$'+((v/window.__FX)*3.785411784).toFixed(2):'$'+v.toFixed(2)};
+    var h='<b>'+d.nom+'</b><div class="pp">'+_p(d.reg)+'</div>';
     var o=[];
-    if(d.pre)o.push('Premium $'+d.pre.toFixed(2));
-    if(d.die)o.push('Diésel $'+d.die.toFixed(2));
+    if(d.pre)o.push('Premium '+_p(d.pre));
+    if(d.die)o.push((_en?'Diesel ':'Diésel ')+_p(d.die));
     if(o.length)h+='<div class="ot">'+o.join(' · ')+'</div>';
-    if(d.d!=null)h+='<div class="ot">A '+(d.d<1?Math.round(d.d*1000)+' m':d.d.toFixed(1)+' km')+' de ti</div>';
-    h+='<a href="https://www.google.com/maps/search/?api=1&query='+d.la+','+d.lo+'" target="_blank" rel="noopener nofollow">Cómo llegar →</a>';
-    if(d.slug)h+=' &nbsp;<a href="/estacion/'+d.slug+'">Ver ficha</a>';
+    if(d.d!=null)h+='<div class="ot">'+(_en?(d.d<1?Math.round(d.d*3280.84)+' ft':(d.d*0.621371).toFixed(1)+' mi')+' away':'A '+(d.d<1?Math.round(d.d*1000)+' m':d.d.toFixed(1)+' km')+' de ti')+'</div>';
+    h+='<a href="https://www.google.com/maps/search/?api=1&query='+d.la+','+d.lo+'" target="_blank" rel="noopener nofollow">'+(_en?'Directions →':'Cómo llegar →')+'</a>';
+    if(d.slug)h+=' &nbsp;<a href="/estacion/'+d.slug+'">'+(_en?'Details':'Ver ficha')+'</a>';
     m.bindPopup(h);
     pts.push([d.la,d.lo]);
    });
@@ -950,6 +971,75 @@ try{var v=localStorage.getItem(KEY);
 <\/script>
 <button class="up" id="up" type="button" aria-label="Volver arriba"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <script>
+// ══════ CAMBIO DE IDIOMA + MONEDA ══════
+// El HTML se sirve en español (asi lo indexa Google).
+// Al elegir English se traduce en el navegador y los precios pasan a USD/galon.
+(function(){
+ var FX=${FX}, GAL=3.785411784, K='gmx_lang';
+ window.__FX=FX;
+ var esEN=false;
+
+ function aUSD(mxnLitro){return '$'+((mxnLitro/FX)*GAL).toFixed(2)}
+
+ function pintaPrecios(en){
+  var n=document.querySelectorAll('.pz[data-v]');
+  for(var i=0;i<n.length;i++){
+   var v=parseFloat(n[i].getAttribute('data-v'));
+   if(!isFinite(v))continue;
+   if(en){
+    if(!n[i].getAttribute('data-es'))n[i].setAttribute('data-es',n[i].textContent);
+    n[i].textContent=aUSD(v);
+   }else{
+    var o=n[i].getAttribute('data-es');
+    if(o)n[i].textContent=o;
+   }
+  }
+ }
+
+ function pintaTextos(en){
+  var n=document.querySelectorAll('[data-en]');
+  for(var i=0;i<n.length;i++){
+   if(!n[i].hasAttribute('data-es'))n[i].setAttribute('data-es',n[i].textContent);
+   n[i].textContent=en?n[i].getAttribute('data-en'):n[i].getAttribute('data-es');
+  }
+ }
+
+ function aplica(en){
+  esEN=en;
+  pintaTextos(en);
+  pintaPrecios(en);
+  // la unidad que se muestra en los encabezados y cajas
+  var u=document.querySelectorAll('.unid');
+  for(var i=0;i<u.length;i++)u[i].textContent=en?'USD/gal':'MXN/L';
+  // el bloque largo en ingles solo estorba cuando ya todo esta en ingles
+  var sec=document.getElementById('en');
+  if(sec)sec.style.display=en?'none':'';
+  document.documentElement.lang=en?'en':'es';
+  var bE=document.getElementById('lgEs'),bI=document.getElementById('lgEn');
+  if(bE)bE.classList.toggle('on',!en);
+  if(bI)bI.classList.toggle('on',en);
+  var fx=document.getElementById('lgfx');
+  if(fx)fx.textContent=en?('1 USD = '+FX.toFixed(2)+' MXN · prices per US gallon'):'';
+ }
+
+ function init(){
+  var bE=document.getElementById('lgEs'),bI=document.getElementById('lgEn');
+  if(!bE||!bI)return;
+  bE.addEventListener('click',function(){try{localStorage.setItem(K,'es')}catch(e){}aplica(false)});
+  bI.addEventListener('click',function(){try{localStorage.setItem(K,'en')}catch(e){}aplica(true)});
+  var g=null;
+  try{g=localStorage.getItem(K)}catch(e){}
+  if(g==='en')aplica(true);
+  else if(g==='es')aplica(false);
+  else{
+   // primera visita: si el navegador esta en ingles, se le ofrece ya traducido
+   var nav=(navigator.language||'es').toLowerCase();
+   if(nav.indexOf('en')===0)aplica(true);
+  }
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+ else init();
+})();
 // ══ Ordenar tablas al tocar el encabezado ══
 (function(){
  function num(t){var v=parseFloat(String(t).replace(/[^0-9.]/g,''));return isNaN(v)?Infinity:v}
@@ -1025,8 +1115,8 @@ const L=(t,d,c,b,r='',nx=false)=>HEAD(t,d,c,r,nx)+`<div class="shell"><aside cla
 const PG=(cur,tot,fn)=>{if(tot<2)return'';let h='<div class="pg">';if(cur>1)h+=`<a href="${fn(cur-1)}">←</a>`;const a=Math.max(1,cur-2),z=Math.min(tot,cur+2);if(a>1)h+=`<a href="${fn(1)}">1</a>`+(a>2?'<span>…</span>':'');for(let i=a;i<=z;i++)h+=i===cur?`<span class="on">${i}</span>`:`<a href="${fn(i)}">${i}</a>`;if(z<tot)h+=(z<tot-1?'<span>…</span>':'')+`<a href="${fn(tot)}">${tot}</a>`;if(cur<tot)h+=`<a href="${fn(cur+1)}">→</a>`;return h+'</div>'};
 const badge=g=>{const t=tendencia(g.id,g.regular);if(!t||Math.abs(t.d)<0.01)return '';
  return `<span class="trend ${t.d>0?'up':'down'}">${t.d>0?'▲':'▼'} ${mx(Math.abs(t.d))}</span>`};
-const fila=(g,i,r='')=>`<tr data-eid="${g.id}"><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}">${e(g.name)}</a>${badge(g)}<small>${e(g._mun?g._mun+', '+(g._edo||''):(g._edo||'México'))}</small></td><td class="pr g">${g.regular?mx(g.regular):'—'}</td><td class="pr">${g.premium?mx(g.premium):'—'}</td><td class="pr">${g.diesel?mx(g.diesel):'—'}</td><td class="oc"><button class="ocb" type="button" data-eid="${g.id}" data-nom="${e(g.name)}" aria-label="Ocultar esta estación" title="Ocultar esta estación">&times;</button></td></tr>`;
-const tabla=(arr,r='')=>`<table class="tabla" data-ord><thead><tr><th></th><th class="ord" data-c="1" data-t="t">Estación</th><th class="ord asc" data-c="2" data-t="n">Magna</th><th class="ord solo-pc" data-c="3" data-t="n">Premium</th><th class="ord solo-pc" data-c="4" data-t="n">Diésel</th><th></th></tr></thead><tbody>${arr.map((g,i)=>fila(g,i,r)).join('')}</tbody></table>`;
+const fila=(g,i,r='')=>`<tr data-eid="${g.id}"><td class="rank">${i+1}</td><td class="nm"><a href="${r}estacion/${g._s}">${e(g.name)}</a>${badge(g)}<small>${e(g._mun?g._mun+', '+(g._edo||''):(g._edo||'México'))}</small></td><td class="pr g">${pz(g.regular)}</td><td class="pr">${pz(g.premium)}</td><td class="pr">${pz(g.diesel)}</td><td class="oc"><button class="ocb" type="button" data-eid="${g.id}" data-nom="${e(g.name)}" aria-label="Ocultar esta estación" title="Ocultar esta estación">&times;</button></td></tr>`;
+const tabla=(arr,r='')=>`<table class="tabla" data-ord><thead><tr><th></th><th class="ord" data-c="1" data-t="t">${tr('Estación','Station')}</th><th class="ord asc" data-c="2" data-t="n">${tr('Magna','Regular')}</th><th class="ord solo-pc" data-c="3" data-t="n">Premium</th><th class="ord solo-pc" data-c="4" data-t="n">${tr('Diésel','Diesel')}</th><th></th></tr></thead><tbody>${arr.map((g,i)=>fila(g,i,r)).join('')}</tbody></table>`;
 
 // ══ BLOQUE EN INGLES PARA TURISTAS ══
 // Google ya manda trafico gringo ("gas prices near me") a las paginas de municipio.
@@ -1193,24 +1283,28 @@ muns.forEach(([k,lista])=>{
  {'@type':'ListItem',position:3,name:edo,item:`${DOM}/estado-${s(edo)}`},
  {'@type':'ListItem',position:4,name:mun,item:`${DOM}/${slugMun(edo,mun)}`}
 ]})}<\/script>
-<p class="crumb"><a href="./">Inicio</a> › <a href="estados">Estados</a> › <a href="estado-${s(edo)}">${e(edo)}</a> › ${e(mun)}</p>
-<h1>Precio de la gasolina hoy en ${e(mun)}</h1><p class="sub">¿Cuánto cuesta el litro en ${e(mun)}, ${e(edo)}? Costo de Magna (verde), Premium (roja) y Diésel en ${lista.length} gasolineras · ${HOY}</p>
+<p class="crumb"><a href="./">${tr('Inicio','Home')}</a> › <a href="estados">${tr('Estados','States')}</a> › <a href="estado-${s(edo)}">${e(edo)}</a> › ${e(mun)}</p>
+<div class="lang"><span class="lbl2">${tr('Idioma','Language')}:</span>
+<button id="lgEs" type="button" class="on">🇲🇽 Español</button>
+<button id="lgEn" type="button">🇺🇸 English</button>
+<span class="fx" id="lgfx"></span></div>
+<h1>${tr('Precio de la gasolina hoy en '+mun,'Gas Prices in '+mun+', Mexico — Today')}</h1><p class="sub">${tr(`¿Cuánto cuesta el litro en ${mun}, ${edo}? Costo de Magna (verde), Premium (roja) y Diésel en ${lista.length} gasolineras · ${HOY}`,`Live prices from ${lista.length} gas stations in ${mun}, ${edo}, in US dollars per gallon. Official CRE data · ${HOY_EN}`)}</p>
 <div class="hero">
-<div class="hbox reg"><div class="lbl">Magna <span class="jg">verde</span></div><div class="val">${mx(pr)}</div><div class="cap">promedio local</div></div>
-<div class="hbox pre"><div class="lbl">Premium <span class="jg">roja</span></div><div class="val">${pp?mx(pp):'—'}</div><div class="cap">promedio local</div></div>
-<div class="hbox die"><div class="lbl">Diésel</div><div class="val">${pd?mx(pd):'—'}</div><div class="cap">promedio local</div></div>
+<div class="hbox reg"><div class="lbl">${tr('Magna','Regular')} <span class="jg">${tr('verde','green')}</span></div><div class="val">${pz(pr)}</div><div class="cap">${tr('promedio local','local average')} · <span class="unid">MXN/L</span></div></div>
+<div class="hbox pre"><div class="lbl">Premium <span class="jg">${tr('roja','red')}</span></div><div class="val">${pz(pp)}</div><div class="cap">${tr('promedio local','local average')} · <span class="unid">MXN/L</span></div></div>
+<div class="hbox die"><div class="lbl">${tr('Diésel','Diesel')}</div><div class="val">${pz(pd)}</div><div class="cap">${tr('promedio local','local average')} · <span class="unid">MXN/L</span></div></div>
 </div>
 ${(()=>{let sube=0,baja=0,sumd=0,nd=0;
 lista.forEach(g=>{const t=tendencia(g.id,g.regular);if(t&&Math.abs(t.d)>=0.01){t.d>0?sube++:baja++;sumd+=t.d;nd++}});
 if(!nd)return '';
 const prom2=sumd/nd;
 return `<div class="resumen">
-<div><div class="k">Cambio promedio</div><div class="v ${prom2>0?'pos':'neg'}">${prom2>0?'+':''}${mx(prom2)}</div><div class="c">respecto al día anterior</div></div>
-<div><div class="k">Subieron</div><div class="v">${sube}</div><div class="c">estaciones</div></div>
-<div><div class="k">Bajaron</div><div class="v">${baja}</div><div class="c">estaciones</div></div>
+<div><div class="k">${tr('Cambio promedio','Average change')}</div><div class="v ${prom2>0?'pos':'neg'}">${prom2>0?'+':''}${mx(prom2)}</div><div class="c">${tr('respecto al día anterior','vs. yesterday')}</div></div>
+<div><div class="k">${tr('Subieron','Went up')}</div><div class="v">${sube}</div><div class="c">${tr('estaciones','stations')}</div></div>
+<div><div class="k">${tr('Bajaron','Went down')}</div><div class="v">${baja}</div><div class="c">${tr('estaciones','stations')}</div></div>
 </div>`})()}
-${dif>0?`<p class="nota">La más barata está en <strong>${mx(conR[0].regular)}</strong> y la más cara en <strong>${mx(conR[conR.length-1].regular)}</strong>. Diferencia de <strong>${mx(dif)}</strong> por litro: <strong>${mx(dif*50)}</strong> en un tanque de 50 L.</p>`:'<p class="nota"></p>'}
-<button class="mapbtn" id="mb" type="button">Ver mapa de ${e(mun)}</button>
+${dif>0?`<p class="nota">${tr('La más barata está en','Cheapest is')} <strong>${pz(conR[0].regular)}</strong> ${tr('y la más cara en','and priciest is')} <strong>${pz(conR[conR.length-1].regular)}</strong>. ${tr('Diferencia de','A gap of')} <strong>${pz(dif)}</strong> ${tr('por litro','per unit')}.</p>`:'<p class="nota"></p>'}
+<button class="mapbtn" id="mb" type="button">${tr('Ver mapa de '+mun,'View map of '+mun)}</button>
 <div class="mapwrap" id="mw" hidden><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
 <script>var MP=${JSON.stringify(conR.filter(g=>isFinite(g.x)&&isFinite(g.y)).slice(0,150).map(g=>({la:+g.y.toFixed(5),lo:+g.x.toFixed(5),nom:g.name,slug:g._s,reg:g.regular,pre:g.premium||0,die:g.diesel||0})))};
 (function(){var b=document.getElementById('mb');if(!b)return;
@@ -1225,11 +1319,11 @@ b.addEventListener('click',function(){
  });
 });})();
 <\/script>
-<h2>Ordenadas de más barata a más cara</h2>
+<h2>${tr('Ordenadas de más barata a más cara','Sorted cheapest to priciest')}</h2>
 ${tabla(conR)}
 ${EN_MUN(mun,edo,pr,pp,pd,lista.length,conR[0]&&conR[0].name,conR[0]&&conR[0].regular)}
-<div class="card"><h3>Precios en ${e(mun)}</h3><p>En ${e(mun)}, ${edo}, hay ${lista.length} estaciones que reportan precios a la CRE. El promedio de Magna es ${mx(pr)} por litro${dif>0?`, con ${mx(dif)} de diferencia entre la más económica y la más cara`:''}. Los datos corresponden al reporte del ${HOY} y pueden cambiar durante el día.</p></div>
-<p style="margin-top:26px"><a class="btn a" href="estado-${s(edo)}">Ver todo ${e(edo)}</a></p>`));
+<div class="card"><h3>${tr('Precios en '+mun,'About prices in '+mun)}</h3><p>${tr(`En ${mun}, ${edo}, hay ${lista.length} estaciones que reportan precios a la CRE. El promedio de Magna es ${mx(pr)} por litro${dif>0?`, con ${mx(dif)} de diferencia entre la más económica y la más cara`:''}. Los datos corresponden al reporte del ${HOY} y pueden cambiar durante el día.`,`${lista.length} stations in ${mun}, ${edo} report prices to Mexico's energy regulator (CRE). Regular averages ${usdGal(pr)} per gallon${dif>0?`, with a ${usdGal(dif)} gap between the cheapest and priciest`:''}. Data is from the ${HOY_EN} report and can change during the day. Attendants pump for you here — a 5-10 peso tip is customary.`)}</p></div>
+<p style="margin-top:26px"><a class="btn a" href="estado-${s(edo)}">${tr('Ver todo '+edo,'See all of '+edo)}</a></p>`));
 });
 console.log(`   ✓ ${muns.length} páginas de municipio`);
 
