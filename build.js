@@ -1047,6 +1047,10 @@ try{var v=localStorage.getItem(KEY);
   // el bloque largo en ingles solo estorba cuando ya todo esta en ingles
   var sec=document.getElementById('en');
   if(sec)sec.style.display=en?'none':'';
+  // paginas legales: dos cuerpos completos, se alterna cual se ve
+  var les=document.querySelectorAll('.les'),len=document.querySelectorAll('.len');
+  for(var a=0;a<les.length;a++)les[a].hidden=en;
+  for(var b2=0;b2<len.length;b2++)len[b2].hidden=!en;
   document.documentElement.lang=en?'en':'es';
   var bE=document.getElementById('lgEs'),bI=document.getElementById('lgEn');
   if(bE)bE.classList.toggle('on',!en);
@@ -1339,7 +1343,7 @@ return `<div class="resumen">
 </div>`})()}
 ${dif>0?`<p class="nota">${tr('La más barata está en','Cheapest is')} <strong>${pz(conR[0].regular)}</strong> ${tr('y la más cara en','and priciest is')} <strong>${pz(conR[conR.length-1].regular)}</strong>. ${tr('Diferencia de','A gap of')} <strong>${pz(dif)}</strong> ${tr('por litro','per unit')}.</p>`:'<p class="nota"></p>'}
 <button class="mapbtn" id="mb" type="button">${tr('Ver mapa de '+mun,'View map of '+mun)}</button>
-<div class="mapwrap" id="mw" hidden><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
+<div class="mapwrap" id="mw" hidden><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span><span data-en="Cheap">Barata</span></span><span class="lg2"><span class="pt" style="background:#f59e0b"></span><span data-en="Mid">Media</span></span><span class="lg2"><span class="pt" style="background:#dc2626"></span><span data-en="Pricey">Cara</span></span><span style="margin-left:auto" data-en="Tap a pin for details">Toca un pin para ver detalles</span></div></div>
 <script>var MP=${JSON.stringify(conR.filter(g=>isFinite(g.x)&&isFinite(g.y)).slice(0,150).map(g=>({la:+g.y.toFixed(5),lo:+g.x.toFixed(5),nom:g.name,slug:g._s,reg:g.regular,pre:g.premium||0,die:g.diesel||0})))};
 (function(){var b=document.getElementById('mb');if(!b)return;
 b.addEventListener('click',function(){
@@ -1419,7 +1423,7 @@ ${hero}
 <button class="geob" id="geoBtn" type="button">📍 <span data-en="Search near me">Buscar cerca de mí</span></button>
 <div class="geost" id="geoSt"></div>
 </div>
-<div class="mapwrap" id="mw" hidden><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span>Barata</span><span class="lg2"><span class="pt" style="background:#f59e0b"></span>Media</span><span class="lg2"><span class="pt" style="background:#dc2626"></span>Cara</span><span class="lg2"><span class="pt" style="background:#0a84ff"></span>Tú</span><span style="margin-left:auto">Toca un pin para ver detalles</span></div></div>
+<div class="mapwrap" id="mw" hidden><div class="mapa" id="mapa"></div><div class="mapbar"><span class="lg2"><span class="pt" style="background:#16a34a"></span><span data-en="Cheap">Barata</span></span><span class="lg2"><span class="pt" style="background:#f59e0b"></span><span data-en="Mid">Media</span></span><span class="lg2"><span class="pt" style="background:#dc2626"></span><span data-en="Pricey">Cara</span></span><span class="lg2"><span class="pt" style="background:#0a84ff"></span><span data-en="You">Tú</span></span><span style="margin-left:auto" data-en="Tap a pin for details">Toca un pin para ver detalles</span></div></div>
 <div class="geores" id="geoRes"></div>
 
 <div class="finder rv"><h3>${tr("O busca por nombre","Or search by name")}</h3><p style="font-size:.88rem;color:#86868b;margin-bottom:12px">${tr("Escribe tu municipio o ciudad — por ejemplo: Tlajomulco, Zapopan, Mérida","Type a city — for example: Cancun, Monterrey, Tijuana")}</p><input id="buscador" data-ph-en="Your city or the station name" placeholder="Tu municipio o el nombre de la estación" autocomplete="off" enterkeyhint="search"><div id="resultados"></div></div>
@@ -1682,8 +1686,8 @@ D.forEach(g=>{
   `Precio de gasolina en ${g.name}${g._edo?', '+g._edo:''} hoy ${HOY}: Magna ${g.regular?mx(g.regular):'no disponible'}.`,
   `${DOM}/estacion/${g._s}`,
 `<p class="crumb"><a href="../">${tr('Inicio','Home')}</a>${g._edo?` › <a href="../estado-${s(g._edo)}">${e(g._edo)}</a>`:''}${(g._mun&&g._edo&&MUNOK.has(g._edo+'|'+g._mun))?` › <a href="../municipio-${s(g._mun)}-${s(g._edo)}">${e(g._mun)}</a>`:''} › ${e(g.name)}</p>
-<h1>${e(g.name)}</h1><p class="sub">${g._mun?e(g._mun)+', ':''}${g._edo?e(g._edo)+' · ':''}${g._sin>=DIAS_AVISO?`Último dato: ${fmtFecha(g._ult)}`:`Precios del ${HOY}`}</p>
-${g._sin>=DIAS_OCULTA?`<div class="avisoX"><strong>Esta estación podría estar cerrada.</strong> Lleva ${g._sin} días sin reportar precios a la CRE. Los datos que ves son del ${fmtFecha(g._ult)||'último reporte disponible'}. Te recomendamos confirmar antes de ir.</div>`:(g._sin>=DIAS_AVISO?`<div class="avisoW"><strong>Datos no actualizados.</strong> Esta estación no ha reportado precios en ${g._sin} días. La información es del ${fmtFecha(g._ult)||'último reporte'}.</div>`:'')}
+<h1>${e(g.name)}</h1><p class="sub">${g._mun?e(g._mun)+', ':''}${g._edo?e(g._edo)+' · ':''}${g._sin>=DIAS_AVISO?tr(`Último dato: ${fmtFecha(g._ult)}`,`Last data: ${fmtFecha(g._ult)}`):tr(`Precios del ${HOY}`,`Prices as of ${HOY_EN}`)}</p>
+${g._sin>=DIAS_OCULTA?`<div class="avisoX">${tr(`Esta estación podría estar cerrada. Lleva ${g._sin} días sin reportar precios a la CRE. Los datos que ves son del ${fmtFecha(g._ult)||'último reporte disponible'}. Te recomendamos confirmar antes de ir.`,`This station may be closed. It hasn't reported prices to the CRE in ${g._sin} days. The data shown is from ${fmtFecha(g._ult)||'the last available report'}. We suggest confirming before you go.`)}</div>`:(g._sin>=DIAS_AVISO?`<div class="avisoW">${tr(`Datos no actualizados. Esta estación no ha reportado precios en ${g._sin} días. La información es del ${fmtFecha(g._ult)||'último reporte'}.`,`Data not current. This station hasn't reported prices in ${g._sin} days. The information is from ${fmtFecha(g._ult)||'the last report'}.`)}</div>`:'')}
 <div class="hero">
 <div class="hbox reg"><div class="lbl">${tr('Magna','Regular')} <span class="jg">${tr('verde','green')}</span></div><div class="val">${pz(g.regular)}</div><div class="cap"><span class="unid">MXN/L</span></div></div>
 <div class="hbox pre"><div class="lbl">Premium <span class="jg">${tr('roja','red')}</span></div><div class="val">${pz(g.premium)}</div><div class="cap"><span class="unid">MXN/L</span></div></div>
@@ -1700,20 +1704,20 @@ ${isFinite(g.x)?`<a class="btn" href="https://www.google.com/maps/search/?api=1&
 <button class="shr" type="button" data-tx="${e(g.name)}${g.regular?` — Magna a ${mx(g.regular)}`:''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>${tr('Compartir','Share')}</button>
 <button class="btn r ocb" type="button" data-eid="${g.id}" data-nom="${e(g.name)}">${tr('Ocultar esta estación','Hide this station')}</button>
 <a class="btn r" href="mailto:${MAIL}?subject=${encodeURIComponent('Reporte: '+g.name+' (ID '+g.id+')')}&body=${encodeURIComponent('Reporto un problema con esta estacion:\n\n'+g.name+'\n'+(g._mun||'')+', '+(g._edo||'')+'\nID CRE: '+g.id+'\n'+DOM+'/estacion/'+g._s+'\n\nQue pasa? (borra lo que no aplique)\n- Ya cerro / no existe\n- El precio no coincide\n- La ubicacion esta mal\n- Otro:\n\n')}">${tr('Reportar un problema','Report a problem')}</a>
-${(g._mun&&g._edo&&MUNOK.has(g._edo+'|'+g._mun))?`<a class="btn a" href="../municipio-${s(g._mun)}-${s(g._edo)}">Más baratas en ${e(g._mun)}</a>`:(g._edo?`<a class="btn a" href="../estado-${s(g._edo)}">Más baratas en ${e(g._edo)}</a>`:'')}
+${(g._mun&&g._edo&&MUNOK.has(g._edo+'|'+g._mun))?`<a class="btn a" href="../municipio-${s(g._mun)}-${s(g._edo)}">${tr('Más baratas en '+g._mun,'Cheapest in '+g._mun)}</a>`:(g._edo?`<a class="btn a" href="../estado-${s(g._edo)}">${tr('Más baratas en '+g._edo,'Cheapest in '+g._edo)}</a>`:'')}
 ${(()=>{const r=rango(g.id),t=tendencia(g.id,g.regular),v=serie(g.id);
 if(!r||r.n<2)return '';
 const w=600,h=150,mn=r.min,mx2=r.max,rg=(mx2-mn)||1;
 const pts=v.map((p,i)=>`${(i/(v.length-1)*w).toFixed(1)},${(h-((p-mn)/rg)*h*0.78-h*0.11).toFixed(1)}`).join(' ');
 const area=`0,${h} `+pts+` ${w},${h}`;
 const sube=v[v.length-1]>v[0], col=sube?'#dc2626':'#16a34a';
-return `<div class="hcard rv"><h3>Histórico de precio</h3><div class="hsub">Magna · últimos ${r.n} día(s) registrados</div>
+return `<div class="hcard rv"><h3>${tr('Histórico de precio','Price history')}</h3><div class="hsub">${tr(`Magna · últimos ${r.n} día(s) registrados`,`Regular · last ${r.n} day(s) on record`)}</div>
 <svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polygon points="${area}" fill="${col}" opacity=".08"/><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
 <div class="hstats">
-<div><b>Mínimo</b>${mx(r.min)}</div>
-<div><b>Máximo</b>${mx(r.max)}</div>
-<div><b>Actual</b>${g.regular?mx(g.regular):'—'}</div>
-${t?`<div><b>vs. ayer</b>${t.d>0?'+':''}${mx(t.d)}</div>`:''}
+<div><b>${tr('Mínimo','Low')}</b>${pz(r.min)}</div>
+<div><b>${tr('Máximo','High')}</b>${pz(r.max)}</div>
+<div><b>${tr('Actual','Now')}</b>${pz(g.regular)}</div>
+${t?`<div><b>${tr('vs. ayer','vs. yesterday')}</b>${t.d>0?'+':'-'}${pz(Math.abs(t.d))}</div>`:''}
 </div></div>`})()}
 ${(()=>{
 // ── datos unicos de ESTA estacion: ranking, ahorro real, vecinas cercanas
@@ -1743,7 +1747,7 @@ return `<div class="card rv"><h3>${tr('Análisis de precio','Price analysis')}</
 <p>${tr(`${g.name} vende la Magna en ${mx(g.regular)} por litro. Dentro de ${ambito} ocupa el lugar ${pos} de ${tot} estaciones ordenadas de más barata a más cara, lo que la coloca como una gasolinera ${veredicto[0]} de la zona.`,`${g.name} sells Regular at ${usdGal(g.regular)} per gallon. Within ${ambito} it ranks ${pos} of ${tot} stations sorted cheapest to priciest, making it a ${veredicto[2]||veredicto[0]} station for the area.`)}</p>
 <p>${tr(`El promedio local es de ${mx(promL)}, así que esta estación está ${Math.abs(vsL)<0.05?'prácticamente en el promedio':(vsL>0?mx(Math.abs(vsL))+' arriba':mx(Math.abs(vsL))+' abajo')} de lo que se cobra en ${ambito}. Contra el promedio nacional de ${mx(pReg)} la diferencia es de ${vsNal>0?'+':''}${mx(vsNal)}.`,`The local average is ${usdGal(promL)}, so this station sits ${Math.abs(vsL)<0.05?'right at the average':(vsL>0?usdGal(Math.abs(vsL))+' above':usdGal(Math.abs(vsL))+' below')} what ${ambito} charges. Against the national average of ${usdGal(pReg)} the gap is ${vsNal>0?'+':'-'}${usdGal(Math.abs(vsNal))}.`)}</p>
 ${masBarata?`<p>${tr(`A ${masBarata.d<1?Math.round(masBarata.d*1000)+' metros':masBarata.d.toFixed(1)+' km'} está ${masBarata.g.name} vendiendo a ${mx(masBarata.g.regular)}. Llenar un tanque de 40 litros ahí te ahorra ${mx(ahorro40)}.`,`${masBarata.d<1?Math.round(masBarata.d*3280.84)+' ft':(masBarata.d*0.621371).toFixed(1)+' mi'} away, ${masBarata.g.name} sells at ${usdGal(masBarata.g.regular)}. Filling a 15-gallon tank there saves you ${'$'+(((g.regular-masBarata.g.regular)/FX)*GAL*15).toFixed(2)}.`)} <a href="${masBarata.g._s}">${tr('Ver ficha','Details')}</a></p>`:`<p>${tr(`De las estaciones a menos de 8 km, ninguna vende la Magna más barata que esta.${vec.length?` Es la mejor opción de las ${vec.length+1} que hay en el radio.`:''}`,`No station within 5 miles sells Regular cheaper than this one.${vec.length?` It's the best of the ${vec.length+1} in range.`:''}`)}</p>`}
-${g.premium?`<p>El Premium está en ${mx(g.premium)}${g.regular?`, es decir ${mx(g.premium-g.regular)} más que la Magna`:''}. `:''}${g.diesel?`${g.premium?'El':'<p>El'} Diésel en ${mx(g.diesel)}. `:''}${(g.premium||g.diesel)?'</p>':''}
+${(g.premium||g.diesel)?`<p>${tr(`${g.premium?`El Premium está en ${mx(g.premium)}${g.regular?`, es decir ${mx(g.premium-g.regular)} más que la Magna`:''}. `:''}${g.diesel?`El Diésel en ${mx(g.diesel)}. `:''}`,`${g.premium?`Premium is at ${usdGal(g.premium)}${g.regular?`, that's ${usdGal(g.premium-g.regular)} more than Regular`:''}. `:''}${g.diesel?`Diesel is at ${usdGal(g.diesel)}. `:''}`)}</p>`:''}
 <p>${tr(`El rango en ${ambito} va de ${mx(barata.regular)} hasta ${mx(cara.regular)}: una diferencia de ${mx(cara.regular-barata.regular)} por litro, o ${mx((cara.regular-barata.regular)*40)} en un tanque de 40 litros. Datos del reporte oficial de la CRE del ${HOY}.`,`Prices in ${ambito} range from ${usdGal(barata.regular)} to ${usdGal(cara.regular)}: a gap of ${usdGal(cara.regular-barata.regular)} per gallon, or ${'$'+(((cara.regular-barata.regular)/FX)*GAL*15).toFixed(2)} on a 15-gallon fill. Data from the official CRE report of ${HOY_EN}.`)}</p></div>
 ${vec.length?`<div class="card rv"><h3>${tr('Gasolineras a menos de 8 km','Stations within 5 miles')}</h3><table class="tabla"><thead><tr><th>${tr('Estación','Station')}</th><th>${tr('Distancia','Distance')}</th><th>${tr('Magna','Regular')}</th><th>${tr('Diferencia','Difference')}</th></tr></thead><tbody>${vec.map(v2=>{
  const df=v2.g.regular-g.regular;
@@ -1756,9 +1760,12 @@ console.log(`   ✓ ${D.length.toLocaleString('es-MX')} fichas de estación`);
 
 // ══════════ PAGINAS LEGALES ══════════
 const LEG=(t,d,f,b)=>f&&f;
-const pgLegal=(archivo,titulo,desc,cuerpo)=>{
+const pgLegal=(archivo,titulo,desc,cuerpo,tituloEn,cuerpoEn)=>{
  f.writeFileSync(P.join(O,archivo),L(`${titulo} | ${N}`,desc,`${DOM}/${archivo.replace('.html','')}`,
- `<p class="crumb"><a href="./">Inicio</a> › ${e(titulo)}</p><div class="legal"><h1>${e(titulo)}</h1><p class="fecha">Última actualización: ${HOY}</p>${cuerpo}</div>`));
+ `<p class="crumb"><a href="./">${tr('Inicio','Home')}</a> › ${tr(titulo,tituloEn||titulo)}</p><div class="legal"><h1>${tr(titulo,tituloEn||titulo)}</h1><p class="fecha">${tr('Última actualización: '+HOY,'Last updated: '+HOY_EN)}</p>`
+ +`<div class="les">${cuerpo}</div>`
+ +(cuerpoEn?`<div class="len" hidden>${cuerpoEn}</div>`:'')
+ +`</div>`));
 };
 
 pgLegal('aviso-de-privacidad.html','Aviso de privacidad',
@@ -1816,7 +1823,49 @@ pgLegal('aviso-de-privacidad.html','Aviso de privacidad',
 <p>Este aviso puede actualizarse para reflejar cambios legales o en nuestras prácticas. Cualquier modificación se publicará en esta misma página, indicando la fecha de última actualización.</p>
 
 <h2>10. Autoridad</h2>
-<p>Si considera que su derecho a la protección de datos personales ha sido vulnerado, puede acudir ante la autoridad competente en materia de protección de datos personales en México.</p>`);
+<p>Si considera que su derecho a la protección de datos personales ha sido vulnerado, puede acudir ante la autoridad competente en materia de protección de datos personales en México.</p>`,
+'Privacy Policy',
+`<p>${N} is a free website that publishes gas prices in Mexico using official public data. This policy explains what information we handle and how.</p>
+
+<h2>1. Who we are</h2>
+<p>${N} is an independent project. We are not affiliated with Pemex, with Mexico's Energy Regulatory Commission (CRE), or with any fuel retailer. Contact: <a href="mailto:${MAIL}">${MAIL}</a>.</p>
+
+<h2>2. What we do not collect</h2>
+<p>We do not ask you to register. We do not request your name, email, phone number, or payment details. There are no user accounts.</p>
+
+<h2>3. Data stored in your own browser</h2>
+<p>Some features save data locally on your device. This never reaches our servers:</p>
+<ul>
+<li><strong>Cookie choice:</strong> so we don't ask you on every visit.</li>
+<li><strong>Language preference:</strong> Spanish or English.</li>
+<li><strong>Hidden stations:</strong> the list of stations you chose to hide.</li>
+<li><strong>Price alert:</strong> the threshold you set, if you enable notifications.</li>
+</ul>
+<p>You can erase all of it by clearing site data in your browser settings.</p>
+
+<h2>4. Location</h2>
+<p>The "search near me" feature asks your browser for your coordinates. Your location is used <strong>only in your device</strong> to sort nearby stations by distance. It is never transmitted to us or to third parties, and it is not stored.</p>
+
+<h2>5. Notifications</h2>
+<p>If you enable price alerts, your browser handles them. We do not maintain a subscriber list or send marketing messages.</p>
+
+<h2>6. Advertising</h2>
+<p>We show ads through <strong>Monetag</strong>. If you accept cookies, Monetag may use cookies and identifiers to display and measure ads, including personalized advertising. This is governed by their own policy: <a href="https://monetag.com/privacy-policy/" target="_blank" rel="noopener nofollow">monetag.com/privacy-policy</a>. If you choose "Necessary only", advertising scripts are not loaded.</p>
+
+<h2>7. Hosting</h2>
+<p>The site is hosted on <strong>Cloudflare Pages</strong>. Like any web server, Cloudflare processes technical data such as IP address and browser type to serve pages and protect against attacks. See <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener nofollow">cloudflare.com/privacypolicy</a>.</p>
+
+<h2>8. Price data</h2>
+<p>Prices come from the public report that Mexico's Energy Regulatory Commission (CRE) requires every fuel retailer to publish. It is public information about businesses, not personal data.</p>
+
+<h2>9. Children</h2>
+<p>This site is not directed at children under 13 and we do not knowingly collect their data.</p>
+
+<h2>10. Your rights</h2>
+<p>Since we do not hold personal data about you, there is nothing for us to access, correct, or delete. If you have any question, write to <a href="mailto:${MAIL}">${MAIL}</a>.</p>
+
+<h2>11. Changes</h2>
+<p>We may update this policy. The date at the top always reflects the current version.</p>`);
 
 pgLegal('terminos.html','Términos de uso',
  `Términos y condiciones de uso del sitio ${N}.`,
@@ -1860,7 +1909,45 @@ pgLegal('terminos.html','Términos de uso',
 <p>Estos términos pueden actualizarse en cualquier momento. La versión vigente es la publicada en esta página.</p>
 
 <h2>9. Contacto</h2>
-<p>Para cualquier duda escriba a <a href="mailto:${MAIL}">${MAIL}</a>.</p>`);
+<p>Para cualquier duda escriba a <a href="mailto:${MAIL}">${MAIL}</a>.</p>`,
+'Terms of Use',
+`<p>By using ${N} you agree to these terms. If you do not agree, please do not use the site.</p>
+
+<h2>1. What this site is</h2>
+<p>${N} is a free tool that displays gas prices in Mexico, sourced from the public report of the Energy Regulatory Commission (CRE). It is an informational service. We do not sell fuel and we are not a broker.</p>
+
+<h2>2. Accuracy of prices</h2>
+<p>Prices come from the official CRE report and are refreshed daily. However:</p>
+<ul>
+<li>A station may change its price during the day without reporting it immediately.</li>
+<li>A station may report late or with errors.</li>
+<li>A station may have closed and still appear in the source file.</li>
+</ul>
+<p><strong>Always confirm the price at the pump before filling up.</strong> We are not liable for differences between what you see here and what you are charged.</p>
+
+<h2>3. Currency conversion</h2>
+<p>Prices in US dollars per gallon are a convenience conversion using a daily exchange rate. The official price is in Mexican pesos per liter. Your bank's rate and any foreign-transaction fee may differ.</p>
+
+<h2>4. No warranty</h2>
+<p>The site is provided "as is". We do not guarantee uninterrupted availability, absence of errors, or that the information is complete. Use of the site is at your own risk.</p>
+
+<h2>5. Limitation of liability</h2>
+<p>We are not responsible for any direct or indirect loss arising from use of this site, including travel to a station whose price changed or that is no longer operating.</p>
+
+<h2>6. Third-party content</h2>
+<p>The site displays third-party advertising and links to external sites such as Google Maps and OpenStreetMap. We do not control their content and are not responsible for it.</p>
+
+<h2>7. Intellectual property</h2>
+<p>Price data is public information from the CRE. The design, code, and text of this site belong to ${N}. Station names and brands belong to their respective owners; they are used descriptively.</p>
+
+<h2>8. Acceptable use</h2>
+<p>You may consult and share the information freely. You may not attempt to disrupt the service, scrape it at abusive volume, or present the data as your own official source.</p>
+
+<h2>9. Changes</h2>
+<p>We may modify these terms at any time. The date at the top reflects the current version.</p>
+
+<h2>10. Contact</h2>
+<p>Questions: <a href="mailto:${MAIL}">${MAIL}</a>.</p>`);
 
 pgLegal('cookies.html','Política de cookies',
  `Qué cookies utiliza ${N}, para qué sirven y cómo puede gestionarlas.`,
@@ -1896,7 +1983,41 @@ pgLegal('cookies.html','Política de cookies',
 <p>Todos los navegadores modernos permiten gestionar cookies desde su sección de privacidad o configuración.</p>
 
 <h2>5. Más información</h2>
-<p>Consulte también nuestro <a href="aviso-de-privacidad">aviso de privacidad</a>. Si tiene dudas, escríbanos a <a href="mailto:${MAIL}">${MAIL}</a>.</p>`);
+<p>Consulte también nuestro <a href="aviso-de-privacidad">aviso de privacidad</a>. Si tiene dudas, escríbanos a <a href="mailto:${MAIL}">${MAIL}</a>.</p>`,
+'Cookie Policy',
+`<p>A cookie is a small file a website stores in your browser to remember information between visits. Here is how <strong>${N}</strong> uses them.</p>
+
+<h2>1. Necessary cookies</h2>
+<p>These are required for the site to work and do not need your consent.</p>
+<ul>
+<li><strong>Consent preference:</strong> we store your cookie choice in your browser's local storage so we don't ask again on every visit. It contains no personal data.</li>
+<li><strong>Language preference:</strong> whether you picked Spanish or English.</li>
+<li><strong>Provider security:</strong> Cloudflare, our hosting provider, may set technical cookies to protect the site against malicious traffic.</li>
+</ul>
+
+<h2>2. Advertising cookies</h2>
+<p>These load only if you press <em>Accept</em> in the initial notice.</p>
+<p>Our advertising partner <strong>Monetag</strong> may use cookies and identifiers to:</p>
+<ul>
+<li>Display ads and cap how often you see the same one</li>
+<li>Measure whether an ad was viewed or clicked</li>
+<li>Personalize advertising based on inferred interests</li>
+</ul>
+<p>These are managed by the third party under their own policy: <a href="https://monetag.com/privacy-policy/" target="_blank" rel="noopener nofollow">monetag.com/privacy-policy</a>.</p>
+
+<h2>3. If you choose "Necessary only"</h2>
+<p>Advertising scripts will not load and no advertising cookies will be set. The site works normally and you can browse every price without restriction.</p>
+
+<h2>4. Changing your mind</h2>
+<p>You can change your choice at any time by:</p>
+<ul>
+<li><strong>Clearing site data</strong> in your browser settings — you'll be asked again on your next visit.</li>
+<li><strong>Configuring your browser</strong> to block third-party cookies permanently.</li>
+<li><strong>Using an ad-blocking extension.</strong></li>
+</ul>
+
+<h2>5. More information</h2>
+<p>See also our <a href="aviso-de-privacidad">privacy policy</a>. Questions: <a href="mailto:${MAIL}">${MAIL}</a>.</p>`);
 
 pgLegal('contacto.html','Contacto',
  `Cómo contactar al equipo de ${N} para dudas, correcciones o reportes.`,
@@ -1918,7 +2039,27 @@ pgLegal('contacto.html','Contacto',
 <p>Para solicitudes relacionadas con datos personales, consulte el <a href="aviso-de-privacidad">aviso de privacidad</a> y escriba al mismo correo indicando su petición.</p>
 
 <h2>Prensa y colaboraciones</h2>
-<p>Para consultas de medios o propuestas de colaboración, utilice el correo anterior indicando el asunto.</p>`);
+<p>Para consultas de medios o propuestas de colaboración, utilice el correo anterior indicando el asunto.</p>`,
+'Contact',
+`<p>Spotted a wrong price? Have a question or a suggestion? Get in touch.</p>
+
+<h2>Email</h2>
+<p><a href="mailto:${MAIL}">${MAIL}</a></p>
+<p>We reply within about three business days.</p>
+
+<h2>About price corrections</h2>
+<p>The prices we show come straight from the <strong>public report of Mexico's Energy Regulatory Commission (CRE)</strong>. We do not enter or edit them.</p>
+<p>If a price looks wrong, the most likely explanation is that the station has not updated its report to the CRE, or that there is an error in the original source. In those cases the correction must happen at the CRE itself; we will reflect the change in the next daily update.</p>
+
+<h2>Visiting from abroad?</h2>
+<p>Prices in Mexico are published <strong>per liter in Mexican pesos</strong>. Use the language switch at the top of any page to see them converted to <strong>US dollars per gallon</strong>. Remember that attendants pump the fuel for you — a tip of 5 to 10 pesos is customary — and it's good practice to check the pump reads zero before they start.</p>
+
+<h2>I own a station</h2>
+<p>If your station shows incorrect information, first check your report to the CRE. Once corrected there, the change will appear on this site automatically within 24 hours.</p>
+<p>If you want your station removed from the site, write to us with the name and CRE ID.</p>
+
+<h2>Press and partnerships</h2>
+<p>For media enquiries or collaboration proposals, use the email above and state the subject.</p>`);
 console.log(`   ✓ 4 páginas legales`);
 
 // ── EXTRAS
@@ -1980,13 +2121,13 @@ f.writeFileSync(P.join(O,'404.html'),L(
  DOM+'/404',
 `<div class="legal" style="text-align:center;padding:60px 0">
 <h1 style="font-size:4.5rem;margin-bottom:6px">404</h1>
-<p class="sub" style="margin:0 auto 30px">No encontramos esa página. Puede que el enlace esté mal escrito o que la estación ya no exista en el reporte de la CRE.</p>
-<p style="margin-bottom:34px"><a class="btn" href="/">Ir al inicio</a> <a class="btn a" href="/estados">Ver todos los estados</a></p>
+<p class="sub" style="margin:0 auto 30px">${tr("No encontramos esa página. Puede que el enlace esté mal escrito o que la estación ya no exista en el reporte de la CRE.","We couldn't find that page. The link may be misspelled, or the station may no longer be in the CRE report.")}</p>
+<p style="margin-bottom:34px"><a class="btn" href="/"><span data-en="Go home">Ir al inicio</span></a> <a class="btn a" href="/estados"><span data-en="See all states">Ver todos los estados</span></a></p>
 <div class="hero" style="max-width:660px;margin:0 auto 18px">
-<div class="hbox reg"><div class="lbl">Magna <span class="jg">verde</span></div><div class="val">${mx(pReg)}</div><div class="cap">promedio nacional</div></div>
-<div class="hbox pre"><div class="lbl">Premium <span class="jg">roja</span></div><div class="val">${mx(pPre)}</div><div class="cap">promedio nacional</div></div>
+<div class="hbox reg"><div class="lbl">${tr('Magna','Regular')} <span class="jg">${tr('verde','green')}</span></div><div class="val">${pz(pReg)}</div><div class="cap">${tr('promedio nacional','national average')} · <span class="unid">MXN/L</span></div></div>
+<div class="hbox pre"><div class="lbl">Premium <span class="jg">${tr('roja','red')}</span></div><div class="val">${pz(pPre)}</div><div class="cap">${tr('promedio nacional','national average')} · <span class="unid">MXN/L</span></div></div>
 </div>
-<p class="nota">Precios del ${HOY} · datos oficiales de la CRE</p>
+<p class="nota">${tr(`Precios del ${HOY} · datos oficiales de la CRE`,`Prices as of ${HOY_EN} · official CRE data`)}</p>
 </div>`,'',true));
 f.writeFileSync(P.join(O,'_headers'),
 `/*
