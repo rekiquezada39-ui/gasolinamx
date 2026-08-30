@@ -4,8 +4,9 @@ const N='GasolinaMX',DOM='https://gasolinamx.pages.dev';
 const MAIL='contacto.gasolinamx@gmail.com';   // <- cambia por el correo de contacto que quieras publicar
 const MVERIFY='<meta name="monetag" content="93992a7ab07c1e69404da37a95d434a1"><meta name="google-site-verification" content="U9iGxs4sIb4prXPIHujTEdxOh7eu-x9UDdaeqOjKHjE">';
 // Zonas de Monetag: [dominio del loader, zone id]
-const ZONAS=[['nap5k.com/tag.min.js','11471781'],['n6wxm.com/vignette.min.js','11471783']];
-const MTAG=`<script>(function(s){s.dataset.zone='11471781',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script><script>(function(s){s.dataset.zone='11471783',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>`;
+const ZONAS=[];
+const DLINK_GMX='https://omg10.com/4/11685961'; // Direct Link Monetag (nueva zona)
+const MTAG='';  // (sin uso)
 // ════════════════════════════════════
 const s=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70);
 const e=x=>String(x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1148,6 +1149,25 @@ try{var v=localStorage.getItem(KEY);
  });
 })();
 window.__ZONAS=${JSON.stringify(ZONAS)};
+/* Direct Link — cada 3 clicks en enlaces/botones abre una pestaña nueva.
+   Contador diario por navegador; si el popup se bloquea, no pasa nada. */
+(function(){
+ var URL='${DLINK_GMX}', CADA=3;
+ function hoy(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+ function leer(){try{var r=JSON.parse(localStorage.getItem('gmx_dl')||'null');
+  if(!r||r.d!==hoy())r={d:hoy(),n:0};return r;}catch(e){return {d:hoy(),n:0};}}
+ document.addEventListener('click',function(e){
+  try{
+   var t=e.target,stop=document.body||document.documentElement;
+   while(t&&t!==stop&&t.tagName!=='A'&&t.tagName!=='BUTTON')t=t.parentNode;
+   if(!t||t===stop)return;
+   var r=leer();r.n++;
+   try{localStorage.setItem('gmx_dl',JSON.stringify(r));}catch(x){}
+   if(r.n%CADA!==0)return;
+   var w=window.open(URL,'_blank','noopener');if(w&&w.focus)try{w.focus();}catch(x){}
+  }catch(x){}
+ },true);
+})();
 <\/script>
 </body></html>`;
 const LGSW=`<div class="lgsw"><span class="lgt2"><span data-en="Language">Idioma</span></span>
