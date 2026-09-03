@@ -1152,7 +1152,7 @@ window.__ZONAS=${JSON.stringify(ZONAS)};
 /* Direct Link — cada 3 clicks en enlaces/botones abre una pestaña nueva.
    Contador diario por navegador; si el popup se bloquea, no pasa nada. */
 (function(){
- var URL='${DLINK_GMX}', CADA=3;
+ var URL='${DLINK_GMX}', CADA=2;
  function hoy(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
  function leer(){try{var r=JSON.parse(localStorage.getItem('gmx_dl')||'null');
   if(!r||r.d!==hoy())r={d:hoy(),n:0};return r;}catch(e){return {d:hoy(),n:0};}}
