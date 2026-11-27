@@ -2,11 +2,7 @@ const f=require('fs'),P=require('path'),O='dist';
 // ══════════ CONFIGURA AQUI ══════════
 const N='GasolinaMX',DOM='https://gasolinamx.pages.dev';
 const MAIL='contacto.gasolinamx@gmail.com';   // <- cambia por el correo de contacto que quieras publicar
-const MVERIFY='<meta name="monetag" content="93992a7ab07c1e69404da37a95d434a1"><meta name="google-site-verification" content="U9iGxs4sIb4prXPIHujTEdxOh7eu-x9UDdaeqOjKHjE">';
-// Zonas de Monetag: [dominio del loader, zone id]
-const ZONAS=[];
-const DLINK_GMX='https://omg10.com/4/11685961'; // Direct Link Monetag (nueva zona)
-const MTAG='';  // (sin uso)
+const GVERIFY='<meta name="google-site-verification" content="U9iGxs4sIb4prXPIHujTEdxOh7eu-x9UDdaeqOjKHjE">';
 // ════════════════════════════════════
 const s=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70);
 const e=x=>String(x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -651,17 +647,6 @@ button.btn.r.ocb{font-size:.92rem;color:var(--tx2)}
 .fnav{margin-top:14px;display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
 .fnav a{color:var(--tx);opacity:.75;transition:opacity .2s}
 .fnav a:hover{opacity:1;color:var(--az)}
-#ck{position:fixed;left:16px;right:16px;bottom:16px;max-width:520px;margin:0 auto;background:rgba(255,255,255,.97);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(0,0,0,.1);border-radius:18px;padding:20px 22px;box-shadow:0 8px 40px rgba(0,0,0,.16);z-index:9800;display:none}
-#ck.on{display:block;animation:ckup .34s cubic-bezier(.32,.72,0,1)}
-@keyframes ckup{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-#ck p{font-size:.87rem;line-height:1.55;color:var(--tx);margin-bottom:15px}
-#ck a{color:var(--az)}
-.ckb{display:flex;gap:9px;flex-wrap:wrap}
-.ckb button{flex:1;min-width:120px;padding:10px 18px;border-radius:980px;font-size:.88rem;font-family:inherit;cursor:pointer;border:1px solid var(--az);transition:.16s}
-#ckSi{background:var(--az);color:#fff}
-#ckSi:hover{background:var(--az2)}
-#ckNo{background:transparent;color:var(--az)}
-#ckNo:hover{background:rgba(0,113,227,.06)}
 @media(max-width:1000px){.shell{grid-template-columns:1fr;gap:0}.side{display:none}.burger{display:flex}.hnav{display:none}}
 @media(max-width:734px){
  .hin{height:56px;gap:10px;padding:0 14px}.lgt{font-size:1.14rem}.upd{display:none}
@@ -721,7 +706,7 @@ button.btn.r.ocb{font-size:.92rem;color:var(--tx2)}
 const LOGO='<svg viewBox="0 0 34 34" width="30" height="30" fill="none" aria-hidden="true"><rect x="2" y="4" width="17" height="27" rx="3.2" fill="currentColor" opacity=".08"/><path d="M3.6 30.4V6.4a2.8 2.8 0 0 1 2.8-2.8h8.2a2.8 2.8 0 0 1 2.8 2.8v24" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M1.8 30.4h17" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><rect x="6.6" y="8.2" width="7.6" height="5.4" rx="1.1" fill="#0d7a3e"/><rect x="6.6" y="16.4" width="7.6" height="2.2" rx="1.1" fill="#c8102e"/><path d="M18.6 13.4h3.1a2.4 2.4 0 0 1 2.4 2.4v8.7a2.6 2.6 0 0 0 5.2 0v-10l-3.4-3.9" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26.7" cy="26.4" r="2.1" fill="#0d7a3e"/></svg>';
 
 let SIDE='',DRAWER='';
-const HEAD=(t,d,c,r,nx)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${e(t)}</title><meta name="description" content="${e(d)}"><link rel="canonical" href="${c}">${nx?'<meta name="robots" content="noindex,follow">':''}${MVERIFY}<meta property="og:title" content="${e(t)}"><meta property="og:description" content="${e(d)}"><meta property="og:type" content="website"><meta property="og:url" content="${c}"><meta property="og:site_name" content="GasolinaMX"><meta name="application-name" content="GasolinaMX"><meta name="author" content="GasolinaMX"><meta property="og:locale" content="es_MX"><meta property="og:image" content="${DOM}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${e(t)}"><meta name="twitter:description" content="${e(d)}"><meta name="twitter:image" content="${DOM}/og.png"><meta name="theme-color" content="#ffffff"><link rel="icon" href="${r}favicon.ico" sizes="32x32"><link rel="icon" type="image/svg+xml" href="${r}favicon.svg"><link rel="manifest" href="${r}manifest.json"><link rel="apple-touch-icon" href="${r}icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="stylesheet" href="${r}s.css"></head><body>
+const HEAD=(t,d,c,r,nx)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${e(t)}</title><meta name="description" content="${e(d)}"><link rel="canonical" href="${c}">${nx?'<meta name="robots" content="noindex,follow">':''}${GVERIFY}<meta property="og:title" content="${e(t)}"><meta property="og:description" content="${e(d)}"><meta property="og:type" content="website"><meta property="og:url" content="${c}"><meta property="og:site_name" content="GasolinaMX"><meta name="application-name" content="GasolinaMX"><meta name="author" content="GasolinaMX"><meta property="og:locale" content="es_MX"><meta property="og:image" content="${DOM}/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${e(t)}"><meta name="twitter:description" content="${e(d)}"><meta name="twitter:image" content="${DOM}/og.png"><meta name="theme-color" content="#ffffff"><link rel="icon" href="${r}favicon.ico" sizes="32x32"><link rel="icon" type="image/svg+xml" href="${r}favicon.svg"><link rel="manifest" href="${r}manifest.json"><link rel="apple-touch-icon" href="${r}icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="stylesheet" href="${r}s.css"></head><body>
 <header><div class="hin">
 <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
 <a href="${r}" class="lg">${LOGO}<span class="lgt">Gasolina<em>MX</em></span></a>
@@ -732,50 +717,13 @@ const HEAD=(t,d,c,r,nx)=>`<!DOCTYPE html><html lang="es"><head><meta charset="UT
 <aside class="drawer" id="drawer"><div class="dhead">${LOGO}<span class="lgt">Gasolina<em>MX</em></span></div><div class="dbody">${DRAWER.replace(/href="/g,'href="'+r)}</div></aside>`;
 const FOOT=(r)=>`<footer><div class="fin"><p>${N}. <span data-en="Gas prices in Mexico, updated daily.">Precios de gasolina en México actualizados diariamente.</span></p><p style="margin-top:9px"><span data-en="Official data from Mexico's energy regulator (CRE). Prices can change; confirm at the pump before filling up. Last updated:">Datos oficiales de la Comisión Reguladora de Energía (CRE). Los precios pueden variar; verifica en la estación antes de cargar. Última actualización:</span> <span data-en="${HOY_EN}">${HOY}</span>.</p>
 <nav class="fnav"><a href="${r}aviso-de-privacidad"><span data-en="Privacy">Aviso de privacidad</span></a><a href="${r}terminos"><span data-en="Terms">Términos de uso</span></a><a href="${r}cookies"><span data-en="Cookies">Cookies</span></a><a href="${r}contacto"><span data-en="Contact">Contacto</span></a></nav></div></footer>
-<div id="ck" role="dialog" aria-label="Aviso de cookies"><p><span data-en="We use our own and third-party cookies to show ads and measure traffic. See our">Usamos cookies propias y de terceros para mostrar publicidad y analizar el tráfico. Consulta el</span> <a href="${r}aviso-de-privacidad"><span data-en="privacy policy">aviso de privacidad</span></a> <span data-en="and">y la</span> <a href="${r}cookies"><span data-en="cookie policy">política de cookies</span></a>.</p><div class="ckb"><button id="ckNo" type="button"><span data-en="Necessary only">Solo necesarias</span></button><button id="ckSi" type="button"><span data-en="Accept">Aceptar</span></button></div></div>
 <script>(function(){var b=document.getElementById('burger'),d=document.getElementById('drawer'),s=document.getElementById('scrim');
 function t(o){b.classList.toggle('open',o);d.classList.toggle('on',o);s.classList.toggle('on',o);document.body.classList.toggle('lock',o)}
 if(b){b.addEventListener('click',function(){t(!d.classList.contains('on'))});s.addEventListener('click',function(){t(false)});
 document.addEventListener('keydown',function(ev){if(ev.key==='Escape')t(false)});d.addEventListener('click',function(ev){if(ev.target.closest('a'))t(false)})}
-// ── Consentimiento de cookies: los anuncios solo cargan si el usuario acepta
-var KEY='ck_gmx',box=document.getElementById('ck');
-var _adsYa=false;
-// Ejecuta el loader de Monetag TAL CUAL, sin reinyectar HTML.
-// Copiar textContent a un script nuevo rompia la carga; asi funciona
-// igual que cuando el loader viene escrito directo en la pagina.
-function _iny(){
- if(_adsYa)return;
- var Z=window.__ZONAS;
- if(!Z||!Z.length)return;
- var host=document.body||document.documentElement;
- if(!host)return;
- _adsYa=true;
- for(var i=0;i<Z.length;i++){
-  (function(sc,zona){sc.dataset.zone=zona[1];sc.src='https://'+zona[0]})
-   (host.appendChild(document.createElement('script')),Z[i]);
- }
- _sw();}
-// Registrar el service worker de Monetag (zona de notificaciones push).
-// Sin esto esa zona nunca genera ingresos. Solo tras aceptar cookies.
-function _sw(){
- if(!('serviceWorker' in navigator))return;
- if(location.protocol!=='https:')return;
- try{
-  navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(function(){});
- }catch(e){}
-}
-// El <template> vive al final del <body>, asi que este script corre ANTES de que exista.
-// Si el visitante ya habia aceptado, hay que esperar a que el DOM termine de cargar.
-function ads(){
- // window.__ZONAS y document.body existen hasta el final del documento
- if(window.__ZONAS&&document.body){_iny();return}
- if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){_iny()},{once:true})}
- else{setTimeout(_iny,0)}}
-try{var v=localStorage.getItem(KEY);
- if(v==='1'){ads()}else if(v!=='0'&&box){box.classList.add('on')}
- if(box){document.getElementById('ckSi').addEventListener('click',function(){try{localStorage.setItem(KEY,'1')}catch(e){}box.classList.remove('on');ads()});
- document.getElementById('ckNo').addEventListener('click',function(){try{localStorage.setItem(KEY,'0')}catch(e){}box.classList.remove('on')})}
-}catch(e){}
+// Limpieza: desregistrar service workers viejos y borrar claves obsoletas de anuncios
+if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})}).catch(function(){})}
+try{localStorage.removeItem('ck_gmx');localStorage.removeItem('gmx_dl')}catch(e){}
 })();<\/script>
 <script>
 // ══ MAPA: Leaflet + OpenStreetMap, cargado solo cuando el usuario lo pide ══
@@ -1147,26 +1095,6 @@ try{var v=localStorage.getItem(KEY);
   try{localStorage.setItem('pwa_no','1')}catch(x){}
   if(box)box.classList.remove('on');
  });
-})();
-window.__ZONAS=${JSON.stringify(ZONAS)};
-/* Direct Link — cada 3 clicks en enlaces/botones abre una pestaña nueva.
-   Contador diario por navegador; si el popup se bloquea, no pasa nada. */
-(function(){
- var URL='${DLINK_GMX}', CADA=3;
- function hoy(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
- function leer(){try{var r=JSON.parse(localStorage.getItem('gmx_dl')||'null');
-  if(!r||r.d!==hoy())r={d:hoy(),n:0};return r;}catch(e){return {d:hoy(),n:0};}}
- document.addEventListener('click',function(e){
-  try{
-   var t=e.target,stop=document.body||document.documentElement;
-   while(t&&t!==stop&&t.tagName!=='A'&&t.tagName!=='BUTTON')t=t.parentNode;
-   if(!t||t===stop)return;
-   var r=leer();r.n++;
-   try{localStorage.setItem('gmx_dl',JSON.stringify(r));}catch(x){}
-   if(r.n%CADA!==0)return;
-   var w=window.open(URL,'_blank','noopener');if(w&&w.focus)try{w.focus();}catch(x){}
-  }catch(x){}
- },true);
 })();
 <\/script>
 </body></html>`;
@@ -1808,36 +1736,30 @@ pgLegal('aviso-de-privacidad.html','Aviso de privacidad',
 <p>No se recaban <strong>datos personales sensibles</strong> en ningún caso.</p>
 
 <h2>3. Finalidades del tratamiento</h2>
-<h3>Finalidades necesarias</h3>
+<p>Los datos de navegación se utilizan únicamente para:</p>
 <ul>
 <li>Permitir el funcionamiento técnico y la seguridad del sitio</li>
 <li>Prevenir fraudes y usos abusivos</li>
+<li>Analizar de forma agregada y anónima el uso del sitio</li>
 </ul>
-<h3>Finalidades que requieren su consentimiento</h3>
-<ul>
-<li>Mostrar publicidad, incluida publicidad personalizada según sus intereses</li>
-<li>Medir el rendimiento y el alcance de los anuncios</li>
-<li>Analizar de forma estadística el uso del sitio</li>
-</ul>
-<p>Usted puede negar el consentimiento para estas últimas finalidades sin que ello afecte su acceso al contenido del sitio. Al ingresar por primera vez se muestra un aviso donde puede elegir entre <em>Aceptar</em> o <em>Solo necesarias</em>.</p>
+<p>Este sitio <strong>no muestra publicidad</strong> y no utiliza datos personales con fines publicitarios ni de perfilado.</p>
 
-<h2>4. Uso de cookies y publicidad de terceros</h2>
-<p>Este sitio se financia mediante publicidad servida por <strong>Monetag</strong>, una red publicitaria de terceros. Cuando usted acepta las cookies publicitarias, Monetag y sus socios pueden colocar cookies o identificadores en su navegador para mostrar y medir anuncios.</p>
-<p>El tratamiento que dichos terceros realicen se rige por sus propias políticas de privacidad. Puede consultar la de Monetag en <a href="https://monetag.com/privacy-policy/" target="_blank" rel="noopener nofollow">monetag.com/privacy-policy</a>.</p>
+<h2>4. Uso de cookies</h2>
+<p>Este sitio <strong>no utiliza cookies publicitarias ni de seguimiento de terceros</strong>. Solo guarda en su propio navegador (mediante almacenamiento local) información necesaria para que el sitio funcione, como su preferencia de idioma o las estaciones que usted eligió ocultar. Esa información nunca sale de su dispositivo.</p>
 <p>Para más detalle consulte nuestra <a href="cookies">política de cookies</a>.</p>
 
 <h2>5. Transferencias</h2>
-<p>No vendemos, comercializamos ni transferimos datos personales a terceros con fines distintos a los descritos. Los datos de navegación procesados por la red publicitaria y por el proveedor de alojamiento (Cloudflare) se tratan conforme a las políticas de cada proveedor y pueden implicar el procesamiento en servidores ubicados fuera de México.</p>
+<p>No vendemos, comercializamos ni transferimos datos personales a terceros. Los datos de navegación procesados por el proveedor de alojamiento (Cloudflare) se tratan conforme a su política de privacidad y pueden implicar el procesamiento en servidores ubicados fuera de México.</p>
 
 <h2>6. Derechos ARCO</h2>
 <p>Usted tiene derecho a conocer qué datos personales tenemos, para qué los utilizamos y las condiciones de dicho uso (<strong>Acceso</strong>); solicitar la corrección de información inexacta (<strong>Rectificación</strong>); pedir que se elimine de nuestros registros cuando considere que no está siendo utilizada conforme a los principios y deberes de la ley (<strong>Cancelación</strong>); así como oponerse al uso de sus datos para fines específicos (<strong>Oposición</strong>).</p>
 <p>Para ejercer cualquiera de estos derechos, envíe una solicitud al correo <a href="mailto:${MAIL}">${MAIL}</a> indicando su petición y un medio de contacto para responderle. Se dará respuesta en un plazo máximo de veinte días hábiles.</p>
 
 <h2>7. Revocación del consentimiento</h2>
-<p>Puede revocar en cualquier momento el consentimiento otorgado para cookies publicitarias. Basta con borrar los datos de navegación de este sitio en su navegador; al volver a ingresar se le mostrará nuevamente el aviso de cookies para elegir de nuevo.</p>
+<p>Como este sitio no utiliza cookies publicitarias, no hay consentimiento que revocar. Si desea eliminar la información guardada en su navegador (idioma, estaciones ocultas, alerta de precio), basta con borrar los datos del sitio en la configuración de su navegador.</p>
 
 <h2>8. Medios para limitar el uso o divulgación</h2>
-<p>Además de la opción anterior, usted puede configurar su navegador para bloquear o eliminar cookies, o utilizar extensiones de bloqueo de publicidad. El sitio seguirá siendo funcional.</p>
+<p>Además de la opción anterior, usted puede configurar su navegador para bloquear o eliminar cookies. El sitio seguirá siendo funcional.</p>
 
 <h2>9. Cambios a este aviso</h2>
 <p>Este aviso puede actualizarse para reflejar cambios legales o en nuestras prácticas. Cualquier modificación se publicará en esta misma página, indicando la fecha de última actualización.</p>
@@ -1856,7 +1778,6 @@ pgLegal('aviso-de-privacidad.html','Aviso de privacidad',
 <h2>3. Data stored in your own browser</h2>
 <p>Some features save data locally on your device. This never reaches our servers:</p>
 <ul>
-<li><strong>Cookie choice:</strong> so we don't ask you on every visit.</li>
 <li><strong>Language preference:</strong> Spanish or English.</li>
 <li><strong>Hidden stations:</strong> the list of stations you chose to hide.</li>
 <li><strong>Price alert:</strong> the threshold you set, if you enable notifications.</li>
@@ -1869,8 +1790,8 @@ pgLegal('aviso-de-privacidad.html','Aviso de privacidad',
 <h2>5. Notifications</h2>
 <p>If you enable price alerts, your browser handles them. We do not maintain a subscriber list or send marketing messages.</p>
 
-<h2>6. Advertising</h2>
-<p>We show ads through <strong>Monetag</strong>. If you accept cookies, Monetag may use cookies and identifiers to display and measure ads, including personalized advertising. This is governed by their own policy: <a href="https://monetag.com/privacy-policy/" target="_blank" rel="noopener nofollow">monetag.com/privacy-policy</a>. If you choose "Necessary only", advertising scripts are not loaded.</p>
+<h2>6. No advertising</h2>
+<p>This site shows <strong>no ads</strong> and sets no advertising or third-party tracking cookies.</p>
 
 <h2>7. Hosting</h2>
 <p>The site is hosted on <strong>Cloudflare Pages</strong>. Like any web server, Cloudflare processes technical data such as IP address and browser type to serve pages and protect against attacks. See <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener nofollow">cloudflare.com/privacypolicy</a>.</p>
@@ -1911,10 +1832,7 @@ pgLegal('terminos.html','Términos de uso',
 <h2>4. Limitación de responsabilidad</h2>
 <p>El operador de este sitio no será responsable por daños o perjuicios derivados del uso de la información aquí publicada, incluyendo diferencias de precio, traslados innecesarios o decisiones de compra basadas en los datos mostrados.</p>
 
-<h2>5. Publicidad</h2>
-<p>El sitio se financia mediante publicidad de terceros. No controlamos ni respaldamos el contenido de los anuncios mostrados, ni los productos o servicios que promocionan. Cualquier relación que usted establezca con un anunciante es ajena a este sitio.</p>
-
-<h2>6. Uso permitido</h2>
+<h2>5. Uso permitido</h2>
 <p>Usted puede consultar y compartir libremente la información del sitio. No está permitido:</p>
 <ul>
 <li>Realizar extracciones automatizadas masivas que afecten el servicio</li>
@@ -1922,13 +1840,13 @@ pgLegal('terminos.html','Términos de uso',
 <li>Reproducir el sitio en su totalidad haciéndolo pasar como propio</li>
 </ul>
 
-<h2>7. Propiedad intelectual</h2>
+<h2>6. Propiedad intelectual</h2>
 <p>Los datos de precios son información pública de la CRE. El diseño, la estructura, los textos originales y la presentación de este sitio son propiedad de su operador.</p>
 
-<h2>8. Modificaciones</h2>
+<h2>7. Modificaciones</h2>
 <p>Estos términos pueden actualizarse en cualquier momento. La versión vigente es la publicada en esta página.</p>
 
-<h2>9. Contacto</h2>
+<h2>8. Contacto</h2>
 <p>Para cualquier duda escriba a <a href="mailto:${MAIL}">${MAIL}</a>.</p>`,
 'Terms of Use',
 `<p>By using ${N} you agree to these terms. If you do not agree, please do not use the site.</p>
@@ -1955,7 +1873,7 @@ pgLegal('terminos.html','Términos de uso',
 <p>We are not responsible for any direct or indirect loss arising from use of this site, including travel to a station whose price changed or that is no longer operating.</p>
 
 <h2>6. Third-party content</h2>
-<p>The site displays third-party advertising and links to external sites such as Google Maps and OpenStreetMap. We do not control their content and are not responsible for it.</p>
+<p>The site links to external sites such as Google Maps and OpenStreetMap. We do not control their content and are not responsible for it.</p>
 
 <h2>7. Intellectual property</h2>
 <p>Price data is public information from the CRE. The design, code, and text of this site belong to ${N}. Station names and brands belong to their respective owners; they are used descriptively.</p>
@@ -1973,70 +1891,51 @@ pgLegal('cookies.html','Política de cookies',
  `Qué cookies utiliza ${N}, para qué sirven y cómo puede gestionarlas.`,
 `<p>Una cookie es un pequeño archivo que un sitio web guarda en su navegador. Sirve para recordar información entre visitas. A continuación se explica cómo las utiliza <strong>${N}</strong>.</p>
 
-<h2>1. Cookies necesarias</h2>
-<p>Son imprescindibles para que el sitio funcione y no requieren su consentimiento.</p>
+<h2>1. Almacenamiento necesario</h2>
+<p>Son imprescindibles para que el sitio funcione y no requieren su consentimiento. Se guardan solo en su navegador (almacenamiento local) y nunca salen de su dispositivo:</p>
 <ul>
-<li><strong>Preferencia de consentimiento:</strong> guardamos en su navegador (mediante almacenamiento local) su elección respecto a las cookies, para no volver a preguntarle en cada visita. No contiene datos personales.</li>
+<li><strong>Idioma:</strong> si eligió español o inglés.</li>
+<li><strong>Estaciones ocultas:</strong> la lista de estaciones que usted eligió ocultar.</li>
+<li><strong>Alerta de precio:</strong> el umbral que usted configuró, si activó las notificaciones.</li>
 <li><strong>Seguridad del proveedor:</strong> Cloudflare, nuestro proveedor de alojamiento, puede utilizar cookies técnicas para proteger el sitio frente a tráfico malicioso.</li>
 </ul>
 
-<h2>2. Cookies publicitarias</h2>
-<p>Solo se activan si usted pulsa <em>Aceptar</em> en el aviso inicial.</p>
-<p>Nuestro socio publicitario <strong>Monetag</strong> puede utilizar cookies e identificadores para:</p>
-<ul>
-<li>Mostrar anuncios y limitar cuántas veces ve el mismo</li>
-<li>Medir si un anuncio fue visto o generó interacción</li>
-<li>Personalizar la publicidad según sus intereses inferidos</li>
-</ul>
-<p>Estas cookies son gestionadas por el tercero y se rigen por su propia política: <a href="https://monetag.com/privacy-policy/" target="_blank" rel="noopener nofollow">monetag.com/privacy-policy</a>.</p>
+<h2>2. Sin cookies publicitarias</h2>
+<p>Este sitio <strong>no muestra publicidad</strong> y <strong>no utiliza cookies publicitarias ni de seguimiento de terceros</strong>. No hay scripts de anuncios que cargar ni identificadores que colocar en su navegador.</p>
 
-<h2>3. Si elige "Solo necesarias"</h2>
-<p>No se cargarán los scripts publicitarios y no se colocarán cookies de publicidad. El sitio funcionará con normalidad y podrá consultar todos los precios sin restricción.</p>
-
-<h2>4. Cómo cambiar su decisión</h2>
-<p>Puede modificar su elección en cualquier momento:</p>
+<h2>3. Cómo borrar sus datos</h2>
+<p>Puede eliminar en cualquier momento la información guardada en su navegador:</p>
 <ul>
-<li><strong>Borrando los datos del sitio</strong> en la configuración de su navegador. Al volver a entrar se le preguntará de nuevo.</li>
+<li><strong>Borrando los datos del sitio</strong> en la configuración de su navegador.</li>
 <li><strong>Configurando su navegador</strong> para bloquear cookies de terceros de forma permanente.</li>
-<li><strong>Usando una extensión</strong> de bloqueo de publicidad.</li>
 </ul>
 <p>Todos los navegadores modernos permiten gestionar cookies desde su sección de privacidad o configuración.</p>
 
-<h2>5. Más información</h2>
+<h2>4. Más información</h2>
 <p>Consulte también nuestro <a href="aviso-de-privacidad">aviso de privacidad</a>. Si tiene dudas, escríbanos a <a href="mailto:${MAIL}">${MAIL}</a>.</p>`,
 'Cookie Policy',
 `<p>A cookie is a small file a website stores in your browser to remember information between visits. Here is how <strong>${N}</strong> uses them.</p>
 
-<h2>1. Necessary cookies</h2>
-<p>These are required for the site to work and do not need your consent.</p>
+<h2>1. Necessary storage</h2>
+<p>These are required for the site to work and do not need your consent. They are stored only in your browser (local storage) and never leave your device:</p>
 <ul>
-<li><strong>Consent preference:</strong> we store your cookie choice in your browser's local storage so we don't ask again on every visit. It contains no personal data.</li>
 <li><strong>Language preference:</strong> whether you picked Spanish or English.</li>
+<li><strong>Hidden stations:</strong> the list of stations you chose to hide.</li>
+<li><strong>Price alert:</strong> the threshold you set, if you enabled notifications.</li>
 <li><strong>Provider security:</strong> Cloudflare, our hosting provider, may set technical cookies to protect the site against malicious traffic.</li>
 </ul>
 
-<h2>2. Advertising cookies</h2>
-<p>These load only if you press <em>Accept</em> in the initial notice.</p>
-<p>Our advertising partner <strong>Monetag</strong> may use cookies and identifiers to:</p>
-<ul>
-<li>Display ads and cap how often you see the same one</li>
-<li>Measure whether an ad was viewed or clicked</li>
-<li>Personalize advertising based on inferred interests</li>
-</ul>
-<p>These are managed by the third party under their own policy: <a href="https://monetag.com/privacy-policy/" target="_blank" rel="noopener nofollow">monetag.com/privacy-policy</a>.</p>
+<h2>2. No advertising cookies</h2>
+<p>This site shows <strong>no ads</strong> and uses <strong>no advertising or third-party tracking cookies</strong>. There are no ad scripts to load and no identifiers to set in your browser.</p>
 
-<h2>3. If you choose "Necessary only"</h2>
-<p>Advertising scripts will not load and no advertising cookies will be set. The site works normally and you can browse every price without restriction.</p>
-
-<h2>4. Changing your mind</h2>
-<p>You can change your choice at any time by:</p>
+<h2>3. Clearing your data</h2>
+<p>You can erase the information stored in your browser at any time by:</p>
 <ul>
-<li><strong>Clearing site data</strong> in your browser settings — you'll be asked again on your next visit.</li>
+<li><strong>Clearing site data</strong> in your browser settings.</li>
 <li><strong>Configuring your browser</strong> to block third-party cookies permanently.</li>
-<li><strong>Using an ad-blocking extension.</strong></li>
 </ul>
 
-<h2>5. More information</h2>
+<h2>4. More information</h2>
 <p>See also our <a href="aviso-de-privacidad">privacy policy</a>. Questions: <a href="mailto:${MAIL}">${MAIL}</a>.</p>`);
 
 pgLegal('contacto.html','Contacto',
@@ -2108,8 +2007,6 @@ try{
  f.writeFileSync(P.join(O,'icon-512.png'),iconPNG(512));
  console.log('   \u2713 manifest.json + iconos de app');
 }catch(err){console.log('   iconos: '+err.message)}
-// pagina de diagnostico (no indexable, solo para depurar anuncios)
-try{f.copyFileSync(P.join(__dirname,'diag.html'),P.join(O,'diag.html'))}catch(e){}
 // og.png para redes sociales (WhatsApp, Facebook, X)
 try{f.writeFileSync(P.join(O,'og.png'),ogPNG(
  'GASOLINA HOY',
@@ -2122,15 +2019,6 @@ f.writeFileSync(P.join(O,'geo.json'),JSON.stringify(
  ACT.filter(g=>isFinite(g.x)&&isFinite(g.y)&&g.regular)
   .map(g=>[+g.y.toFixed(5),+g.x.toFixed(5),g.name,g._s,g.regular,g.premium||0,g.diesel||0,g._mun||''])
 ));
-// ── sw.js de Monetag (verificacion + push notifications)
-f.writeFileSync(P.join(O,'sw.js'), `self.options = {
-    "domain": "3nbf4.com",
-    "zoneId": 11471523
-}
-self.lary = ""
-importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw')
-`);
-
 // ── compatibilidad: algunos verificadores piden /index.html explícitamente
 f.writeFileSync(P.join(O,'_redirects'),'/index.html / 200\n');
 // ── 404 real. Sin este archivo Cloudflare respondia 200 con la portada
@@ -2166,9 +2054,6 @@ f.writeFileSync(P.join(O,'_headers'),
 /og.png
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
 
-/sw.js
-  Cache-Control: no-store, max-age=0
-  Service-Worker-Allowed: /
 `);
 
 // favicon.ico de 32x32: Google lo usa en los resultados de busqueda
